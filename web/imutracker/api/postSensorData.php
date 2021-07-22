@@ -16,8 +16,7 @@ $dbname = "imutracker";
 $username = "imuAPI";
 $password = "Cs.![qPtTOAVxs].";
 
-// Keep this API Key value to be compatible with the ESP32 code provided in the project page. 
-// If you change this value, the ESP32 sketch needs to match
+// api keys stored in the database
 $api_key_value = "kzNABRcbVBQghFDC";
 
 $api_key = $id = $time = $accX = $accY = $accZ = $gyrX = $gyrY = $gyrZ = $temp = "";
@@ -40,11 +39,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             die("Connection failed: " . $conn->connect_error);
         } 
         
-        $sql = "INSERT INTO measures (accX, accY, accZ, gyrX, gyrY, gyrZ, temp)
-        VALUES ('" . $accX . "', '" . $accY . "', '" . $accZ . "', '" . $gyrX . "', '" . $gyrY . "', '" . $gyrZ . "', '" . $temp . "')";
+        // update always the oldest entry
+        $sql = "UPDATE measures SET accX=$accX, accY=$accY, accZ=$accZ, gyrX=$gyrX, gyrY=$gyrY, gyrZ=$gyrZ, temp=$temp WHERE timestamp = (SELECT MIN(timestamp) FROM measures) ORDER BY id LIMIT 1";
         
         if ($conn->query($sql) === TRUE) {
-            echo "New record created successfully";
+            echo "Entry updated successfully";
         } 
         else {
             echo "Error: " . $sql . "<br>" . $conn->error;
