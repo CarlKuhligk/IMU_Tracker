@@ -13,13 +13,8 @@ Rights:
 - FILE
 
 Tabels:
-- measures
+- devices
 	- id
 	- timestamp
-	- accX(float)
-	- accY(float)
-	- accZ(float)
-	- gyrX(float)
-	- gyrY(float)
-	- gyrZ(float)
-	- temp(float)
+	- name
+	- api_key
