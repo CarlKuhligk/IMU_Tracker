@@ -11,5 +11,3 @@ class Channel{
         $this->dataTableName = $dataTableName;
     }
 }
-
-?>

@@ -5,4 +5,3 @@ class DBConfig{
     protected $username = "imuAPI";
     protected $password = "Cs.![qPtTOAVxs].";
 }
-?>

@@ -20,12 +20,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $sql = "SELECT id, name FROM devices WHERE api_key = '$api_key';";
     $result = $conn->query($sql);
-    $row = $result -> fetch_array(MYSQLI_ASSOC);
+    $row = $result->fetch_array(MYSQLI_ASSOC);
 
-    if ( $row != null) {
+    if ($row != null) {
         $id = $row['id'];
         $name = $row['name'];
-        $tableName = $name."_".$id;
+        $tableName = $name . "_" . $id;
 
         $accX = htmlspecialchars($_POST["accX"]);
         $accY = htmlspecialchars($_POST["accY"]);
@@ -40,18 +40,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($conn->query($sql) === TRUE) {
             echo "Entry updated successfully";
-        } 
-        else {
+        } else {
             echo "Error: " . $sql . "<br>" . $conn->error;
         }
-    } 
-    else {
+    } else {
         echo "Wrong API Key provided.";
         echo "Error: " . $sql . "<br>" . $conn->error;
     }
     $conn->close();
-}
-else {
+} else {
     echo "No data posted with HTTP POST.";
 }
-?>
