@@ -142,7 +142,9 @@
             var message = {type:"", value:[]};
             function onClick() {
                 if(textboxes[0].value != ""){
+                    //set type
                     message.type = dropdown.value;
+                    //set value
                     switch(dropdown.value){
                         case "sender":
                             message.value = textboxes[0].value;
