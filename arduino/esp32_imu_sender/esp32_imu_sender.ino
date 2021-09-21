@@ -23,7 +23,7 @@
 const char* ssid     = "WIFI";
 const char* password = "123456789";
 const char* serverName = "http://192.168.137.1/imutracker/api/postSensorData.php";
-String apiKeyValue = "28e7ebccfe374ccf75c3ec83fbc2805ec6131ab4d1aba6d859726e9b99cde835";
+String apiKeyValue = "558fe9f09edca96e6b7007f0c187c30579b0727235b43d58b342faa8f81bb300";
 
 Adafruit_MPU6050 mpu;
 
