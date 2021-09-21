@@ -10,18 +10,18 @@ body {
   background-color: #444444;
 }
 
-.channelHead {
+.channelOverview {
   display: flex;
   flex-direction: row;
   padding-top: 10px;
   padding-bottom: 10px;
 }
 
-.channelHead img {
+.channelOverview img {
   height: 25px;
 }
 
-.channelHead p {
+.channelOverview label {
   padding-left: 15px;
   padding-right: 15px;
   white-space: nowrap;
@@ -42,7 +42,7 @@ body {
   height: 25px;
 }
 
-.channel p {
+.channel label {
   padding-left: 15px;
   padding-right: 15px;
   white-space: nowrap;

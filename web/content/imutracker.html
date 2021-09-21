@@ -2,36 +2,28 @@
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, inital-scale=1.0" />
+    <meta name="viewport" content="width=device-width" />
     <meta name="keywords" content="IMU, MPU, Recorder, Tracker" />
 
     <link href="styles/imutracker.css" rel="stylesheet" type="text/css" />
     <link
-      rel="stylesheet"
       href="https://fonts.googleapis.com/css?family=Palette+Mosaic"
+      rel="stylesheet"
     />
+
+    <script src="source/jquery.js"></script>
+    <script src="scripts/channelController.js"></script>
+
     <title></title>
   </head>
-  <body>
+  <body onload="debug()">
     <div class="navigation">
-      <div class="channelHead">
-        <p>Channels</p>
+      <div class="channelOverview">
+        <label>Übersicht</label>
         <img src="img/user.png" alt="Usercount" />
-        <p class="totalReciverLabel">15</p>
+        <label>0</label>
       </div>
-      <div class="cannelContainer">
-        <div class="channel">
-          <img
-            class="channelOnlineImage"
-            id="0"
-            src="img/online.png"
-            alt="online"
-          />
-          <p>Channel Namme</p>
-          <img src="img/user.png" alt="Usercount" />
-          <p class="totalChannelReciverLabel" id="0">6</p>
-        </div>
-      </div>
+      <div class="cannelContainer"></div>
       <div class="systemOverview"></div>
       <div class="additional"></div>
     </div>
@@ -42,5 +34,13 @@
       <div class="gyroscopView"></div>
     </div>
     <div class="foot"></div>
+
+    <script>
+      function debug() {
+        appendNewChannel(createChannel(65, "Hello World", 1, 12));
+        appendNewChannel(createChannel(45, "TestChannel2", 0, 72));
+        updateChannelOverview(2);
+      }
+    </script>
   </body>
 </html>
