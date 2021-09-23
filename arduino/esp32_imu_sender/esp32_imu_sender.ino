@@ -1,45 +1,141 @@
 /*
-  Rui Santos
-  Complete project details at https://RandomNerdTutorials.com/esp32-esp8266-mysql-database-php/
-  
-  Permission is hereby granted, free of charge, to any person obtaining a copy
-  of this software and associated documentation files.
-  
-  The above copyright notice and this permission notice shall be included in all
-  copies or substantial portions of the Software.
+  Minimal Esp32 Websockets Client
+
+  This sketch:
+        1. Connects to a WiFi network
+        2. Connects to a Websockets server
+        3. Sends the websockets server a message ("Hello Server")
+        4. Sends the websocket server a "ping"
+        5. Prints all incoming messages while the connection is open
+
+    NOTE:
+    The sketch dosen't check or indicate about errors while connecting to 
+    WiFi or to the websockets server. For full example you might want 
+    to try the example named "Esp32-Client".
+
+  Hardware:
+        For this sketch you only need an ESP8266 board.
+
+  Created 15/02/2019
+  By Gil Maimon
+  https://github.com/gilmaimon/ArduinoWebsockets
 
 */
 
+// websocket
+#include <ArduinoWebsockets.h>
 #include <WiFi.h>
-#include <HTTPClient.h>
-#include <WiFiMulti.h>
-#include <WiFiClientSecure.h>
+#include <ArduinoJson.h>
 
+// sensor
 #include <Wire.h>
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
 
+const char* ssid = "WIFI"; //Enter SSID
+const char* password = "123456789"; //Enter Password
+const char* websockets_server_host = "192.168.137.1"; //Enter server adress
+const uint16_t websockets_server_port = 8080; // Enter server port
+DynamicJsonDocument doc(2048);
 
-const char* ssid     = "WIFI";
-const char* password = "123456789";
-const char* serverName = "http://192.168.137.1/imutracker/api/postSensorData.php";
-String apiKeyValue = "558fe9f09edca96e6b7007f0c187c30579b0727235b43d58b342faa8f81bb300";
-
+const char* apikey = "558fe9f09edca96e6b7007f0c187c30579b0727235b43d58b342faa8f81bb300";
 Adafruit_MPU6050 mpu;
+sensors_event_t a, g, temp;
 
+
+
+using namespace websockets;
+
+void onMessageCallback(WebsocketsMessage message) {
+    Serial.print("Got Message: ");
+    Serial.println(message.data());
+}
+
+void onEventsCallback(WebsocketsEvent event, String data) {
+    if(event == WebsocketsEvent::ConnectionOpened) {
+        Serial.println("Connnection Opened");
+    } else if(event == WebsocketsEvent::ConnectionClosed) {
+        Serial.println("Connnection Closed");
+    } else if(event == WebsocketsEvent::GotPing) {
+        Serial.println("Got a Ping!");
+    } else if(event == WebsocketsEvent::GotPong) {
+        Serial.println("Got a Pong!");
+    }
+}
+
+WebsocketsClient client;
 void setup() {
-  Serial.begin(115200);
+    Serial.begin(115200);
+    // Connect to wifi
+    WiFi.begin(ssid, password);
+
+    // Wait some time to connect to wifi
+    for(int i = 0; i < 10 && WiFi.status() != WL_CONNECTED; i++) {
+        Serial.print(".");
+        delay(1000);
+    }
+
+    // run callback when messages are received
+    client.onMessage(onMessageCallback);
+    
+    // run callback when events are occuring
+    client.onEvent(onEventsCallback);
+
+    // Connect to server
+    Serial.println("Connected to Wifi, Connecting to server.");
+    // try to connect to Websockets server
+    bool connected = client.connect(websockets_server_host, websockets_server_port, "/");
+    if(connected) {
+        Serial.println("Connected!");
+        client.send("Hello Server");
+    } else {
+        Serial.println("Not Connected!");
+    }
+
+    Serial.println("Register as sender");
+    // register as sender
+    //generate json string
+    String output;
+    doc["type"] = "sender";
+    doc["value"] = apikey;
+    serializeJson(doc, output);
+
+    // Send a messagg
+    // register with api key
+    client.send(output);
+
+
+    //
+    ini_mpu();
+
   
-  WiFi.begin(ssid, password);
-  Serial.println("Connecting");
-  while(WiFi.status() != WL_CONNECTED) { 
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.print("Connected to WiFi network with IP Address: ");
-  Serial.println(WiFi.localIP());
-  
+    //client.close();
+}
+
+void loop() {
+    client.poll();
+    measureAndSendData();
+    delay(50);
+}
+
+void measureAndSendData(){
+  /* Get new sensor events with the readings */
+  mpu.getEvent(&a, &g, &temp);
+
+  String output = "{\"type\":\"data\",\"value\":[" + 
+                    String(a.acceleration.x) + "," +
+                    String(a.acceleration.y) + "," +
+                    String(a.acceleration.z) + "," +
+                    String(g.gyro.x) + "," +
+                    String(g.gyro.y) + "," +
+                    String(g.gyro.z) + "," +
+                    String(temp.temperature) + "]}";
+
+  // Send sensordata
+  client.send(output);
+}
+
+void ini_mpu(){
   // Try to initialize mpu/imu!
   if (!mpu.begin()) {
     Serial.println("Failed to find MPU6050 chip");
@@ -48,7 +144,7 @@ void setup() {
     }
   }
   Serial.println("MPU6050 Found!");
-
+    
   mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
   Serial.print("Accelerometer range set to: ");
   switch (mpu.getAccelerometerRange()) {
@@ -107,59 +203,4 @@ void setup() {
     Serial.println("5 Hz");
     break;
   }
-
-  Serial.println("");
-  delay(100);
-  
-}
-
-void loop() {
-  sensors_event_t a, g, temp;
-  
-  //Check WiFi connection status
-  if(WiFi.status()== WL_CONNECTED){
-    WiFiClient client;
-    HTTPClient http;
-    
-    // Your Domain name with URL path or IP address with path
-    http.begin(client, serverName);
-    
-    // Specify content-type header
-    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-
-    // Prepare your HTTP POST request data
-    /* Get new sensor events with the readings */
-    mpu.getEvent(&a, &g, &temp);
-    
-    String httpRequestData = "api_key=" + apiKeyValue +
-                               "&accX=" + String(a.acceleration.x) +
-                               "&accY=" + String(a.acceleration.y) +
-                               "&accZ=" + String(a.acceleration.z) +
-                               "&gyrX=" + String(g.gyro.x) +
-                               "&gyrY=" + String(g.gyro.y) +
-                               "&gyrZ=" + String(g.gyro.z) +
-                               "&temp=" + String(temp.temperature) + "";
-    
-    Serial.print("httpRequestData: ");
-    Serial.println(httpRequestData);
-    
-    // Send HTTP POST request
-    int httpResponseCode = http.POST(httpRequestData);
-
-    if (httpResponseCode>0) {
-      Serial.print("HTTP Response code: ");
-      Serial.println(httpResponseCode);
-    }
-    else {
-      Serial.print("Error code: ");
-      Serial.println(httpResponseCode);
-    }
-    // Free resources
-    http.end();
-  }
-  else {
-    Serial.println("WiFi Disconnected");
-  }
-  //Send an HTTP POST request every 0.1 seconds
-  delay(100);  
 }
