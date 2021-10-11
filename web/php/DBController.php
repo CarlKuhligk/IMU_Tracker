@@ -37,7 +37,7 @@ class DBController
         return null;
     }
 
-    private function dbUpdate($sql)
+    private function dbRequest($sql)
     {
         if (isset($sql)) {
             $result = $this->dbConnection->query($sql);
@@ -56,7 +56,7 @@ class DBController
         if (isset($row)) {
             $channel = (object)[
                 'id' => $row['id'],
-                'dataTableName' => $row['name'] . "_" . $row['id']
+                'name' => $row['name']
             ];
             return $channel;
         }
@@ -70,7 +70,7 @@ class DBController
         if (isset($row)) {
             $channel = (object)[
                 'id' => $row['id'],
-                'dataTableName' => $row['name'] . "_" . $row['id']
+                'name' => $row['name']
             ];
             return $channel;
         }
@@ -78,25 +78,33 @@ class DBController
     }
 
     //
-    public function setChannelOnline($id)
+    public function setChannelOnlineState($id, $state)
     {
-        return $this->dbUpdate("UPDATE channels SET online=1 WHERE id='$id';");
+        if ($state) {
+            $this->dbRequest("UPDATE channels SET online=1 WHERE id='$id';");
+        } else {
+            $this->dbRequest("UPDATE channels SET online=0 WHERE id='$id';");
+        }
     }
 
-    public function setChannelOffline($id)
+    public function getChannelOnlineState($id)
     {
-        return $this->dbUpdate("UPDATE channels SET online=0 WHERE id='$id';");
+        $result = $this->dbQuery("SELECT online FROM channels WHERE id='$id';");
+        $result = filter_var($result['online'], FILTER_VALIDATE_BOOLEAN);
+        return $result;
     }
 
     public function setChannelStatus($id, $status)
     {
-        return $this->dbUpdate("UPDATE channels SET status='$status' WHERE id='$id';");
+        return $this->dbRequest("UPDATE channels SET status='$status' WHERE id='$id';");
     }
 
     public function setSubscriberCount($id, $count)
     {
-        return $this->dbUpdate("UPDATE channels SET reciver='$count' WHERE id = '$id';");
+        return $this->dbRequest("UPDATE channels SET reciver='$count' WHERE id = '$id';");
     }
+
+
 
     // 
     public function writeSensorData($tableName, $data)
@@ -108,6 +116,6 @@ class DBController
         $gyrY = $data[4];
         $gyrZ = $data[5];
         $temp = $data[6];
-        return $this->dbUpdate("UPDATE $tableName SET accX=$accX, accY=$accY, accZ=$accZ, gyrX=$gyrX, gyrY=$gyrY, gyrZ=$gyrZ, temp=$temp WHERE timestamp = (SELECT MIN(timestamp) FROM $tableName) ORDER BY id LIMIT 1;");
+        return $this->dbRequest("UPDATE $tableName SET accX=$accX, accY=$accY, accZ=$accZ, gyrX=$gyrX, gyrY=$gyrY, gyrZ=$gyrZ, temp=$temp WHERE timestamp = (SELECT MIN(timestamp) FROM $tableName) ORDER BY id LIMIT 1;");
     }
 }
