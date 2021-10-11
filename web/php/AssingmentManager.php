@@ -1,49 +1,60 @@
 <?php
 
+use function PHPSTORM_META\type;
+
 include_once 'Channel.php';
 
 class AssingmentManager
 {
-    // db table name is used as channel key
+    // channel id is used as key
     public $channels = array();
 
-    public function addSenderRescourceId($rescourceId, $id, $dataTableName)
+    // normal array key
+    public $unassignedConnections = array();
+
+
+    public function addUnassignedConnection($rescourceId)
     {
-        if (!isset($this->channels[$id])) {
-            $this->channels[$id] = new Channel($id, $dataTableName);
-        }
-        $this->channels[$id]->senderRescourceId = $rescourceId;
+        array_push($this->unassignedConnections, $rescourceId);
     }
 
-    public function addReciverRescourceId($rescourceId, $id, $dataTableName)
+
+    public function assignConnection($rescourceId, $channel_id, $channel_name, $type)
     {
-        if (!isset($this->channels[$id])) {
-            $this->channels[$id] = new Channel($id, $dataTableName);
+        if (!isset($this->channels[$channel_id])) {
+            $this->channels[$channel_id] = new Channel($channel_id, $channel_name);
         }
-        array_push($this->channels[$id]->reciverRescourceIds, $rescourceId);
+
+        if ($type == "sender") {
+            $this->channels[$channel_id]->senderRescourceId = $rescourceId;
+        } else if ($type == "subscriber") {
+            array_push($this->channels[$channel_id]->reciverRescourceIds, $rescourceId);
+        }
+
+        unset($this->unassignedConnections[array_search($rescourceId, $this->unassignedConnections)]);
     }
 
-    public function removeSenderRescourceId($rescourceId, $id)
+    public function unassignConnection($rescourceId, $channel_id)
     {
-        //if the channel exits
-        if (isset($this->channels[$id])) {
-            // if the senderRescourceId exists
-            if (isset($this->channels[$id]->senderRescourceId)) {
-                // remove from channel
-                $this->channels[$id]->senderRescourceId = null;
+        if ($this->channels[$channel_id]->senderRescourceId === $rescourceId) {
+            $this->channels[$channel_id]->senderRescourceId = null;
+            $this->addUnassignedConnection($rescourceId);
+            return;
+        }
+        foreach ($this->channels[$channel_id]->reciverRescourceIds as $key => $reciverRescourceId) {
+            if ($reciverRescourceId === $rescourceId) {
+                unset($this->channels[$channel_id]->reciverRescourceIds[$key]);
+                $this->addUnassignedConnection($rescourceId);
             }
         }
     }
 
-    public function removeReciverRescourceId($rescourceId, $id)
+    public function removeConnection($rescourceId, $channel_id)
     {
-        //if the channel exits
-        if (isset($this->channels[$id])) {
-            // if the reciverRescourceIds exists
-            if (in_array($rescourceId, $this->channels[$id]->reciverRescourceIds)) {
-                // remove from channel
-                unset($this->channels[$id]->reciverRescourceIds[array_search($rescourceId, $this->channels[$id]->reciverRescourceIds)]);
-            }
+        if (isset($channel_id)) {
+            $this->unassignConnection($rescourceId, $channel_id);
         }
+        $key = array_search($rescourceId, $this->unassignedConnections);
+        unset($this->unassignedConnections[$key]);
     }
 }
