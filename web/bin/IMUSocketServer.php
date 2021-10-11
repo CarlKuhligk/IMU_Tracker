@@ -17,3 +17,6 @@ $server = IoServer::factory(
 );
 
 $server->run();
+
+// server closed
+echo "Server has stopped!";
