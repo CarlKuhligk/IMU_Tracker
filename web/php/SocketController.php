@@ -6,66 +6,39 @@ use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 
 include_once 'DBController.php';
+include_once 'Channel.php';
 include_once 'DBConfig.php';
-include_once 'AssingmentManager.php';
 
-use DBController;
 use DBConfig;
-use AssingmentManager;
+use DBController;
+use Channel;
 
-
-class SocketController extends DBConfig implements MessageComponentInterface
+class SocketController implements MessageComponentInterface
 {
-    protected $clients;
-
-    private $assingMgr;
+    private $clients = array();
+    private $channels = array();
     private $db;
 
-
-    public function __construct()
+    function __construct()
     {
-        $this->clients = [];
-        $this->assingMgr = new AssingmentManager();
-        $this->db = new DBController();
-        if ($this->db->connect($this->servername, $this->username, $this->password, $this->dbname) === false) {
+        $this->db = new DBController(DBConfig::$servername, DBConfig::$username, DBConfig::$password, DBConfig::$dbname);
+        if ($this->db->connect() === false) {
             die("Connection to database faild!");
         }
-    }
-
-
-    # need to be implemented in IMUSocketServer.php
-    # server shut down -> set all channels offline!
-    #########################################################################################################
-    public function __destruct()
-    {
-        // close all connections!
-        foreach ($this->assingMgr->channels as $channel) {
-            // close senderconnection
-            if (isset($channel->senderRescourceId)) {
-                $this->clients[$channel->senderRescourceId]->close();
-                $this->db->setChannelOnlineState($channel->id, 0);
-            }
-            // check all reciver of this channel
-            foreach ($channel->reciverRescourceIds as $reciverRescourceId) {
-                // close all reciverconnections
-                $this->clients[$reciverRescourceId]->send("server shut down");
-                $this->clients[$reciverRescourceId]->close();
-                $this->assingMgr->removeConnection($reciverRescourceId, $channel->id);
-            }
-            $this->db->setSubscriberCount($channel->id, count($this->assingMgr->channels[$channel->id]->reciverRescourceIds));
+        $this->db->resetChannels();
+        // load all channels
+        $channelInformation = $this->db->loadChannels();
+        foreach ($channelInformation as $channel) {
+            $this->channels[$channel->id] = new Channel($channel->id, $channel->name);
         }
+        // set static reference in class Channel
+        Channel::$clients = &$this->clients;
     }
-    #########################################################################################################
 
     public function onOpen(ConnectionInterface $clientConnection)
     {
         // Store the new connection to send messages to later
         $this->clients[$clientConnection->resourceId] = $clientConnection;
-        $this->assingMgr->addUnassignedConnection($clientConnection->resourceId);
-        // send current state of all channels
-        foreach ($this->assingMgr->channels as $channel) {
-            $this->clients[$clientConnection->resourceId]->send($this->getChannelInfo($channel->id));
-        }
         echo "New connection! ({$clientConnection->resourceId})\n";
     }
 
@@ -74,148 +47,146 @@ class SocketController extends DBConfig implements MessageComponentInterface
         // convert string to object
         $data = json_decode($message);
 
-        // break if data is missing
+        // break if datatype is missing
         if (!isset($data->type)) {
-            $from->send("error: type is missing\n");
+            $from->send($this->response(30)); // error: type missing
             return;
         }
 
         // handle incoming data
         switch ($data->type) {
             case "sender":
-                // apikey check
-                if ($channel = $this->db->validateApiKey($data->value)) {
-                    // check double registration
-                    if (!$this->db->getChannelOnlineState($channel->id)) {
-                        $this->assingMgr->assignConnection($from->resourceId, $channel->id, $channel->name, "sender");
-                        $this->db->setChannelOnlineState($channel->id, true);
-                        $from->send("sucsessfully authenticated\n");
-                        // send global update
-                        $this->sendGlobalMessage($this->getChannelInfo($channel->id));
+                if (isset($data->apikey)) {
+                    // apikey check
+                    if ($channel = $this->db->validateApiKey($data->apikey)) {
+                        // check double registration
+                        if (!$this->channels[$channel->id]->online) {
+                            //check subscription
+                            if (!$this->channels[$channel->id]->isSubscribed($from->resourceId)) {
+                                $this->channels[$channel->id]->setSender($from->resourceId);
+                                $this->db->setChannelOnlineState($channel->id, true);
+                                $from->send($this->response(10)); // successfuly registered as sender
+                                // send global update
+                                $this->sendGlobalMessage($this->getChannelInfo($channel->id));
+                            } else {
+                                $from->send($this->response(28)); // error: subscriber, cant be a sender at same time
+                            }
+                        } else {
+                            $from->send($this->response(21)); // error: already redisterd as sender
+                        }
                     } else {
-                        $from->send("error: sender is already online\n");
+                        $from->send($this->response(20)); // invailid api key
                     }
                 } else {
-                    $from->send("error: invailid api key\n");
+                    $from->send($this->response(19)); // missing apikey
                 }
                 break;
             case "subscribe":
-                // channel id check
-                if ($channel = $this->db->validateChannelId($data->channel_id)) {
-                    $channelExsits = array_key_exists($channel->id, $this->assingMgr->channels);
-                    // check double registration
-                    if ($channelExsits) {
-                        $reciverRegisterd = in_array($from->resourceId, $this->assingMgr->channels[$channel->id]->reciverRescourceIds, false);
-                    } else {
-                        $reciverRegisterd = false;
-                    }
-                    // subscribe or unsubscribe?
-                    if ($data->subscribe) {
-                        // SUBSCRIBE
-                        if (!$reciverRegisterd) {
-                            $this->assingMgr->assignConnection($from->resourceId, $channel->id, $channel->name, "subscriber");
-                            $from->send("sucsessfully subscribed\n");
-                            # code dupication 1
-                            $this->db->setSubscriberCount($channel->id, count($this->assingMgr->channels[$channel->id]->reciverRescourceIds));
-                            // send global update
-                            $this->sendGlobalMessage($this->getChannelInfo($channel->id));
+                if (isset($data->channel_id)) {
+                    // channel id check
+                    if ($channel = $this->db->validateChannelId($data->channel_id)) {
+                        if (isset($data->subscribe)) {
+                            // check is sender
+                            if (!$this->channels[$channel->id]->isSender($from->resourceId)) {
+                                // subscribe or unsubscribe?
+                                // !!! UGLY !!!
+                                //  |        |
+                                // \ /      \ /
+                                //  v        v
+                                if ($data->subscribe) {
+                                    // SUBSCRIBE
+                                    if ($this->channels[$channel->id]->addSubscriber($from->resourceId)) {
+                                        $from->send($this->response(11)); // sucsessfully subscribed
+                                        $this->updateChannelSubscriberCount($channel->id);
+                                    } else {
+                                        $from->send($this->response(24)); // error: already subscribed
+                                    }
+                                } else {
+                                    // UNSBSCRIBE
+                                    if ($this->channels[$channel->id]->removeSubscriber($from->resourceId)) {
+                                        $from->send($this->response(12)); // successfuly unsubscribed from channel
+                                        $this->updateChannelSubscriberCount($channel->id);
+                                    } else {
+                                        $from->send($this->response(25)); // error: not subscribed
+                                    }
+                                }
+                                //  ᴧ        ᴧ
+                                // / \      / \
+                                //  |        |
+                            } else {
+                                $from->send($this->response(29)); // error : sender, cant be a subscriber at same
+                            }
                         } else {
-                            $from->send("error: already subscribed\n");
+                            $from->send($this->response(27)); // error: missing subscription data
                         }
                     } else {
-                        // UNSBSCRIBE
-                        if ($reciverRegisterd) {
-                            $this->assingMgr->unassignConnection($from->resourceId, $channel->id);
-                            $from->send("sucsessfully unsubscribed\n");
-                            # code dupication 1
-                            $this->db->setSubscriberCount($channel->id, count($this->assingMgr->channels[$channel->id]->reciverRescourceIds));
-                            // send global update
-                            $this->sendGlobalMessage($this->getChannelInfo($channel->id));
-                        } else {
-                            $from->send("error: already unsubscribed\n");
-                        }
+                        $from->send($this->response(23)); // error: invalid channel id
                     }
                 } else {
-                    $from->send("error: invalid channel id\n");
+                    $from->send($this->response(26)); // error: missing channel id
                 }
                 break;
             case "data":
                 for ($i = 0; $i < 7; $i++) {
                     // check if is empty or not a number
                     if ($data->value[$i] == null || !is_numeric($data->value[$i] + 0)) {
-                        $from->send("error: data is missing\n");
+                        $from->send($this->response(31)); // error: data missing
                         return;
                     }
                 }
                 $authenticated = false;
-                foreach ($this->assingMgr->channels as $channel) {
+                foreach ($this->channels as $channel) {
                     // check if the senders recource id has been authenticated
-                    if ($channel->senderRescourceId === $from->resourceId) {
+                    if ($channel->sender === $from->resourceId) {
                         $authenticated = true;
                         // write values in database
                         $this->db->writeSensorData($channel->dataTableName, $data->value);
                         // send values to all "channel/channel" subscribers
-                        $this->sendLocalMessage($channel, $message);
+                        $this->channels[$channel->id]->send($data->value);
                     }
                 }
                 if (!$authenticated) {
-                    $from->send("error: not authenticated\n");
+                    $from->send($this->response(22)); // error: not authenticated as sender
                 }
                 break;
             default:
-                $from->send("error: unknown type\n");
+                $from->send($this->response(32)); // error: unknown datatype
         }
     }
 
     public function onClose(ConnectionInterface $clientConnection)
     {
-        foreach ($this->assingMgr->channels as $channel) {
-            if ($channel->senderRescourceId == $clientConnection->resourceId) {
-                $this->assingMgr->removeConnection($clientConnection->resourceId, $channel->id);
+        foreach ($this->channels as $channel) {
+            if ($channel->unsetSender()) {
+                // sender successfuly removed
                 $this->db->setChannelOnlineState($channel->id, false);
-                // send global event sender/channel disconnected
+                // send global channel update
                 $this->sendGlobalMessage($this->getChannelInfo($channel->id));
+                break;
+            } elseif ($channel->removeSubscriber($clientConnection->resourceId)) {
+                // subscriber successfuly removed
+                $this->db->setSubscriberCount($channel->id, $this->channels[$channel->id]->subscriberCount);
+                // send global channel update
+                $this->sendGlobalMessage($this->getChannelInfo($channel->id));
+                break;
             }
-            foreach ($channel->reciverRescourceIds as $reciverRescourceId) {
-                if ($reciverRescourceId == $clientConnection->resourceId) {
-                    $this->assingMgr->removeConnection($reciverRescourceId, $channel->id);
-                    $this->db->setSubscriberCount($channel->id, count($this->assingMgr->channels[$channel->id]->reciverRescourceIds));
-                    // send global event subscriber disconnected
-                    $this->sendGlobalMessage($this->getChannelInfo($channel->id));
-                }
-            }
-        }
-        foreach ($this->assingMgr->unassignedConnections as $rescourceId) {
-            $this->assingMgr->removeConnection($rescourceId, null);
         }
         // The connection is closed, remove it, as we can no longer send it messages
         unset($this->clients[$clientConnection->resourceId]);
-
         echo "Connection {$clientConnection->resourceId} has disconnected\n";
     }
 
     public function onError(ConnectionInterface $conn, \Exception $e)
     {
         echo "An error has occurred: {$e->getMessage()}\n";
-
         $conn->close();
     }
 
-    # send messages
-    private function sendLocalMessage($channel, $message)
-    {
-        foreach ($this->assingMgr->channels[$channel->id]->reciverRescourceIds as $reciverRescourceId) {
-            $this->clients[$reciverRescourceId]->send($message);
-        }
-    }
 
     private function sendGlobalMessage($message)
     {
-        foreach ($this->assingMgr->channels as $channel) {
-            $this->sendLocalMessage($channel, $message);
-        }
-        foreach ($this->assingMgr->unassignedConnections as $reciverRescourceId) {
-            $this->clients[$reciverRescourceId]->send($message);
+        foreach ($this->clients as $client) {
+            $client->send($message);
         }
     }
 
@@ -225,12 +196,27 @@ class SocketController extends DBConfig implements MessageComponentInterface
             'type' => "update",
             'channel' => [
                 'id' => $id,
-                'name' => $this->assingMgr->channels[$id]->name,
-                'online' => isset($this->assingMgr->channels[$id]->senderRescourceId) ? 1 : 0,
-                'state' => "comming soon",
-                'reciver' => count($this->assingMgr->channels[$id]->reciverRescourceIds)
+                'name' => $this->channels[$id]->name,
+                'online' => $this->channels[$id]->online,
+                'state' => $this->channels[$id]->state,
+                'reciver' => $this->channels[$id]->subscriberCount
             ]
         ];
         return json_encode($message);
+    }
+
+    private function response($responseId)
+    {
+        $response = (object)[
+            'type' => "response",
+            'id' => "{$responseId}"
+        ];
+        return json_encode($response);
+    }
+
+    private function updateChannelSubscriberCount($id)
+    {
+        $this->db->setSubscriberCount($id, $this->channels[$id]->subscriberCount);
+        $this->sendGlobalMessage($this->getChannelInfo($id));
     }
 }

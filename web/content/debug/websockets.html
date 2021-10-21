@@ -150,11 +150,6 @@
 
       var message = { type: "", value: [] };
 
-      var messageSumbscribe = {
-        type: "subscribe",
-        channel_id: 0,
-        subscribe: false,
-      };
       function onClick() {
         if (textboxes[0].value != "") {
           //set type
@@ -162,7 +157,7 @@
           //set value
           switch (dropdown.value) {
             case "sender":
-              message.value = textboxes[0].value;
+              message.apikey = textboxes[0].value;
               console.log("sender");
               break;
             case "subscribe":

@@ -1,7 +1,8 @@
 <?php
-class DBConfig{
-    protected $servername = "localhost";
-    protected $dbname = "imutracker";
-    protected $username = "imuAPI";
-    protected $password = "Cs.![qPtTOAVxs].";
+class DBConfig
+{
+    public static $servername = "localhost";
+    public static $dbname = "imutracker";
+    public static $username = "imuAPI";
+    public static $password = "Cs.![qPtTOAVxs].";
 }
