@@ -17,12 +17,26 @@ import test_11_subscriber_missing_data
 import test_12_subscriber_subscribe
 import test_14_subscriber_sender_regestration
 import test_15_subscriber_double_subscribe
-
+import test_16_not_authenticated_as_sender
 
 # ___________________________________
 def log(message):
     logFile.writelines(message + "\n")
 
+
+def test(description, func, *args):
+    test.testNum += 1
+    result, response = func(*args)
+    log(
+        "| %.3i | %-30s | %5s |     %3s     |"
+        % (test.testNum, description, result, response)
+    )
+    if not result:
+        logFile.close
+        exit
+
+
+test.testNum = 0
 
 wsMaster = websocket.WebSocket()
 wsClient1 = websocket.WebSocket()
@@ -38,112 +52,59 @@ logFile = open(
 
 # CALLING TESTS
 log("Start testing\n")
+log("___________________________________________________________")
+log("|Test | Description                    | Passed| Response ID |")
 
-if test_1_connect_websocket.test(wsMaster, wsClient1, wsClient2):
-    log("Test 1: success -> websocket is connected")
-else:
-    log("Test 1: faild -> websocket is not connected")
-    exit
+test(
+    "connect websocket",
+    test_1_connect_websocket.test,
+    wsMaster,
+    wsClient1,
+    wsClient2,
+)
 
-result, message = test_2_unknown_datatype.test(wsMaster)
-if result:
-    log("Test 2: success -> " + message)
-else:
-    log("Test 2: faild -> " + message)
-    exit
+test("unknown datatype", test_2_unknown_datatype.test, wsMaster)
 
-result, message = test_3_missing_data.test(wsMaster)
-if result:
-    log("Test 3: success -> " + message)
-else:
-    log("Test 3: faild -> " + message)
-    exit
+test("missing data", test_3_missing_data.test, wsMaster)
 
-result, message = test_4_sender_missing_apikey.test(wsMaster)
-if result:
-    log("Test 4: success -> " + message)
-else:
-    log("Test 4: faild -> " + message)
-    exit
+test("empty apikey", test_4_sender_missing_apikey.test, wsMaster)
 
-result, message = test_5_sender_invalid_apikey.test(wsMaster)
-if result:
-    log("Test 5: success -> " + message)
-else:
-    log("Test 5: faild -> " + message)
-    exit
+test("invalid apikey", test_5_sender_invalid_apikey.test, wsMaster)
 
-result, message = test_6_sender_regestration.test(wsMaster)
-if result:
-    log("Test 6: success -> " + message)
-else:
-    log("Test 6: faild -> " + message)
-    exit
+test("correct apikey", test_6_sender_regestration.test, wsMaster)
+test(
+    "global channel update",
+    test_7_global_channel_update.test,
+    wsMaster,
+    wsClient1,
+    wsClient2,
+)
+test("double sender regestration", test_8_sender_double_regestration.test, wsMaster)
 
-result, message = test_7_global_channel_update.test(wsMaster, wsClient1, wsClient2)
-if result:
-    log("Test 7: success -> " + message)
-else:
-    log("Test 7: faild -> " + message)
-    exit
+test("subscribe, no channel id", test_9_subscriber_missing_channel_id.test, wsClient1)
 
-result, message = test_8_sender_double_regestration.test(wsMaster)
-if result:
-    log("Test 8: success -> " + message)
-else:
-    log("Test 8: faild -> " + message)
-    exit
+test(
+    "subscribe, invalid channel id",
+    test_10_subscriber_invalid_channel_id.test,
+    wsClient1,
+)
+test("subscribe, no data", test_11_subscriber_missing_data.test, wsClient1)
 
-result, message = test_9_subscriber_missing_channel_id.test(wsClient1)
-if result:
-    log("Test 9: success -> " + message)
-else:
-    log("Test 9: faild -> " + message)
-    exit
+test("subscribe", test_12_subscriber_subscribe.test, wsClient1)
 
-result, message = test_10_subscriber_invalid_channel_id.test(wsClient1)
-if result:
-    log("Test 10: success -> " + message)
-else:
-    log("Test 10: faild -> " + message)
-    exit
+test(
+    "global channel update",
+    test_7_global_channel_update.test,
+    wsMaster,
+    wsClient1,
+    wsClient2,
+)
 
-result, message = test_11_subscriber_missing_data.test(wsClient1)
-if result:
-    log("Test 11: success -> " + message)
-else:
-    log("Test 11: faild -> " + message)
-    exit
+# test("sender reg as subscriber", test_14_subscriber_sender_regestration.test, wsClient1)
 
-result, message = test_12_subscriber_subscribe.test(wsClient1)
-if result:
-    log("Test 12: success -> " + message)
-else:
-    log("Test 12: faild -> " + message)
-    exit
+test("double subscribe", test_15_subscriber_double_subscribe.test, wsClient1)
 
-result, message = test_7_global_channel_update.test(wsMaster, wsClient1, wsClient2)
-if result:
-    log("Test 13: success -> " + message)
-else:
-    log("Test 13: faild -> " + message)
-    exit
-
-
-# result, message = test_14_subscriber_sender_regestration.test(wsClient1)
-# if result:
-#    log("Test 14: success -> " + message)
-# else:
-#    log("Test 14: faild -> " + message)
-#    exit
-
-result, message = test_15_subscriber_double_subscribe.test(wsClient1)
-if result:
-    log("Test 15: success -> " + message)
-else:
-    log("Test 15: faild -> " + message)
-    exit
-
+test("not authenticated as sender", test_16_not_authenticated_as_sender.test, wsClient2)
 
 wsMaster.close()
 wsClient1.close()

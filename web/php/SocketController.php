@@ -137,7 +137,7 @@ class SocketController implements MessageComponentInterface
                 $authenticated = false;
                 foreach ($this->channels as $channel) {
                     // check if the senders recource id has been authenticated
-                    if ($channel->sender === $from->resourceId) {
+                    if ($channel->isSender($from->resourceId)) {
                         $authenticated = true;
                         // write values in database
                         $this->db->writeSensorData($channel->dataTableName, $data->value);

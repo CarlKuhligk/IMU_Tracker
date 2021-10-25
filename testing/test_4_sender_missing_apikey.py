@@ -6,14 +6,12 @@ def test(ws):
     wsMsg = {"type": "sender"}
     ws.send(json.dumps(wsMsg))
     message = json.loads(ws.recv())
-    result = ""
+
     if message["type"] == "response":
         if message["id"] == "19":
-            result = "type: " + message["type"] + " id: " + message["id"]
-            return True, result
+            return True, message["id"]
         else:
-            result = "wrong response-id -> " + message["id"]
-            return False, result
+            return False, message["id"]
     else:
-        result = "wrong type -> " + message["type"]
-        return False, result
+        # wrong type
+        return False, 0

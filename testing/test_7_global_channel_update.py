@@ -7,29 +7,16 @@ def test(ws, c1, c2):
     message1 = json.loads(c1.recv())
     message2 = json.loads(c2.recv())
     if message == message1 and message == message2:
-        result = ""
+
         if message["type"] == "update":
             if message["channel"]["id"] == "16":
-                result = (
-                    "\nchannel: "
-                    + message["channel"]["name"]
-                    + "\n id: "
-                    + message["channel"]["id"]
-                    + "\n online: "
-                    + str(message["channel"]["online"])
-                    + "\n reciver: "
-                    + str(message["channel"]["reciver"])
-                    + "\n state: "
-                    + str(message["channel"]["state"])
-                    + "\n"
-                )
-                return True, result
+                return True, 4
             else:
-                result = "wrong channel-id -> " + message["channel"]["id"]
-                return False, result
+                # wrong channel-id
+                return False, 0
         else:
-            result = "wrong type -> " + message["type"]
-            return False, result
+            # wrong type
+            return False, 0
     else:
-        result = "messages not eual" + message
-        return False, result
+        # messages not eual
+        return False, 0
