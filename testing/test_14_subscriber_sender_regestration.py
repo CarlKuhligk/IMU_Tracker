@@ -5,18 +5,16 @@ import json
 def test(ws):
     wsMsg = {
         "type": "sender",
-        "apikey": "558fe9f09edca96e6b7007f0c187c30579b0727235b43d58b342faa8f81bb300",
+        "apikey": "e677ac85fd13a73d9ce55f01615fec43deabe678e652b5721d5aad3108b8eb5b",
     }
     ws.send(json.dumps(wsMsg))
     message = json.loads(ws.recv())
-    result = ""
+
     if message["type"] == "response":
         if message["id"] == "29":
-            result = "type: " + message["type"] + " id: " + message["id"]
-            return True, result
+            return True, message["id"]
         else:
-            result = "wrong response-id -> " + message["id"]
-            return False, result
+            return False, message["id"]
     else:
-        result = "wrong type -> " + message["type"]
-        return False, result
+        # wrong type
+        return False, 0

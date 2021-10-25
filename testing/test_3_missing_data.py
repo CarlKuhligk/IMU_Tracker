@@ -5,14 +5,12 @@ import json
 def test(ws):
     ws.send("empty")
     message = json.loads(ws.recv())
-    result = ""
+
     if message["type"] == "response":
         if message["id"] == "30":
-            result = "type: " + message["type"] + " id: " + message["id"]
-            return True, result
+            return True, message["id"]
         else:
-            result = "wrong response-id -> " + message["id"]
-            return False, result
+            return False, message["id"]
     else:
-        result = "wrong type -> " + message["type"]
-        return False, result
+        # wrong type
+        return False, 0
