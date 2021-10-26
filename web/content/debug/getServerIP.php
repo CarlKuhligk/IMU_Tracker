@@ -1,4 +1,2 @@
 <?php
-$host = gethostname();
-$ip = gethostbyname($host);
-echo $ip;
+echo ($_SERVER['HTTP_HOST']);
