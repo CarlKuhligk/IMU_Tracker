@@ -89,8 +89,18 @@
       ];
       var textboxes = [];
 
-      // create a new WebSocket.
-      var socket = new WebSocket("ws://localhost:8080");
+      var socket;
+      // get server ip
+      var serverIP = $.get("/debug/getServerIP.php").done(function (data) {
+        // create a new WebSocket.
+        socket = new WebSocket("ws://" + data + ":8080");
+
+        // socket message callback
+        socket.onmessage = function (e) {
+          outputField.append(e.data);
+          console.log(e.data);
+        };
+      });
 
       // generate textboxes
       for (var i = 0; i < 7; i++) {
@@ -182,11 +192,6 @@
           alert("no value");
         }
       }
-
-      socket.onmessage = function (e) {
-        outputField.append(e.data);
-        console.log(e.data);
-      };
     </script>
   </body>
 </html>
