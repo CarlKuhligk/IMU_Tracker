@@ -1,0 +1,31 @@
+BEGIN
+	#get last device id and creat new unique tablename
+    SET @last_device_id = (SELECT devices.id FROM devices ORDER BY devices.id DESC LIMIT 1);
+    SET @new_device_id = @last_device_id + 1;
+    SET @new_table_name = CONCAT("device_", @new_device_id);
+    
+    #generate api key
+    SET @new_api_key = (SELECT SHA2(CONCAT(CURRENT_TIMESTAMP(),@new_table_name),256));
+	INSERT INTO devices(devices.id, devices.api_key) VALUES(@new_device_id, @new_api_key);
+        
+    SET @table_settings = '(`id` int(11) NOT NULL,`timestamp` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),       `accX` float NOT NULL,      `accY` float NOT NULL,\r\n        `accZ` float NOT NULL,      `gyrX` float NOT NULL,      `gyrY` float NOT NULL,      `gyrZ` float NOT NULL,       `temp` float NOT NULL, `latitude` float( 10, 6 ) NOT NULL, `longitude` float( 10, 6 ) NOT NULL, `battery` int NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';
+    
+    #creat new table
+    SET @SQL = CONCAT('CREATE TABLE ',@new_table_name, @table_settings);
+    PREPARE stmt FROM @SQL;
+    EXECUTE stmt;
+    
+    #setup primary key and autoincrement
+    SET @SQL = CONCAT('ALTER TABLE ',@new_table_name, ' ADD PRIMARY KEY (id);');
+	PREPARE stmt FROM @SQL;
+    EXECUTE stmt;
+
+	SET @SQL = CONCAT('ALTER TABLE ',@new_table_name, ' MODIFY id int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10001;');
+	PREPARE stmt FROM @SQL;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    COMMIT;
+    
+    CALL resetTable(@new_table_name);
+    CALL addRows(@new_table_name, 1000);
+END
