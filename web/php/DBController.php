@@ -56,60 +56,62 @@ class DBController
 
     public function validateApiKey($apiKey)
     {
-        $result = $this->dbQuery("SELECT id, name FROM channels WHERE api_key = '$apiKey';");
+        $result = $this->dbQuery("SELECT id, employee_id, employee FROM devices WHERE api_key = '$apiKey';");
         $row = $result->fetch_row();
         if (isset($row)) {
-            $channel = (object)[
+            $device = (object)[
                 'id' => $row[0],
-                'name' => $row[1]
+                'employee_id' => $row[1],
+                'employee' => $row[2]
             ];
-            return $channel;
+            return $device;
         }
         return false;
     }
 
     public function validateChannelId($id)
     {
-        $result = $this->dbQuery("SELECT id, name FROM channels WHERE id = '$id';");
+        $result = $this->dbQuery("SELECT id, employee_id, employee FROM devices WHERE id = '$id';");
         $row = $result->fetch_row();
         if (isset($row)) {
-            $channel = (object)[
+            $device = (object)[
                 'id' => $row[0],
-                'name' => $row[1]
+                'employee_id' => $row[1],
+                'employee' => $row[2]
             ];
-            return $channel;
+            return $device;
         }
         return false;
     }
 
-    public function setChannelOnlineState($id, $state)
+    public function setDeviceOnlineState($id, $state)
     {
         if ($state) {
-            $this->dbRequest("UPDATE channels SET online=1 WHERE id='$id';");
+            $this->dbRequest("UPDATE devices SET online=1 WHERE id='$id';");
         } else {
-            $this->dbRequest("UPDATE channels SET online=0 WHERE id='$id';");
+            $this->dbRequest("UPDATE devices SET online=0 WHERE id='$id';");
         }
     }
 
-    public function getChannelOnlineState($id)
+    public function getDeviceOnlineState($id)
     {
-        $result = $this->dbQuery("SELECT online FROM channels WHERE id='$id';");
+        $result = $this->dbQuery("SELECT online FROM devices WHERE id='$id';");
         $row = $result->fetch_row();
         $row = filter_var($row['online'], FILTER_VALIDATE_BOOLEAN);
         return $row;
     }
 
-    public function setChannelStatus($id, $status)
+    public function setDeviceStatus($id, $status)
     {
-        return $this->dbRequest("UPDATE channels SET status='$status' WHERE id='$id';");
+        return $this->dbRequest("UPDATE devices SET status='$status' WHERE id='$id';");
     }
 
-    public function setSubscriberCount($id, $count)
+    public function setObserverCount($id, $count)
     {
-        return $this->dbRequest("UPDATE channels SET reciver='$count' WHERE id = '$id';");
+        return $this->dbRequest("UPDATE devices SET observer='$count' WHERE id = '$id';");
     }
 
-    public function writeSensorData($tableName, $data)
+    public function writeDeviceData($tableName, $data)
     {
         $accX = $data[0];
         $accY = $data[1];
@@ -121,26 +123,26 @@ class DBController
         return $this->dbRequest("UPDATE $tableName SET accX=$accX, accY=$accY, accZ=$accZ, gyrX=$gyrX, gyrY=$gyrY, gyrZ=$gyrZ, temp=$temp WHERE timestamp = (SELECT MIN(timestamp) FROM $tableName) ORDER BY id LIMIT 1;");
     }
 
-    public function loadChannels()
+    public function loadDevices()
     {
-        $result = $this->dbQuery("SELECT id, name, status FROM channels;");
+        $result = $this->dbQuery("SELECT id, employee, status FROM devices;");
         $resultCount = $result->num_rows;
         $channels = array();
 
         for ($i = 0; $i < $resultCount; $i++) {
             $channelRaw =  $result->fetch_row();
-            $channel = (object)[
+            $device = (object)[
                 'id' => $channelRaw[0],
                 'name' => $channelRaw[1],
                 'state' => $channelRaw[2],
             ];
-            array_push($channels, $channel);
+            array_push($channels, $device);
         }
         return $channels;
     }
 
-    public function resetChannels()
+    public function resetDevices()
     {
-        $this->dbRequest("UPDATE channels SET online=0,reciver=0 WHERE 1;");
+        $this->dbRequest("UPDATE devices SET online=0,observer=0 WHERE 1;");
     }
 }
