@@ -1,0 +1,11 @@
+BEGIN
+    SET @SQL = CONCAT('DELETE FROM ', tableName);
+    PREPARE stmt FROM @SQL;
+    EXECUTE stmt;
+    
+	SET @SQL = CONCAT('ALTER TABLE ', tableName, ' AUTO_INCREMENT = 1');
+    PREPARE stmt FROM @SQL;
+    EXECUTE stmt;
+    
+    DEALLOCATE PREPARE stmt;
+END

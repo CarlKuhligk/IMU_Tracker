@@ -1,7 +1,7 @@
 <?php
 
 
-class Channel
+class Device
 {
     public static $clients;
     public $id;
@@ -9,16 +9,25 @@ class Channel
     public $dataTableName;
     public $online = false;
     public $state = 0; // reserved
-    public $subscriberCount = 0;
+    public $observerCount = 0;
+    # position
+    public $alarmLatitude;
+    public $alarmLongitude;
+    public $lastLatitude;
+    public $lastLongitude;
+
+    #battery
+    public $battery;
+
     private $sender = null;
-    private $subscribers = array();
+    private $observers = array();
 
     public function __construct($id, $name)
     {
         $this->id = $id;
         $this->name = $name;
-        $this->dataTableName = $this->name . '_' . $this->id;
-        echo "Channel " . $this->id . " : Name: " . $this->name . "\n";
+        $this->dataTableName = 'device_' . $this->id;
+        echo "Device " . $this->id . " : Name: " . $this->name . "\n";
     }
 
     public function setSender($resourceId)
@@ -47,25 +56,25 @@ class Channel
         }
     }
 
-    public function addSubscriber($resourceId)
+    public function addObserver($resourceId)
     {
         if ($this->isSubscribed($resourceId)) {
             // error cant add resourceId
             return false;
         } else {
-            $this->subscribers[$resourceId] = $resourceId;
-            $this->subscriberCount++;
+            $this->observers[$resourceId] = $resourceId;
+            $this->observerCount++;
             // successfuly added
             return true;
         }
     }
 
-    public function removeSubscriber($resourceId)
+    public function removeObserver($resourceId)
     {
         if ($this->isSubscribed($resourceId)) {
             // successfuly removed
-            unset($this->subscribers[$resourceId]);
-            $this->subscriberCount--;
+            unset($this->observers[$resourceId]);
+            $this->observerCount--;
             return true;
         } else {
             // error resourceId do not exsits
@@ -75,14 +84,17 @@ class Channel
 
     public function isSubscribed($resourceId)
     {
-        return array_key_exists($resourceId, $this->subscribers);
+        return array_key_exists($resourceId, $this->observers);
     }
 
-    // send local message to all channel subscriber
+    // send local message to all Device observer
     public function send($message)
     {
-        foreach ($this->subscribers as $subscriber) {
-            Channel::$clients[$subscriber->id]->send($message);
+        foreach ($this->observers as $observer) {
+            #send message only to observers
+            if ($observer->id != $this->sender) {
+                Device::$clients[$observer->id]->send($message);
+            }
         }
     }
 

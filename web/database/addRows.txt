@@ -1,0 +1,9 @@
+BEGIN
+  SET @currIndex = 0;
+  SET @SQL = CONCAT('INSERT INTO ', tableName, '(`accX`, `accY`, `accZ`, `gyrX`, `gyrY`, `gyrZ`, `temp`) VALUES (0,0,0,0,0,0,0)');
+  PREPARE stmt FROM @SQL;
+  WHILE @currIndex < rowCount DO
+    SET @currIndex = @currIndex + 1;
+    EXECUTE stmt;
+  END WHILE;
+END

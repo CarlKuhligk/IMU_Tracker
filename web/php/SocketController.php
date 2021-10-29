@@ -6,17 +6,17 @@ use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 
 include_once 'DBController.php';
-include_once 'Channel.php';
+include_once 'Device.php';
 include_once 'DBConfig.php';
 
 use DBConfig;
 use DBController;
-use Channel;
+use Device;
 
 class SocketController implements MessageComponentInterface
 {
     private $clients = array();
-    private $channels = array();
+    private $devices = array();
     private $db;
 
     function __construct()
@@ -25,14 +25,14 @@ class SocketController implements MessageComponentInterface
         if ($this->db->connect() === false) {
             die("Connection to database faild!");
         }
-        $this->db->resetChannels();
-        // load all channels
-        $channelInformation = $this->db->loadChannels();
-        foreach ($channelInformation as $channel) {
-            $this->channels[$channel->id] = new Channel($channel->id, $channel->name);
+        $this->db->resetDevices();
+        // load all devices
+        $deviceList = $this->db->loadDevices();
+        foreach ($deviceList as $device) {
+            $this->devices[$device->id] = new Device($device->id, $device->name);
         }
-        // set static reference in class Channel
-        Channel::$clients = &$this->clients;
+        // set static reference in class Device
+        Device::$clients = &$this->clients;
     }
 
     public function onOpen(ConnectionInterface $clientConnection)
@@ -58,16 +58,16 @@ class SocketController implements MessageComponentInterface
             case "sender":
                 if (isset($data->apikey)) {
                     // apikey check
-                    if ($channel = $this->db->validateApiKey($data->apikey)) {
+                    if ($device = $this->db->validateApiKey($data->apikey)) {
                         // check double registration
-                        if (!$this->channels[$channel->id]->online) {
+                        if (!$this->devices[$device->id]->online) {
                             //check subscription
-                            if (!$this->channels[$channel->id]->isSubscribed($from->resourceId)) {
-                                $this->channels[$channel->id]->setSender($from->resourceId);
-                                $this->db->setChannelOnlineState($channel->id, true);
+                            if (!$this->devices[$device->id]->isSubscribed($from->resourceId)) {
+                                $this->devices[$device->id]->setSender($from->resourceId);
+                                $this->db->setDeviceOnlineState($device->id, true);
                                 $from->send($this->response(10)); // successfuly registered as sender
                                 // send global update
-                                $this->sendGlobalMessage($this->getChannelInfo($channel->id));
+                                $this->sendGlobalMessage($this->getChannelInfo($device->id));
                             } else {
                                 $from->send($this->response(28)); // error: subscriber, cant be a sender at same time
                             }
@@ -83,11 +83,11 @@ class SocketController implements MessageComponentInterface
                 break;
             case "subscribe":
                 if (isset($data->channel_id)) {
-                    // channel id check
-                    if ($channel = $this->db->validateChannelId($data->channel_id)) {
+                    // device id check
+                    if ($device = $this->db->validateChannelId($data->channel_id)) {
                         if (isset($data->subscribe)) {
                             // check is sender
-                            if (!$this->channels[$channel->id]->isSender($from->resourceId)) {
+                            if (!$this->devices[$device->id]->isSender($from->resourceId)) {
                                 // subscribe or unsubscribe?
                                 // !!! UGLY !!!
                                 //  |        |
@@ -95,17 +95,17 @@ class SocketController implements MessageComponentInterface
                                 //  v        v
                                 if ($data->subscribe) {
                                     // SUBSCRIBE
-                                    if ($this->channels[$channel->id]->addSubscriber($from->resourceId)) {
+                                    if ($this->devices[$device->id]->addObserver($from->resourceId)) {
                                         $from->send($this->response(11)); // sucsessfully subscribed
-                                        $this->updateChannelSubscriberCount($channel->id);
+                                        $this->updateChannelObserverCount($device->id);
                                     } else {
                                         $from->send($this->response(24)); // error: already subscribed
                                     }
                                 } else {
                                     // UNSBSCRIBE
-                                    if ($this->channels[$channel->id]->removeSubscriber($from->resourceId)) {
-                                        $from->send($this->response(12)); // successfuly unsubscribed from channel
-                                        $this->updateChannelSubscriberCount($channel->id);
+                                    if ($this->devices[$device->id]->removeObserver($from->resourceId)) {
+                                        $from->send($this->response(12)); // successfuly unsubscribed from device
+                                        $this->updateChannelObserverCount($device->id);
                                     } else {
                                         $from->send($this->response(25)); // error: not subscribed
                                     }
@@ -120,10 +120,10 @@ class SocketController implements MessageComponentInterface
                             $from->send($this->response(27)); // error: missing subscription data
                         }
                     } else {
-                        $from->send($this->response(23)); // error: invalid channel id
+                        $from->send($this->response(23)); // error: invalid device id
                     }
                 } else {
-                    $from->send($this->response(26)); // error: missing channel id
+                    $from->send($this->response(26)); // error: missing device id
                 }
                 break;
             case "data":
@@ -135,14 +135,14 @@ class SocketController implements MessageComponentInterface
                     }
                 }
                 $authenticated = false;
-                foreach ($this->channels as $channel) {
+                foreach ($this->devices as $device) {
                     // check if the senders recource id has been authenticated
-                    if ($channel->isSender($from->resourceId)) {
+                    if ($device->isSender($from->resourceId)) {
                         $authenticated = true;
                         // write values in database
-                        $this->db->writeSensorData($channel->dataTableName, $data->value);
-                        // send values to all "channel/channel" subscribers
-                        $this->channels[$channel->id]->send($data->value);
+                        $this->db->writeDeviceData($device->dataTableName, $data->value);
+                        // send values to all "device/device" subscribers
+                        $this->devices[$device->id]->send($data->value);
                     }
                 }
                 if (!$authenticated) {
@@ -156,18 +156,18 @@ class SocketController implements MessageComponentInterface
 
     public function onClose(ConnectionInterface $clientConnection)
     {
-        foreach ($this->channels as $channel) {
-            if ($channel->unsetSender()) {
+        foreach ($this->devices as $device) {
+            if ($device->unsetSender()) {
                 // sender successfuly removed
-                $this->db->setChannelOnlineState($channel->id, false);
-                // send global channel update
-                $this->sendGlobalMessage($this->getChannelInfo($channel->id));
+                $this->db->setDeviceOnlineState($device->id, false);
+                // send global device update
+                $this->sendGlobalMessage($this->getChannelInfo($device->id));
                 break;
-            } elseif ($channel->removeSubscriber($clientConnection->resourceId)) {
+            } elseif ($device->removeObserver($clientConnection->resourceId)) {
                 // subscriber successfuly removed
-                $this->db->setSubscriberCount($channel->id, $this->channels[$channel->id]->subscriberCount);
-                // send global channel update
-                $this->sendGlobalMessage($this->getChannelInfo($channel->id));
+                $this->db->setObserverCount($device->id, $this->devices[$device->id]->observerCount);
+                // send global device update
+                $this->sendGlobalMessage($this->getChannelInfo($device->id));
                 break;
             }
         }
@@ -194,12 +194,12 @@ class SocketController implements MessageComponentInterface
     {
         $message = (object)[
             'type' => "update",
-            'channel' => [
+            'device' => [
                 'id' => $id,
-                'name' => $this->channels[$id]->name,
-                'online' => $this->channels[$id]->online,
-                'state' => $this->channels[$id]->state,
-                'reciver' => $this->channels[$id]->subscriberCount
+                'name' => $this->devices[$id]->name,
+                'online' => $this->devices[$id]->online,
+                'state' => $this->devices[$id]->state,
+                'reciver' => $this->devices[$id]->observerCount
             ]
         ];
         return json_encode($message);
@@ -214,9 +214,9 @@ class SocketController implements MessageComponentInterface
         return json_encode($response);
     }
 
-    private function updateChannelSubscriberCount($id)
+    private function updateChannelObserverCount($id)
     {
-        $this->db->setSubscriberCount($id, $this->channels[$id]->subscriberCount);
+        $this->db->setObserverCount($id, $this->devices[$id]->observerCount);
         $this->sendGlobalMessage($this->getChannelInfo($id));
     }
 }
