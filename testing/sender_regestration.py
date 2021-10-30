@@ -3,15 +3,19 @@ import json
 
 
 def test(ws):
-    wsMsg = {"type": "subscribe", "channel_id": "16", "subscribe": "true"}
+    wsMsg = {
+        "type": "sender",
+        "apikey": "23b651a79c9a5136d4751e6df9659ea15ed9df4768c211ede558d1ebd3b0c5bd",
+    }
     ws.send(json.dumps(wsMsg))
     message = json.loads(ws.recv())
 
     if message["type"] == "response":
-        if message["id"] == "11":
+        if message["id"] == "10":
             return True, message["id"]
         else:
             return False, message["id"]
     else:
         # wrong type
+        print(message["type"])
         return False, 0

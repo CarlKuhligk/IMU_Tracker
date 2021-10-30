@@ -5,13 +5,13 @@ import json
 def test(ws):
     wsMsg = {
         "type": "sender",
-        "apikey": "558fe9f09edca96e6b7007f0c187c30579b0727235b43d58b342faa8f81bb300",
+        "apikey": "23b651a79c9a5136d4751e6df9659ea15ed9df4768c211ede558d1ebd3b0c5bd",
     }
     ws.send(json.dumps(wsMsg))
     message = json.loads(ws.recv())
 
     if message["type"] == "response":
-        if message["id"] == "10":
+        if message["id"] == "29":
             return True, message["id"]
         else:
             return False, message["id"]

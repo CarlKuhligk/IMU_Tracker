@@ -58,7 +58,7 @@ class Device
 
     public function addObserver($resourceId)
     {
-        if ($this->isSubscribed($resourceId)) {
+        if ($this->isObserver($resourceId)) {
             // error cant add resourceId
             return false;
         } else {
@@ -71,7 +71,7 @@ class Device
 
     public function removeObserver($resourceId)
     {
-        if ($this->isSubscribed($resourceId)) {
+        if ($this->isObserver($resourceId)) {
             // successfuly removed
             unset($this->observers[$resourceId]);
             $this->observerCount--;
@@ -82,7 +82,7 @@ class Device
         }
     }
 
-    public function isSubscribed($resourceId)
+    public function isObserver($resourceId)
     {
         return array_key_exists($resourceId, $this->observers);
     }
@@ -92,8 +92,8 @@ class Device
     {
         foreach ($this->observers as $observer) {
             #send message only to observers
-            if ($observer->id != $this->sender) {
-                Device::$clients[$observer->id]->send($message);
+            if ($observer != $this->sender) {
+                Device::$clients[$observer]->send($message);
             }
         }
     }
@@ -101,5 +101,15 @@ class Device
     public function isSender($resourceId)
     {
         return ($this->sender == $resourceId ? True : False);
+    }
+
+    public function sendSender($message)
+    {
+        if (isset($this->sender)) {
+            Device::$clients[$this->sender]->send($message);
+            return True;
+        } else {
+            return False;
+        }
     }
 }
