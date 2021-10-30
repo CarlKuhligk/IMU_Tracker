@@ -13,17 +13,17 @@ use DBConfig;
 use DBController;
 use Device;
 
+// SendGlobalMessageFlags
+define("SGMF_OBSERVER", 1 << 1, true);
+define("SGMF_SENDER", 1 << 2, true);
+define("SGMF_CONNECTION", 1 << 3, true);
+define("SGMF_UNUSED_CONNECTION", 1 << 4, true);
+
 class SocketController implements MessageComponentInterface
 {
     private $clients = array();
     private $devices = array();
     private $db;
-
-    // global message tagets
-    static $Observer = 1 << 1;
-    static $Sender = 1 << 2;
-    static $Connection = 1 << 3;
-    static $UnusedConnection = 1 << 4;
 
     function __construct()
     {
@@ -73,7 +73,7 @@ class SocketController implements MessageComponentInterface
                                 $this->db->setDeviceOnlineState($device->id, true);
                                 $from->send($this->response(10)); // successfuly registered as sender
                                 // send global update
-                                $this->sendGlobalMessage($this->getDeviceInfo($device->id), SocketController::$Observer);
+                                $this->sendGlobalMessage($this->getDeviceInfo($device->id), SGMF_OBSERVER);
                             } else {
                                 $from->send($this->response(28)); // error: subscriber, cant be a sender at same time
                             }
@@ -167,13 +167,13 @@ class SocketController implements MessageComponentInterface
                 // sender successfuly removed
                 $this->db->setDeviceOnlineState($device->id, false);
                 // send global device update
-                $this->sendGlobalMessage($this->getDeviceInfo($device->id), SocketController::$Observer);
+                $this->sendGlobalMessage($this->getDeviceInfo($device->id), SGMF_OBSERVER);
                 break;
             } elseif ($device->removeObserver($clientConnection->resourceId)) {
                 // subscriber successfuly removed
                 $this->db->setObserverCount($device->id, $this->devices[$device->id]->observerCount);
                 // send global device update
-                $this->sendGlobalMessage($this->getDeviceInfo($device->id), SocketController::$Observer);
+                $this->sendGlobalMessage($this->getDeviceInfo($device->id), SGMF_OBSERVER);
                 break;
             }
         }
@@ -188,27 +188,29 @@ class SocketController implements MessageComponentInterface
         $conn->close();
     }
 
-    private function sendGlobalMessage($message, $target)
+    // send to all client is default without flags
+    private function sendGlobalMessage($message, $target = 0)
     {
-        if ($target & SocketController::$Sender) {
+        if ($target & SGMF_SENDER) {
             foreach ($this->devices as $device) {
                 $device->sendSender($message);
             }
         }
 
-        if ($target & SocketController::$Observer) {
+        if ($target & SGMF_OBSERVER) {
             foreach ($this->devices as $device) {
                 $device->send($message);
             }
         }
 
-        if ($target & SocketController::$Connection) {
+        // send to all client is default
+        if (($target & SGMF_CONNECTION) || $target = 0) {
             foreach ($this->clients as $client) {
                 $client->send($message);
             }
         }
 
-        if ($target & SocketController::$UnusedConnection) {
+        if ($target & SGMF_UNUSED_CONNECTION) {
             foreach ($this->clients as $client) {
                 foreach ($this->devices as $device) {
                     if (!$device->isSender($client->resourceId) || !$device->isObserver($client->resourceId)) {
@@ -246,6 +248,6 @@ class SocketController implements MessageComponentInterface
     private function updateDeviceObserverCount($id)
     {
         $this->db->setObserverCount($id, $this->devices[$id]->observerCount);
-        $this->sendGlobalMessage($this->getDeviceInfo($id), SocketController::$Observer);
+        $this->sendGlobalMessage($this->getDeviceInfo($id), SGMF_OBSERVER);
     }
 }
