@@ -3,7 +3,7 @@ import json
 
 
 def test(ws):
-    wsMsg = {"type": "subscribe", "channel_id": "16", "subscribe": "true"}
+    wsMsg = {"type": "subscribe", "device_id": "0", "subscribe": "true"}
     ws.send(json.dumps(wsMsg))
     message = json.loads(ws.recv())
 
