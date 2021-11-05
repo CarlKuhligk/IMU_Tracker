@@ -1,0 +1,4 @@
+#Mon Nov 01 19:53:17 CET 2021
+base.0=C\:\\Developement\\Projects\\gyroscope_test\\build\\app\\intermediates\\dex\\debug\\mergeDexDebug\\classes.dex
+renamed.0=classes.dex
+path.0=classes.dex

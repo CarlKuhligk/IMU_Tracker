@@ -8,6 +8,7 @@ use Ratchet\ConnectionInterface;
 include_once 'DBController.php';
 include_once 'Device.php';
 include_once 'DBConfig.php';
+include_once 'Response.php';
 
 use DBConfig;
 use DBController;
@@ -55,7 +56,7 @@ class SocketController implements MessageComponentInterface
 
         // break if datatype is missing
         if (!isset($data->type)) {
-            $from->send($this->response(30)); // error: type missing
+            $from->send($this->response(RP_MISSING_TYPE));
             return;
         }
 
@@ -71,20 +72,20 @@ class SocketController implements MessageComponentInterface
                             if (!$this->devices[$device->id]->isObserver($from->resourceId)) {
                                 $this->devices[$device->id]->setSender($from->resourceId);
                                 $this->db->setDeviceOnlineState($device->id, true);
-                                $from->send($this->response(10)); // successfuly registered as sender
+                                $from->send($this->response(RP_DEVICE_REGISTERED));
                                 // send global update
                                 $this->sendGlobalMessage($this->getDeviceInfo($device->id), SGMF_OBSERVER);
                             } else {
-                                $from->send($this->response(28)); // error: subscriber, cant be a sender at same time
+                                $from->send($this->response(RP_OBSERVER_CANT_REGISTER_AS_DEVICE));
                             }
                         } else {
-                            $from->send($this->response(21)); // error: already redisterd as sender
+                            $from->send($this->response(RP_DEVICE_ALREADY_REGISTERED));
                         }
                     } else {
-                        $from->send($this->response(20)); // invailid api key
+                        $from->send($this->response(RP_INVALID_API_KEY));
                     }
                 } else {
-                    $from->send($this->response(19)); // missing apikey
+                    $from->send($this->response(RP_MISSING_API_KEY));
                 }
                 break;
             case "subscribe":
@@ -102,41 +103,41 @@ class SocketController implements MessageComponentInterface
                                 if ($data->subscribe) {
                                     // SUBSCRIBE
                                     if ($this->devices[$device->id]->addObserver($from->resourceId)) {
-                                        $from->send($this->response(11)); // sucsessfully subscribed
+                                        $from->send($this->response(RP_OBSERVER_REGISTERED));
                                         $this->updateDeviceObserverCount($device->id);
                                     } else {
-                                        $from->send($this->response(24)); // error: already subscribed
+                                        $from->send($this->response(RP_OBSERVER_ALREADY_REGISTERED));
                                     }
                                 } else {
                                     // UNSBSCRIBE
                                     if ($this->devices[$device->id]->removeObserver($from->resourceId)) {
-                                        $from->send($this->response(12)); // successfuly unsubscribed from device
+                                        $from->send($this->response(RP_OBSERVER_UNREGISTERED));
                                         $this->updateDeviceObserverCount($device->id);
                                     } else {
-                                        $from->send($this->response(25)); // error: not subscribed
+                                        $from->send($this->response(RP_OBSERVER_NOT_REGISTERED));
                                     }
                                 }
                                 //  ᴧ        ᴧ
                                 // / \      / \
                                 //  |        |
                             } else {
-                                $from->send($this->response(29)); // error : sender, cant be a subscriber at same
+                                $from->send($this->response(RP_DEVICE_CANT_REGISTER_AS_OBSERVER));
                             }
                         } else {
-                            $from->send($this->response(27)); // error: missing subscription data
+                            $from->send($this->response(RP_OBSERVER_MISSING_REGESTRATION_STATE));
                         }
                     } else {
-                        $from->send($this->response(23)); // error: invalid device id
+                        $from->send($this->response(RP_INVALID_DEVICE_ID));
                     }
                 } else {
-                    $from->send($this->response(26)); // error: missing device id
+                    $from->send($this->response(RP_MISSING_DEVICE_ID));
                 }
                 break;
             case "data":
                 for ($i = 0; $i < 7; $i++) {
                     // check if is empty or not a number
                     if ($data->value[$i] == null || !is_numeric($data->value[$i] + 0)) {
-                        $from->send($this->response(31)); // error: data missing
+                        $from->send($this->response(RP_MISSING_DATA));
                         return;
                     }
                 }
@@ -152,11 +153,11 @@ class SocketController implements MessageComponentInterface
                     }
                 }
                 if (!$authenticated) {
-                    $from->send($this->response(22)); // error: not authenticated as sender
+                    $from->send($this->response(RP_DEVICE_NOT_REGISTERED));
                 }
                 break;
             default:
-                $from->send($this->response(32)); // error: unknown datatype
+                $from->send($this->response(RP_UNKNOWN_DATA_TYPE));
         }
     }
 
@@ -230,7 +231,7 @@ class SocketController implements MessageComponentInterface
                 'name' => $this->devices[$id]->name,
                 'online' => $this->devices[$id]->online,
                 'state' => $this->devices[$id]->state,
-                'reciver' => $this->devices[$id]->observerCount
+                'observer' => $this->devices[$id]->observerCount
             ]
         ];
         return json_encode($message);
