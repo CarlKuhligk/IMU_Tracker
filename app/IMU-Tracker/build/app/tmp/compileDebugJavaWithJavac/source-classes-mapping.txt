@@ -1,0 +1,4 @@
+io/flutter/plugins/GeneratedPluginRegistrant.java
+ io.flutter.plugins.GeneratedPluginRegistrant
+com/example/gyroscope_test/BuildConfig.java
+ com.example.gyroscope_test.BuildConfig
