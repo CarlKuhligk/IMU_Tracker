@@ -1,4 +1,4 @@
-import 'package:IMU_Tracker/services/message_builder.dart';
+import 'package:imu_tracker/services/message_builder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
@@ -48,7 +48,7 @@ class _MyMainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("IMU-Tracker DEMO"),
+          title: Text("IMU_Tracker DEMO"),
         ),
         body: Center(
           child: Column(
