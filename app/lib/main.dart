@@ -1,9 +1,21 @@
+import 'package:imu_tracker/screens/qr_code_registration_screen.dart';
+import 'package:imu_tracker/services/websocket_handler.dart';
 import 'screens/main_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:sensors/sensors.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  runApp(MyApp());
+  /*accelerometerEvents.listen((AccelerometerEvent event) {
+    setState(() {
+      accelerationX = event.x;
+      accelerationY = event.y;
+      accelerationZ = event.z;
+    });
+  });*/
+}
 
 class MyApp extends StatelessWidget {
   @override
@@ -26,7 +38,7 @@ class LoadPage extends StatefulWidget {
 }
 
 class LoadPageState extends State {
-  var newLaunch;
+  bool newLaunch = false;
 
   @override
   void initState() {
@@ -38,6 +50,9 @@ class LoadPageState extends State {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       bool _newLaunch = ((prefs.getBool('newLaunch') ?? true));
+      if (_newLaunch == Null) {
+        _newLaunch = false;
+      }
       newLaunch = _newLaunch;
     });
   }
