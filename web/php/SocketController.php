@@ -24,17 +24,17 @@ class SocketController implements MessageComponentInterface
 {
     private $clients = array();
     private $devices = array();
-    private $db;
+    private $Database;
 
     function __construct()
     {
-        $this->db = new DBController(DBConfig::$servername, DBConfig::$username, DBConfig::$password, DBConfig::$dbname);
-        if ($this->db->connect() === false) {
+        $this->Database = new DBController(DBConfig::$servername, DBConfig::$username, DBConfig::$password, DBConfig::$dbname);
+        if ($this->Database->connect() === false) {
             die("Connection to database faild!");
         }
-        $this->db->resetDevices();
+        $this->Database->resetDevices();
         // load all devices
-        $deviceList = $this->db->loadDevices();
+        $deviceList = $this->Database->loadDevices();
         foreach ($deviceList as $device) {
             $this->devices[$device->id] = new Device($device->id, $device->name);
         }
@@ -65,13 +65,13 @@ class SocketController implements MessageComponentInterface
             case "sender":
                 if (isset($data->apikey)) {
                     // apikey check
-                    if ($device = $this->db->validateApiKey($data->apikey)) {
+                    if ($device = $this->Database->validateApiKey($data->apikey)) {
                         // check double registration
                         if (!$this->devices[$device->id]->online) {
                             //check subscription
                             if (!$this->devices[$device->id]->isObserver($from->resourceId)) {
                                 $this->devices[$device->id]->setSender($from->resourceId);
-                                $this->db->setDeviceOnlineState($device->id, true);
+                                $this->Database->setDeviceOnlineState($device->id, true);
                                 $from->send($this->response(RP_DEVICE_REGISTERED));
                                 // send global update
                                 $this->sendGlobalMessage($this->getDeviceInfo($device->id), SGMF_OBSERVER);
@@ -88,20 +88,20 @@ class SocketController implements MessageComponentInterface
                     $from->send($this->response(RP_MISSING_API_KEY));
                 }
                 break;
-            case "subscribe":
+            case "observe":
                 if (isset($data->device_id)) {
                     // device id check
-                    if ($device = $this->db->validateChannelId($data->device_id)) {
-                        if (isset($data->subscribe)) {
+                    if ($device = $this->Database->validateChannelId($data->device_id)) {
+                        if (isset($data->state)) {
                             // check is sender
                             if (!$this->devices[$device->id]->isSender($from->resourceId)) {
-                                // subscribe or unsubscribe?
+                                // observe or not observe?
                                 // !!! UGLY !!!
                                 //  |        |
                                 // \ /      \ /
                                 //  v        v
-                                if ($data->subscribe) {
-                                    // SUBSCRIBE
+                                if ($data->state) {
+                                    // observe
                                     if ($this->devices[$device->id]->addObserver($from->resourceId)) {
                                         $from->send($this->response(RP_OBSERVER_REGISTERED));
                                         $this->updateDeviceObserverCount($device->id);
@@ -109,7 +109,7 @@ class SocketController implements MessageComponentInterface
                                         $from->send($this->response(RP_OBSERVER_ALREADY_REGISTERED));
                                     }
                                 } else {
-                                    // UNSBSCRIBE
+                                    // not observe
                                     if ($this->devices[$device->id]->removeObserver($from->resourceId)) {
                                         $from->send($this->response(RP_OBSERVER_UNREGISTERED));
                                         $this->updateDeviceObserverCount($device->id);
@@ -134,7 +134,7 @@ class SocketController implements MessageComponentInterface
                 }
                 break;
             case "data":
-                for ($i = 0; $i < 7; $i++) {
+                for ($i = 0; $i < 8; $i++) {
                     // check if is empty or not a number
                     if ($data->value[$i] == null || !is_numeric($data->value[$i] + 0)) {
                         $from->send($this->response(RP_MISSING_DATA));
@@ -147,7 +147,7 @@ class SocketController implements MessageComponentInterface
                     if ($device->isSender($from->resourceId)) {
                         $authenticated = true;
                         // write values in database
-                        $this->db->writeDeviceData($device->dataTableName, $data->value);
+                        $this->Database->writeDeviceData($device->dataTableName, $data->value);
                         // send values to all "device/device" subscribers
                         $this->devices[$device->id]->send($data->value);
                     }
@@ -166,13 +166,13 @@ class SocketController implements MessageComponentInterface
         foreach ($this->devices as $device) {
             if ($device->unsetSender()) {
                 // sender successfuly removed
-                $this->db->setDeviceOnlineState($device->id, false);
+                $this->Database->setDeviceOnlineState($device->id, false);
                 // send global device update
                 $this->sendGlobalMessage($this->getDeviceInfo($device->id), SGMF_OBSERVER);
                 break;
             } elseif ($device->removeObserver($clientConnection->resourceId)) {
                 // subscriber successfuly removed
-                $this->db->setObserverCount($device->id, $this->devices[$device->id]->observerCount);
+                $this->Database->setObserverCount($device->id, $this->devices[$device->id]->observerCount);
                 // send global device update
                 $this->sendGlobalMessage($this->getDeviceInfo($device->id), SGMF_OBSERVER);
                 break;
@@ -248,7 +248,7 @@ class SocketController implements MessageComponentInterface
 
     private function updateDeviceObserverCount($id)
     {
-        $this->db->setObserverCount($id, $this->devices[$id]->observerCount);
+        $this->Database->setObserverCount($id, $this->devices[$id]->observerCount);
         $this->sendGlobalMessage($this->getDeviceInfo($id), SGMF_OBSERVER);
     }
 }
