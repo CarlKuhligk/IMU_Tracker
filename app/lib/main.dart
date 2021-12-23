@@ -1,20 +1,18 @@
 import 'package:imu_tracker/screens/qr_code_registration_screen.dart';
-import 'package:imu_tracker/services/websocket_handler.dart';
+import 'package:imu_tracker/services/localstorage_service.dart';
 import 'screens/main_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:sensors/sensors.dart';
+import 'service_locator.dart';
 
-void main() {
-  runApp(MyApp());
-  /*accelerometerEvents.listen((AccelerometerEvent event) {
-    setState(() {
-      accelerationX = event.x;
-      accelerationY = event.y;
-      accelerationZ = event.z;
-    });
-  });*/
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await setupLocator();
+    runApp(MyApp());
+  } catch (error) {
+    print('Locator setup has failed');
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -32,7 +30,6 @@ class MyApp extends StatelessWidget {
 
 class LoadPage extends StatefulWidget {
   //LoadPage({Key key}) : super(key: key);
-
   @override
   LoadPageState createState() => LoadPageState();
 }
@@ -47,9 +44,8 @@ class LoadPageState extends State {
   }
 
   loadNewLaunch() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool _newLaunch = LocalStorageService.getDeviceIsRegistered();
     setState(() {
-      bool _newLaunch = ((prefs.getBool('newLaunch') ?? true));
       if (_newLaunch == Null) {
         _newLaunch = false;
       }
@@ -59,6 +55,6 @@ class LoadPageState extends State {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: newLaunch ? MainPage() : MainPage());
+    return Scaffold(body: newLaunch ? RegistrationScreen() : MainPage());
   }
 }
