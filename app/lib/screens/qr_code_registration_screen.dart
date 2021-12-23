@@ -1,9 +1,10 @@
 import 'dart:developer';
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:imu_tracker/services/login_data_handling.dart';
+import 'package:imu_tracker/services/localstorage_service.dart';
 
 class MyHome extends StatelessWidget {
   const MyHome({Key? key}) : super(key: key);
@@ -16,7 +17,7 @@ class MyHome extends StatelessWidget {
         child: ElevatedButton(
           onPressed: () {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const QRViewExample(),
+              builder: (context) => const RegistrationScreen(),
             ));
           },
           child: const Text('SetUp IMU_tracker'),
@@ -26,14 +27,14 @@ class MyHome extends StatelessWidget {
   }
 }
 
-class QRViewExample extends StatefulWidget {
-  const QRViewExample({Key? key}) : super(key: key);
+class RegistrationScreen extends StatefulWidget {
+  const RegistrationScreen({Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _QRViewExampleState();
+  State<StatefulWidget> createState() => _RegistrationScreen();
 }
 
-class _QRViewExampleState extends State<QRViewExample> {
+class _RegistrationScreen extends State<RegistrationScreen> {
   Barcode? result;
   QRViewController? controller;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
@@ -102,6 +103,10 @@ class _QRViewExampleState extends State<QRViewExample> {
       this.controller = controller;
     });
     controller.scannedDataStream.listen((scanData) {
+      if (checkQrCode(describeEnum(scanData.format), scanData.code)) {
+        LocalStorageService.writeAuthenticationToMemory(scanData.code);
+        LocalStorageService.setDeviceIsRegistered(true);
+      }
       setState(() {
         result = scanData;
       });

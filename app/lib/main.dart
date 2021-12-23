@@ -35,7 +35,7 @@ class LoadPage extends StatefulWidget {
 }
 
 class LoadPageState extends State {
-  bool newLaunch = false;
+  bool deviceIsRegistered = false;
 
   @override
   void initState() {
@@ -44,17 +44,18 @@ class LoadPageState extends State {
   }
 
   loadNewLaunch() async {
-    bool _newLaunch = LocalStorageService.getDeviceIsRegistered();
+    bool _deviceIsRegistered = LocalStorageService.getDeviceIsRegistered();
     setState(() {
-      if (_newLaunch == Null) {
-        _newLaunch = false;
+      if (_deviceIsRegistered == Null) {
+        _deviceIsRegistered = false;
       }
-      newLaunch = _newLaunch;
+      deviceIsRegistered = _deviceIsRegistered;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: newLaunch ? RegistrationScreen() : MainPage());
+    return Scaffold(
+        body: deviceIsRegistered ? MainPage() : RegistrationScreen());
   }
 }

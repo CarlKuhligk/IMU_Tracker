@@ -7,6 +7,7 @@ class LocalStorageService {
   static late LocalStorageService _instance;
   static late SharedPreferences _preferences;
   static const String deviceIsSetUpKey = 'deviceIsSetUp';
+  static const String AuthenticationValuesKey = 'AuthenticationValues';
 
   static Future<LocalStorageService> getInstance() async {
     _instance = LocalStorageService();
@@ -16,18 +17,21 @@ class LocalStorageService {
     return _instance;
   }
 
-  writeAuthenticationToMemory(authenticationValues) {}
-
-  getAuthenticationFromMemory() {}
-
-  static bool getDeviceIsRegistered() {
-    bool _newLaunch = ((_preferences.getBool(deviceIsSetUpKey) ?? true));
-    return _newLaunch;
+  static void writeAuthenticationToMemory(authenticationValues) {
+    _preferences.setString(AuthenticationValuesKey, authenticationValues);
   }
 
-  void saveStringToDisk(String key, String content) {
-    print(
-        '(TRACE) LocalStorageService:_saveStringToDisk. key: $key value: $content');
-    _preferences.setString(key, content);
+  static getAuthenticationFromMemory() {
+    var _authenticationValues = (AuthenticationValuesKey);
+    return jsonDecode(_authenticationValues);
+  }
+
+  static void setDeviceIsRegistered(isRegistered) {
+    _preferences.setBool(deviceIsSetUpKey, isRegistered);
+  }
+
+  static bool getDeviceIsRegistered() {
+    bool _isRegistered = ((_preferences.getBool(deviceIsSetUpKey) ?? true));
+    return _isRegistered;
   }
 }
