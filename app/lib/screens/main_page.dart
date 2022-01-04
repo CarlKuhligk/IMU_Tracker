@@ -1,10 +1,9 @@
+import 'package:imu_tracker/service_locator.dart';
 import 'package:imu_tracker/services/websocket_handler.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sensors/sensors.dart';
-import 'dart:convert';
 
 class MainPage extends StatefulWidget {
   const MainPage({
@@ -15,6 +14,7 @@ class MainPage extends StatefulWidget {
 }
 
 class _MyMainPageState extends State<MainPage> {
+  var websocket = getIt<WebSocketService>();
   var accelerationValues = {'X': 0, 'Y': 0, 'Z': 0};
   var gyroscopeValues = {'X': 0, 'Y': 0, 'Z': 0};
   double accelerationX = 0, accelerationY = 0, accelerationZ = 0;
@@ -32,7 +32,7 @@ class _MyMainPageState extends State<MainPage> {
       });
     });
     gyroscopeEvents.listen((GyroscopeEvent event) {
-      if (sucessfullyRegistered) buildValueMessage();
+      if (websocket.sucessfullyRegistered) websocket.buildValueMessage();
       setState(() {
         gyroscopeX = event.x;
         gyroscopeY = event.y;
@@ -52,7 +52,7 @@ class _MyMainPageState extends State<MainPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               new RaisedButton(
-                onPressed: () => {registerAsSender()},
+                onPressed: () => {websocket.registerAsSender()},
                 child: new Text("Connect"),
               ),
               Padding(
@@ -64,11 +64,11 @@ class _MyMainPageState extends State<MainPage> {
               ),
               const SizedBox(height: 24),
               StreamBuilder(
-                stream: channel.stream,
+                stream: WebSocketService.channel.stream,
                 builder: (context, snapshot) {
                   Future.delayed(Duration.zero, () async {
-                    messageHandler(snapshot.data);
-                    if (sucessfullyRegistered) {
+                    websocket.messageHandler(snapshot.data);
+                    if (websocket.sucessfullyRegistered) {
                       setState(() {
                         _connectionStateText = 'Connected';
                       });

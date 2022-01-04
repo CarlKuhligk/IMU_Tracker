@@ -1,88 +1,89 @@
 import 'dart:convert';
+import 'package:imu_tracker/services/localstorage_service.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:imu_tracker/services/login_data_handling.dart';
 
-//Websocket Variables
 String apikey =
     "23b651a79c9a5136d4751e6df9659ea15ed9df4768c211ede558d1ebd3b0c5bd";
 
-var gyroMessage = {
-  "type": "data",
-  "value": ["4", "4", "44", "4", "4", "4", "55"],
-  "apikey": apikey
-};
+class WebSocketService {
+//Websocket Variables
 
-var message = {"type": "", "value": [], "apikey": ""};
-var loginMessage = {"type": "sender", "value": [], "apikey": apikey};
+  //static late WebSocketService _instance;
+  static WebSocketChannel channel =
+      WebSocketChannel.connect(Uri.parse('ws://192.168.178.42:8080'));
 
-var channel = WebSocketChannel.connect(Uri.parse('ws://192.168.0.20:8080'));
+  var gyroMessage = {
+    "type": "data",
+    "value": ["4", "4", "44", "4", "4", "4", "55"],
+    "apikey": apikey
+  };
 
-bool sucessfullyRegistered = false;
+  var message = {"type": "", "value": [], "apikey": ""};
+  var _loginMessage = {"type": "sender", "value": [], "apikey": apikey};
+
+  bool sucessfullyRegistered = false;
 //Gyroscope Variables
 
-var accelerationX,
-    accelerationY,
-    accelerationZ,
-    gyroscopeX,
-    gyroscopeY,
-    gyroscopeZ;
-
-void sendMessage(messageString) {
-  if (messageString.isNotEmpty) {
-    channel.sink.add(jsonEncode(messageString));
-    //print('sent message');
-    //print(messageString);
-  }
-}
-
-void registerAsSender() {
-  channel.sink.add(jsonEncode(loginMessage));
-  print(loginMessage);
-}
-
-void messageHandler(message) {
-  if (message != null) {
-    var incomingMessage = jsonDecode(message);
-    //print(message);
-    if (incomingMessage['type'] == 'response' &&
-        incomingMessage['id'] == '10') {
-      //print("Successfully registered as Sender");
-      sucessfullyRegistered = true;
-    }
-  }
-}
-
-void buildValueMessage() {
-  var buildMessage = {
-    "type": "data",
-    "value": [
-      accelerationX,
+  var accelerationX,
       accelerationY,
       accelerationZ,
       gyroscopeX,
       gyroscopeY,
-      gyroscopeZ,
-      "0",
-      "0",
-      "0"
-    ],
-    "apikey": apikey
-  };
-  sendMessage(buildMessage);
-}
-
-void dispose() {
-  channel.sink.close();
-}
-
+      gyroscopeZ;
 
 /*
-void main() {
-  print(message["type"]);
-  String rawJson = jsonEncode(message);
-  print(rawJson);
-  var message2 = jsonDecode(rawJson);
-  print(message2["type"]);
-  print(message2["value"]);
-  print(message2["apikey"]);
-}
+  Future<WebSocketService> getInstance() async {
+    _instance = WebSocketService();
+
+    _channel = WebSocketChannel.connect(Uri.parse('ws://192.168.178.42:8080'));
+
+    return _instance;
+  }
 */
+  void sendMessage(messageString) {
+    if (messageString.isNotEmpty) {
+      channel.sink.add(jsonEncode(messageString));
+    }
+  }
+
+  void registerAsSender() {
+    channel.sink.add(jsonEncode(_loginMessage));
+    print(_loginMessage);
+  }
+
+  void messageHandler(message) {
+    if (message != null) {
+      var incomingMessage = jsonDecode(message);
+      //print(message);
+      if (incomingMessage['type'] == 'response' &&
+          incomingMessage['id'] == '10') {
+        //print("Successfully registered as Sender");
+        sucessfullyRegistered = true;
+      }
+    }
+  }
+
+  void buildValueMessage() {
+    var buildMessage = {
+      "type": "data",
+      "value": [
+        accelerationX,
+        accelerationY,
+        accelerationZ,
+        gyroscopeX,
+        gyroscopeY,
+        gyroscopeZ,
+        "0",
+        "0",
+        "0"
+      ],
+      "apikey": apikey
+    };
+    sendMessage(buildMessage);
+  }
+
+  void dispose() {
+    channel.sink.close();
+  }
+}
