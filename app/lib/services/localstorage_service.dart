@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'dart:async' show Future;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -7,7 +6,7 @@ class LocalStorageService {
   static late LocalStorageService _instance;
   static late SharedPreferences _preferences;
   static const String deviceIsSetUpKey = 'deviceIsSetUp';
-  static const String AuthenticationValuesKey = 'AuthenticationValues';
+  static const String authenticationValuesKey = 'AuthenticationValues';
 
   static Future<LocalStorageService> getInstance() async {
     _instance = LocalStorageService();
@@ -18,12 +17,16 @@ class LocalStorageService {
   }
 
   static void writeAuthenticationToMemory(authenticationValues) {
-    _preferences.setString(AuthenticationValuesKey, authenticationValues);
+    _preferences.setString(authenticationValuesKey, authenticationValues);
   }
 
   static getAuthenticationFromMemory() {
-    var _authenticationValues = (AuthenticationValuesKey);
-    return jsonDecode(_authenticationValues);
+    var _authenticationValues = _preferences.getString(authenticationValuesKey);
+    if (_authenticationValues != null) {
+      return jsonDecode(_authenticationValues);
+    } else
+      //! to be looked at further
+      return "";
   }
 
   static void setDeviceIsRegistered(isRegistered) {
