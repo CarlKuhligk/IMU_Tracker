@@ -32,15 +32,6 @@ class WebSocketHandler {
       gyroscopeY,
       gyroscopeZ;
 
-/*
-  Future<WebSocketService> getInstance() async {
-    _instance = WebSocketService();
-
-    _channel = WebSocketChannel.connect(Uri.parse('ws://192.168.178.42:8080'));
-
-    return _instance;
-  }
-*/
   void sendMessage(messageString) {
     if (messageString.isNotEmpty) {
       channel.sink.add(jsonEncode(messageString));
