@@ -4,6 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:imu_tracker/services/login_data_handling.dart';
+import 'package:imu_tracker/service_locator.dart';
+import 'package:imu_tracker/services/websocket_handler.dart';
+import 'package:imu_tracker/screens/qr_code_found_page.dart';
+import 'dart:convert';
 import 'package:imu_tracker/services/localstorage_service.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -81,10 +85,28 @@ class _RegistrationScreen extends State<RegistrationScreen> {
     setState(() {
       this.controller = controller;
     });
+
+    var websocket = getIt<WebSocketHandler>();
     controller.scannedDataStream.listen((scanData) {
+      controller.pauseCamera();
       if (checkQrCode(describeEnum(scanData.format), scanData.code)) {
-        LocalStorageService.writeAuthenticationToMemory(scanData.code);
-        LocalStorageService.setDeviceIsRegistered(true);
+        var socketData;
+        socketData = scanData.code;
+
+        if (websocket.testWebSocketConnection(json.decode(socketData))) {
+          LocalStorageService.writeAuthenticationToMemory(scanData.code);
+          LocalStorageService.setDeviceIsRegistered(true);
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => QrCodeFoundPage(
+                  // Pass in the recognised item to the Order Page,
+                  ),
+            ),
+          );
+        }
+      } else {
+        print("Wrong Data Format");
+        //Implement Pushroute/Overlay for the wrong data format
       }
       setState(() {
         result = scanData;
