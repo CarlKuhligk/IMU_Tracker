@@ -2,11 +2,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'dart:convert';
 
-getDeviceIsRegistered() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool _newLaunch = ((prefs.getBool('newLaunch') ?? true));
-  return _newLaunch;
-}
 
 checkQrCode(qrCode) {
   bool _success = false;
