@@ -3,8 +3,6 @@ import 'package:imu_tracker/services/localstorage_service.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:imu_tracker/services/login_data_handling.dart';
 
-String apikey =
-    "23b651a79c9a5136d4751e6df9659ea15ed9df4768c211ede558d1ebd3b0c5bd";
 
 class WebSocketHandler {
 //Websocket Variables
@@ -56,21 +54,21 @@ class WebSocketHandler {
     }
   }
 
-  void buildValueMessage() {
+  void buildValueMessage(values, apiKey) {
     var buildMessage = {
       "type": "data",
       "value": [
-        accelerationX,
-        accelerationY,
-        accelerationZ,
-        gyroscopeX,
-        gyroscopeY,
-        gyroscopeZ,
+        values.accelerationX,
+        values.accelerationY,
+        values.accelerationZ,
+        values.gyroscopeX,
+        values.gyroscopeY,
+        values.gyroscopeZ,
         "0",
         "0",
         "0"
       ],
-      "apikey": apikey
+      "apikey": apiKey
     };
     sendMessage(buildMessage);
   }
