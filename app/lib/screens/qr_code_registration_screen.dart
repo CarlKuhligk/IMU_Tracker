@@ -6,27 +6,6 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:imu_tracker/services/login_data_handling.dart';
 import 'package:imu_tracker/services/localstorage_service.dart';
 
-class MyHome extends StatelessWidget {
-  const MyHome({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('IMU_tracker')),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const RegistrationScreen(),
-            ));
-          },
-          child: const Text('SetUp IMU_tracker'),
-        ),
-      ),
-    );
-  }
-}
-
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({Key? key}) : super(key: key);
 
