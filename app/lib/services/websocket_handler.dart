@@ -38,9 +38,10 @@ class WebSocketHandler {
     }
   }
 
-  void registerAsSender() {
-    channel.sink.add(jsonEncode(_loginMessage));
-    print(_loginMessage);
+  void registerAsSender(socketData) {
+    var _registrationMessage = buildRegistrationMessage(socketData);
+    channel.sink.add(jsonEncode(_registrationMessage));
+    print(_registrationMessage);
   }
 
   void messageHandler(message) {
