@@ -117,5 +117,9 @@ class WebSocketHandler {
 
   void dispose() {
     channel.sink.close();
+    if (channel != null) {
+      channel.sink.close();
+    }
+  }
   }
 }
