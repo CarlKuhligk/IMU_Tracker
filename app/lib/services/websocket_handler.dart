@@ -42,15 +42,24 @@ class WebSocketHandler {
     print(_registrationMessage);
   }
 
-  void messageHandler(message) {
-    if (message != null) {
-      var incomingMessage = jsonDecode(message);
-      //print(message);
-      if (incomingMessage['type'] == 'response' &&
-          incomingMessage['id'] == '10') {
-        //print("Successfully registered as Sender");
-        sucessfullyRegistered = true;
-      }
+  MessageHandlerReturnType messageHandler(message) {
+    var decodedJSON;
+    bool decodeSucceeded = false;
+    try {
+      decodedJSON = json.decode(message) as Map<String, dynamic>;
+      decodeSucceeded = true;
+    } on FormatException catch (e) {
+      print('The provided string is not valid JSON');
+      return MessageHandlerReturnType(false, 0);
+    }
+
+    if (decodeSucceeded &&
+        decodedJSON["type"] != null &&
+        decodedJSON["id"] != null) {
+      print("Right message format");
+      return MessageHandlerReturnType(true, int.parse(decodedJSON['id']));
+    } else {
+      return MessageHandlerReturnType(false, 0);
     }
   }
 
