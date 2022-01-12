@@ -6,7 +6,7 @@ import 'package:imu_tracker/services/login_data_handling.dart';
 String apikey =
     "23b651a79c9a5136d4751e6df9659ea15ed9df4768c211ede558d1ebd3b0c5bd";
 
-class WebSocketService {
+class WebSocketHandler {
 //Websocket Variables
 
   //static late WebSocketService _instance;

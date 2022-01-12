@@ -14,7 +14,7 @@ class MainPage extends StatefulWidget {
 }
 
 class _MyMainPageState extends State<MainPage> {
-  var websocket = getIt<WebSocketService>();
+  var websocket = getIt<WebSocketHandler>();
   var accelerationValues = {'X': 0, 'Y': 0, 'Z': 0};
   var gyroscopeValues = {'X': 0, 'Y': 0, 'Z': 0};
   double accelerationX = 0, accelerationY = 0, accelerationZ = 0;
