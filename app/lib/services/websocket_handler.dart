@@ -120,6 +120,53 @@ class WebSocketHandler {
       channel.sink.close();
     }
   }
+
+  testWebSocketConnection(socketData) {
+    var _successfullyRegistered = false;
+
+    int retryLimit = 3;
+    bool isWebsocketRunning = false;
+
+    var _registrationMessage = buildRegistrationMessage(socketData);
+    print(_registrationMessage);
+
+    var _webSocket = IOWebSocketChannel.connect(
+      Uri.parse('ws://${socketData['ServerIp']}'),
+    );
+    Future.delayed(Duration(seconds: 1), () {
+      if (_webSocket.innerWebSocket != null) {
+        _webSocket.sink.add(jsonEncode(_registrationMessage));
+
+        _webSocket.stream.listen(
+          (message) {
+            var handledMessage = messageHandler(message);
+            if (handledMessage.hasMessageRightFormat &&
+                handledMessage.webSocketResponseType ==
+                    responseList['deviceRegistered']!.responseNumber) {
+              isWebsocketRunning = true;
+              _webSocket.sink.close();
+            } else {
+              _webSocket.sink.close();
+            } //pass a function to use the recieved JSON data and parse it
+          },
+          onDone: () {
+            isWebsocketRunning = false;
+          },
+          onError: (err) {
+            isWebsocketRunning = false;
+            retryLimit--;
+          },
+        );
+      } else {
+        if (_webSocket.innerWebSocket != null) {
+          _webSocket.sink.close();
+        }
+        print("Websocket not connected");
+        retryLimit--;
+      }
+    });
+  }
+
   buildRegistrationMessage(socketData) {
     var _registrationMessage = {"type": "sender", "value": [], "apikey": ""};
     _registrationMessage['apikey'] = socketData['apiKey'];
