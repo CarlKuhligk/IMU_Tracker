@@ -120,5 +120,10 @@ class WebSocketHandler {
       channel.sink.close();
     }
   }
+  buildRegistrationMessage(socketData) {
+    var _registrationMessage = {"type": "sender", "value": [], "apikey": ""};
+    _registrationMessage['apikey'] = socketData['apiKey'];
+
+    return _registrationMessage;
   }
 }
