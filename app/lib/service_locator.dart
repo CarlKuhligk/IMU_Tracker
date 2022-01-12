@@ -13,5 +13,5 @@ Future setupLocator() async {
   getIt.registerSingleton<WebSocketService>(WebSocketServiceInstance);
 */
 
-  getIt.registerLazySingleton<WebSocketService>(() => WebSocketService());
+  getIt.registerLazySingleton<WebSocketHandler>(() => WebSocketHandler());
 }
