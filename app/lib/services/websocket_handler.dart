@@ -1,8 +1,5 @@
 import 'dart:convert';
-import 'package:imu_tracker/services/localstorage_service.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:imu_tracker/services/login_data_handling.dart';
-
 import 'package:web_socket_channel/io.dart';
 import 'package:imu_tracker/data_structures/function_return_types.dart';
 import 'package:imu_tracker/data_structures/response_types.dart';
@@ -14,28 +11,6 @@ class WebSocketHandler {
   bool isWebsocketRunning = false; //status of a websocket
   int retryLimit = 3;
 
-  //static late WebSocketService _instance;
-  static WebSocketChannel channel =
-      WebSocketChannel.connect(Uri.parse('ws://192.168.178.42:8080'));
-
-  var gyroMessage = {
-    "type": "data",
-    "value": ["4", "4", "44", "4", "4", "4", "55"],
-    "apikey": apikey
-  };
-
-  var message = {"type": "", "value": [], "apikey": ""};
-  var _loginMessage = {"type": "sender", "value": [], "apikey": apikey};
-
-  bool sucessfullyRegistered = false;
-//Gyroscope Variables
-
-  var accelerationX,
-      accelerationY,
-      accelerationZ,
-      gyroscopeX,
-      gyroscopeY,
-      gyroscopeZ;
   void connectWebSocket(socketData) async {
     if (isWebsocketRunning) return; //check if its already running
     this.channel = IOWebSocketChannel.connect(
