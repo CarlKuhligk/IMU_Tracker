@@ -87,27 +87,41 @@ class _RegistrationScreen extends State<RegistrationScreen> {
     });
 
     var websocket = getIt<WebSocketHandler>();
-    controller.scannedDataStream.listen((scanData) {
+    controller.scannedDataStream.listen((scanData) async {
       controller.pauseCamera();
       if (checkQrCode(describeEnum(scanData.format), scanData.code)) {
         var socketData;
         socketData = scanData.code;
-
-        if (websocket.testWebSocketConnection(json.decode(socketData))) {
-          LocalStorageService.writeAuthenticationToMemory(scanData.code);
-          LocalStorageService.setDeviceIsRegistered(true);
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => QrCodeFoundPage(
-                  // Pass in the recognised item to the Order Page,
-                  ),
-            ),
-          );
+        var webSocketTestResult =
+            await websocket.testWebSocketConnection(json.decode(socketData));
+        if (webSocketTestResult.isWebSocketConnected) {
+          if (webSocketTestResult.webSocketResponseType ==
+              responseList['deviceRegistered']!.responseNumber) {
+            LocalStorageService.writeAuthenticationToMemory(scanData.code);
+            LocalStorageService.setDeviceIsRegistered(true);
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => QrCodeFoundPage(
+                    // Pass in the recognised item to the Order Page,
+                    ),
+              ),
+            );
+          } else {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => QrCodeFoundPage(
+                    // Pass in the recognised item to the Order Page,
+                    ),
+              ),
+            );
+          }
         }
       } else {
         print("Wrong Data Format");
         //Implement Pushroute/Overlay for the wrong data format
       }
+
+      controller.resumeCamera();
       setState(() {
         result = scanData;
       });

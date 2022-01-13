@@ -96,19 +96,19 @@ class WebSocketHandler {
     }
   }
 
-  testWebSocketConnection(socketData) {
-    var _successfullyRegistered = false;
+  Future<WebSocketTestResultReturnType> testWebSocketConnection(
+      socketData) async {
+    bool _isWebsocketRunning = false;
 
-    int retryLimit = 3;
-    bool isWebsocketRunning = false;
+    var _webSocketMessageNumber = 0;
 
     var _registrationMessage = buildRegistrationMessage(socketData);
-    print(_registrationMessage);
 
     var _webSocket = IOWebSocketChannel.connect(
       Uri.parse('ws://${socketData['ServerIp']}'),
     );
-    Future.delayed(Duration(seconds: 1), () {
+
+    return await Future.delayed(Duration(seconds: 1), () async {
       if (_webSocket.innerWebSocket != null) {
         _webSocket.sink.add(jsonEncode(_registrationMessage));
 
@@ -118,27 +118,27 @@ class WebSocketHandler {
             if (handledMessage.hasMessageRightFormat &&
                 handledMessage.webSocketResponseType ==
                     responseList['deviceRegistered']!.responseNumber) {
-              isWebsocketRunning = true;
+              _isWebsocketRunning = true;
               _webSocket.sink.close();
             } else {
               _webSocket.sink.close();
-            } //pass a function to use the recieved JSON data and parse it
-          },
-          onDone: () {
-            isWebsocketRunning = false;
+            }
+            _webSocketMessageNumber = handledMessage.webSocketResponseType;
           },
           onError: (err) {
-            isWebsocketRunning = false;
-            retryLimit--;
+            _isWebsocketRunning = false;
           },
         );
       } else {
         if (_webSocket.innerWebSocket != null) {
           _webSocket.sink.close();
         }
-        print("Websocket not connected");
-        retryLimit--;
       }
+
+      return await Future.delayed(Duration(seconds: 1), () {
+        return WebSocketTestResultReturnType(
+            _isWebsocketRunning, _webSocketMessageNumber);
+      });
     });
   }
 
