@@ -1,6 +1,10 @@
+//dart packages
 import 'dart:convert';
+import 'dart:async';
+//additional packages
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
+//project specific types
 import 'package:imu_tracker/data_structures/function_return_types.dart';
 import 'package:imu_tracker/data_structures/response_types.dart';
 

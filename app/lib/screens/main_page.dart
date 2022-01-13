@@ -1,9 +1,12 @@
+//flutter packages
+import 'package:flutter/material.dart';
+
+//additional packages
+import 'package:sensors/sensors.dart';
+
+//project internal services / dependency injection
 import 'package:imu_tracker/service_locator.dart';
 import 'package:imu_tracker/services/websocket_handler.dart';
-import 'dart:async';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:sensors/sensors.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({

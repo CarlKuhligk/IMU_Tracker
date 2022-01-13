@@ -1,7 +1,12 @@
+//flutter packages
 import 'package:flutter/material.dart';
+
+//project specific types
+import 'package:imu_tracker/data_structures/response_types.dart';
+
+//screens
 import 'package:imu_tracker/screens/main_page.dart';
-import 'package:imu_tracker/service_locator.dart';
-import 'package:imu_tracker/services/websocket_handler.dart';
+import 'package:imu_tracker/screens/qr_code_registration_screen.dart';
 
 class QrCodeFoundPage extends StatefulWidget {
   const QrCodeFoundPage({Key? key}) : super(key: key);

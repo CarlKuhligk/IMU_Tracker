@@ -1,14 +1,27 @@
+//dart packages
 import 'dart:developer';
 import 'dart:io';
+import 'dart:convert';
+
+//flutter packages
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+//additional packages
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:imu_tracker/services/login_data_handling.dart';
+
+//project internal services / dependency injection
 import 'package:imu_tracker/service_locator.dart';
+import 'package:imu_tracker/services/login_data_handling.dart';
 import 'package:imu_tracker/services/websocket_handler.dart';
-import 'package:imu_tracker/screens/qr_code_found_page.dart';
-import 'dart:convert';
 import 'package:imu_tracker/services/localstorage_service.dart';
+
+//project specific types
+import 'package:imu_tracker/data_structures/response_types.dart';
+
+//screens
+import 'package:imu_tracker/screens/qr_code_found_page.dart';
+import 'package:imu_tracker/screens/qr_code_wrong_format.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({Key? key}) : super(key: key);
