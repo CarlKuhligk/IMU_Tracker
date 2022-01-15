@@ -17,11 +17,11 @@ import 'package:imu_tracker/services/websocket_handler.dart';
 import 'package:imu_tracker/services/localstorage_service.dart';
 
 //project specific types
+import 'package:imu_tracker/data_structures/function_return_types.dart';
 import 'package:imu_tracker/data_structures/response_types.dart';
 
 //screens
 import 'package:imu_tracker/screens/qr_code_found_page.dart';
-import 'package:imu_tracker/screens/qr_code_wrong_format.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({Key? key}) : super(key: key);
@@ -99,6 +99,7 @@ class _RegistrationScreen extends State<RegistrationScreen> {
     controller.scannedDataStream.listen((scanData) async {
       controller.pauseCamera();
       if (checkQrCode(describeEnum(scanData.format), scanData.code)) {
+        var qrCodeHasRightFormat = true;
         var socketData;
         socketData = scanData.code;
         var webSocketTestResult =
@@ -108,26 +109,25 @@ class _RegistrationScreen extends State<RegistrationScreen> {
               responseList['deviceRegistered']!.responseNumber) {
             LocalStorageService.writeAuthenticationToMemory(scanData.code);
             LocalStorageService.setDeviceIsRegistered(true);
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => QrCodeFoundPage(
-                    // Pass in the recognised item to the Order Page,
-                    ),
-              ),
-            );
-          } else {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => QrCodeFoundPage(
-                    // Pass in the recognised item to the Order Page,
-                    ),
-              ),
-            );
           }
         }
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => QrCodeFoundPage(
+                qrCheckResult: qrCodeHasRightFormat,
+                webSocketTestResult: webSocketTestResult),
+          ),
+        );
       } else {
-        print("Wrong Data Format");
-        //Implement Pushroute/Overlay for the wrong data format
+        var qrCodeHasRightFormat = false;
+        var webSocketTestResult = WebSocketTestResultReturnType(false, 0);
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => QrCodeFoundPage(
+                qrCheckResult: qrCodeHasRightFormat,
+                webSocketTestResult: webSocketTestResult),
+          ),
+        );
       }
 
       controller.resumeCamera();
