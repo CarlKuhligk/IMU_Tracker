@@ -1,6 +1,6 @@
 {
-    "name": "gyroscope_test",
-    "short_name": "gyroscope_test",
+    "name": "imu_tracker",
+    "short_name": "imu_tracker",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

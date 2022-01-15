@@ -1,4 +1,4 @@
-# gyroscope_test
+# imu_tracker
 
 A new Flutter project.
 

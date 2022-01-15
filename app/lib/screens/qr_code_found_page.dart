@@ -1,0 +1,140 @@
+//flutter packages
+import 'package:flutter/material.dart';
+
+//project specific types
+import 'package:imu_tracker/data_structures/function_return_types.dart';
+import 'package:imu_tracker/data_structures/response_types.dart';
+
+//screens
+import 'package:imu_tracker/screens/main_page.dart';
+import 'package:imu_tracker/screens/qr_code_registration_screen.dart';
+
+class QrCodeFoundPage extends StatelessWidget {
+  const QrCodeFoundPage({
+    Key? key,
+    required this.qrCheckResult,
+    required this.webSocketTestResult,
+  }) : super(key: key);
+  final qrCheckResult;
+  final WebSocketTestResultReturnType webSocketTestResult;
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Found QR-Code'),
+      ),
+      body: Center(
+        child: Column(
+          // horizontal).
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            Table(
+              border: TableBorder.symmetric(),
+              columnWidths: {
+                0: FractionColumnWidth(0.2),
+                1: FractionColumnWidth(0.8)
+              },
+              children: [
+                TableRow(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: _getCheckBox(qrCheckResult),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text('QR - Code Format',
+                          style: TextStyle(fontSize: 20.0)),
+                    )
+                  ],
+                ),
+                if (qrCheckResult)
+                  TableRow(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: _getCheckBox(
+                            webSocketTestResult.isWebSocketConnected),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text('Verbindung zum Server',
+                            style: TextStyle(fontSize: 20.0)),
+                      )
+                    ],
+                  ),
+                if (webSocketTestResult.isWebSocketConnected)
+                  TableRow(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: _getCheckBox(
+                            (webSocketTestResult.webSocketResponseType ==
+                                    responseList['deviceRegistered']!
+                                        .responseNumber)
+                                ? true
+                                : false),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                            '${_getWebsocketResponseString(webSocketTestResult.webSocketResponseType)}',
+                            style: TextStyle(fontSize: 20.0)),
+                      )
+                    ],
+                  ),
+              ],
+            ),
+            if (qrCheckResult &&
+                webSocketTestResult.isWebSocketConnected &&
+                webSocketTestResult.webSocketResponseType ==
+                    responseList['deviceRegistered']!.responseNumber)
+              RaisedButton(
+                onPressed: () => {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => MainPage(),
+                    ),
+                  )
+                },
+                child: new Text("App starten"),
+              )
+            else
+              RaisedButton(
+                onPressed: () => {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => RegistrationScreen(),
+                    ),
+                  )
+                },
+                child: new Text("QR - Code erneut scannen"),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  _getCheckBox(bool checkBoxState) {
+    if (checkBoxState) {
+      return Icon(
+        Icons.check_box,
+        color: Colors.green,
+        size: 24.0,
+      );
+    } else {
+      return Icon(
+        Icons.indeterminate_check_box,
+        color: Colors.red,
+        size: 24.0,
+      );
+    }
+  }
+
+  _getWebsocketResponseString(webSocketResponseTypeNumber) {
+    var responseType = responseList.values.firstWhere(
+        (element) => element.responseNumber == webSocketResponseTypeNumber);
+    return responseType.responseString;
+  }
+}

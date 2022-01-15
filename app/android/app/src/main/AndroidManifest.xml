@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.gyroscope_test">
+    package="com.example.imu_tracker">
    <application
-        android:label="gyroscope_test"
+        android:label="imu_tracker"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
