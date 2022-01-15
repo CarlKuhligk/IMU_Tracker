@@ -51,7 +51,7 @@ class _RegistrationScreen extends State<RegistrationScreen> {
     return Scaffold(
       body: Column(
         children: <Widget>[
-          Expanded(flex: 4, child: _buildQrView(context)),
+          Expanded(flex: 9, child: _buildQrView(context)),
           Expanded(
             flex: 1,
             child: FittedBox(
@@ -59,11 +59,7 @@ class _RegistrationScreen extends State<RegistrationScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
-                  if (result != null)
-                    Text(
-                        'Barcode Type: ${describeEnum(result!.format)}   Data: ${result!.code}')
-                  else
-                    const Text('Scan a code'),
+                  const Text('Bitte den QR-Code scannen'),
                 ],
               ),
             ),
