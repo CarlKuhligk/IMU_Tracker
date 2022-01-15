@@ -20,6 +20,7 @@ class WebSocketHandler {
     this.channel = IOWebSocketChannel.connect(
       Uri.parse('ws://${socketData['ServerIp']}'),
     );
+
     channel.stream.listen(
       (message) {
         var handledMessage = messageHandler(message);
@@ -114,6 +115,7 @@ class WebSocketHandler {
 
     return await Future.delayed(Duration(seconds: 1), () async {
       if (_webSocket.innerWebSocket != null) {
+        _isWebsocketRunning = true;
         _webSocket.sink.add(jsonEncode(_registrationMessage));
 
         _webSocket.stream.listen(
