@@ -25,5 +25,7 @@ checkQrCode(qrCodeType, qrCodeData) {
     } else {
       return false;
     }
+  } else {
+    return false;
   }
 }
