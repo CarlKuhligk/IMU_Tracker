@@ -11,36 +11,54 @@ import 'package:imu_tracker/data_structures/response_types.dart';
 class WebSocketHandler {
 //Websocket Variables
   var sucessfullyRegistered = false;
-  late WebSocketChannel channel; //initialize a websocket channel
+  late IOWebSocketChannel channel; //initialize a websocket channel
+  final streamController = StreamController.broadcast();
   bool isWebsocketRunning = false; //status of a websocket
   int retryLimit = 3;
+  var _apiKey;
 
-  void connectWebSocket(socketData) async {
-    if (isWebsocketRunning) return; //check if its already running
-    this.channel = IOWebSocketChannel.connect(
+  Future<int> connectWebSocket(socketData) async {
+    var _webSocketMessageNumber = 0;
+
+    var _registrationMessage = buildRegistrationMessage(socketData);
+    _apiKey = socketData['apiKey'];
+    channel = IOWebSocketChannel.connect(
       Uri.parse('ws://${socketData['ServerIp']}'),
     );
 
-    channel.stream.listen(
-      (message) {
-        var handledMessage = messageHandler(message);
-        if (handledMessage.hasMessageRightFormat &&
-            handledMessage.webSocketResponseType ==
-                responseList['deviceRegistered']!.responseNumber) {
-          isWebsocketRunning = true;
-        } //pass a function to use the recieved JSON data and parse it
-      },
-      onDone: () {
-        isWebsocketRunning = false;
-      },
-      onError: (err) {
-        isWebsocketRunning = false;
-        if (retryLimit > 0) {
-          retryLimit--;
-          connectWebSocket(socketData);
+    return await Future.delayed(Duration(seconds: 1), () async {
+      if (channel.innerWebSocket != null) {
+        streamController.addStream(channel.stream);
+        isWebsocketRunning = true;
+        channel.sink.add(jsonEncode(_registrationMessage));
+
+        streamController.stream.listen(
+          (message) {
+            var handledMessage = messageHandler(message);
+            if (handledMessage.hasMessageRightFormat &&
+                handledMessage.webSocketResponseType ==
+                    responseList['deviceRegistered']!.responseNumber) {
+              isWebsocketRunning = true;
+              sucessfullyRegistered = true;
+            } else {
+              channel.sink.close();
+            }
+            _webSocketMessageNumber = handledMessage.webSocketResponseType;
+          },
+          onError: (err) {
+            isWebsocketRunning = false;
+          },
+        );
+      } else {
+        if (channel.innerWebSocket != null) {
+          channel.sink.close();
         }
-      },
-    );
+      }
+
+      return await Future.delayed(Duration(seconds: 1), () {
+        return _webSocketMessageNumber;
+      });
+    });
   }
 
   void sendMessage(messageString) {
@@ -76,21 +94,21 @@ class WebSocketHandler {
     }
   }
 
-  void buildValueMessage(values, apiKey) {
+  void buildValueMessage(accelerationValues, gyroscopeValues, batteryState) {
     var buildMessage = {
       "type": "data",
       "value": [
-        values.accelerationX,
-        values.accelerationY,
-        values.accelerationZ,
-        values.gyroscopeX,
-        values.gyroscopeY,
-        values.gyroscopeZ,
-        "0",
+        accelerationValues.x,
+        accelerationValues.y,
+        accelerationValues.z,
+        gyroscopeValues.x,
+        gyroscopeValues.y,
+        gyroscopeValues.z,
+        batteryState,
         "0",
         "0"
       ],
-      "apikey": apiKey
+      "apikey": _apiKey
     };
     sendMessage(buildMessage);
   }
