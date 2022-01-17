@@ -18,21 +18,21 @@ class WebSocketHandler {
   var _apiKey;
 
   Future<int> connectWebSocket(socketData) async {
-    var _webSocketMessageNumber = 0;
+    int _webSocketMessageNumber = 0;
 
     var _registrationMessage = buildRegistrationMessage(socketData);
     _apiKey = socketData['apiKey'];
     channel = IOWebSocketChannel.connect(
       Uri.parse('ws://${socketData['ServerIp']}'),
     );
-
+    StreamSubscription? streamSubscription;
     return await Future.delayed(Duration(seconds: 1), () async {
       if (channel.innerWebSocket != null) {
         streamController.addStream(channel.stream);
         isWebsocketRunning = true;
         channel.sink.add(jsonEncode(_registrationMessage));
 
-        streamController.stream.listen(
+        streamSubscription = streamController.stream.listen(
           (message) {
             var handledMessage = messageHandler(message);
             if (handledMessage.hasMessageRightFormat &&
@@ -56,6 +56,9 @@ class WebSocketHandler {
       }
 
       return await Future.delayed(Duration(seconds: 1), () {
+        if (streamSubscription != null) {
+          streamSubscription!.cancel();
+        }
         return _webSocketMessageNumber;
       });
     });
@@ -104,9 +107,8 @@ class WebSocketHandler {
         gyroscopeValues.x,
         gyroscopeValues.y,
         gyroscopeValues.z,
-        batteryState,
         "0",
-        "0"
+        batteryState,
       ],
       "apikey": _apiKey
     };

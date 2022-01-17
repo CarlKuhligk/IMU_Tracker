@@ -27,18 +27,24 @@ class _MyMainPageState extends State<MainPage> {
   @override
   void initState() {
     var authenticationData = LocalStorageService.getAuthenticationFromMemory();
-    //var receivedMessage = websocket.connectWebSocket(authenticationData).then((value) => null)
 
     Future.delayed(Duration.zero, () async {
       int receivedMessage =
           await websocket.connectWebSocket(authenticationData);
       if (websocket.sucessfullyRegistered) {
+        setState(() {});
         websocket.streamController.stream.listen(
           (event) {
-            websocket.messageHandler(event);
+            var response = websocket.messageHandler(event);
           },
           onDone: () {
             websocket.isWebsocketRunning = false;
+            print("Websocket Done");
+            setState(() {});
+          },
+          onError: (err) {
+            websocket.isWebsocketRunning = false;
+            print("Websocket Error");
             setState(() {});
           },
         );
@@ -66,8 +72,27 @@ class _MyMainPageState extends State<MainPage> {
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[],
+            children: <Widget>[
+              _getCheckBox(websocket.isWebsocketRunning &&
+                  websocket.sucessfullyRegistered),
+            ],
           ),
         ));
+  }
+
+  _getCheckBox(bool checkBoxState) {
+    if (checkBoxState) {
+      return Icon(
+        Icons.wifi,
+        color: Colors.green,
+        size: 80.0,
+      );
+    } else {
+      return Icon(
+        Icons.wifi_off,
+        color: Colors.red,
+        size: 80.0,
+      );
+    }
   }
 }
