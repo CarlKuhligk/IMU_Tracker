@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Erstellungszeit: 17. Jan 2022 um 21:56
+-- Erstellungszeit: 23. Jan 2022 um 14:15
 -- Server-Version: 10.4.22-MariaDB
 -- PHP-Version: 8.1.1
 
@@ -49,11 +49,37 @@ BEGIN
 	PREPARE stmt FROM @SQL;
     EXECUTE stmt;
 
-	SET @SQL = CONCAT('ALTER TABLE ',@new_table_name, ' MODIFY capture_id int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10001;');
+	SET @SQL = CONCAT('ALTER TABLE ',@new_table_name, ' MODIFY capture_id int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;');
 	PREPARE stmt FROM @SQL;
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
     COMMIT;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_device_data` (IN `days` INT(11))  BEGIN
+    DECLARE temp_tablename CHAR(32);
+	DECLARE not_done INT DEFAULT TRUE;
+    DECLARE db_cursor CURSOR FOR SELECT table_name FROM INFORMATION_SCHEMA.TABLES WHERE engine = 'innodb' AND table_schema = 'imutracker' AND table_name LIKE 'device_%%_log%';
+    
+    # condition older 7 Days -> WHERE TIMESTAMPDIFF(DAY, timestamp, CURRENT_TIMESTAMP) >= 7
+
+	DECLARE CONTINUE HANDLER FOR NOT FOUND SET not_done = FALSE;
+
+	OPEN db_cursor;
+
+WHILE not_done DO
+    FETCH db_cursor INTO temp_tablename;
+    
+    SET @SQL = CONCAT('DELETE FROM ',temp_tablename, ' WHERE TIMESTAMPDIFF(DAY, timestamp, CURRENT_TIMESTAMP) >= ',days,';');
+	PREPARE stmt FROM @SQL;
+    EXECUTE stmt;
+    
+END WHILE;
+
+DEALLOCATE PREPARE stmt;
+COMMIT;
+CLOSE db_cursor;
+
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `resetTable` (IN `tableName` VARCHAR(32))  MODIFIES SQL DATA
@@ -112,6 +138,16 @@ CREATE TABLE `device_1_log` (
   `battery` int(11) NOT NULL,
   `status` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Daten für Tabelle `device_1_log`
+--
+
+INSERT INTO `device_1_log` (`capture_id`, `timestamp`, `accX`, `accY`, `accZ`, `gyrX`, `gyrY`, `gyrZ`, `temp`, `battery`, `status`) VALUES
+(10005, '2022-01-23 12:19:33', 50, 71, 1, 54, 75, 87, 78, 5, 37),
+(10006, '2022-01-23 12:19:36', 50, 71, 1, 54, 75, 87, 78, 5, 37),
+(10007, '2022-01-23 12:19:39', 50, 71, 1, 54, 75, 87, 78, 5, 37),
+(10008, '2022-01-23 12:20:04', 50, 71, 1, 54, 75, 87, 78, 5, 37);
 
 -- --------------------------------------------------------
 
@@ -240,7 +276,7 @@ ALTER TABLE `devices`
 -- AUTO_INCREMENT für Tabelle `device_1_log`
 --
 ALTER TABLE `device_1_log`
-  MODIFY `capture_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10001;
+  MODIFY `capture_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10009;
 
 --
 -- AUTO_INCREMENT für Tabelle `events`
