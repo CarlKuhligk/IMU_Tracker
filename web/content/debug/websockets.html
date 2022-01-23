@@ -58,8 +58,9 @@
       <div class="inputContainer">
         <p class="label">select type and enter data</p>
         <select class="dropdown" id="dropdown" onchange="onChange()">
-          <option value="sender">sender</option>
-          <option value="subscribe">subscribe</option>
+          <option value="login">login</option>
+          <option value="logout">logout</option>
+          <option value="observe">observe</option>
           <option value="data">data</option>
           <option value="event">event</option>
         </select>
@@ -91,7 +92,8 @@
 
       var socket;
       // get server ip
-      var serverIP = $.get("/debug/getServerIP.php").done(function (data) {
+      /*
+      var serverIP = $.get("../debug/getServerIP.php").done(function (data) {
         // create a new WebSocket.
         socket = new WebSocket("ws://" + data + ":8080");
 
@@ -101,6 +103,15 @@
           console.log(e.data);
         };
       });
+      */
+
+      socket = new WebSocket("ws://localhost:8080");
+
+      // socket message callback
+      socket.onmessage = function (e) {
+        outputField.append(e.data);
+        console.log(e.data);
+      };
 
       // generate textboxes
       for (var i = 0; i < 7; i++) {
@@ -131,11 +142,15 @@
       function onChange() {
         textboxes[0].value = "";
         switch (dropdown.value) {
-          case "sender":
+          case "login":
             textboxes[0].placeholder = "enter api key";
             showAccGyrTextbox(false);
             break;
-          case "subscribe":
+          case "logout":
+            textboxes[0].placeholder = "enter pin";
+            showAccGyrTextbox(false);
+            break;
+          case "observe":
             textboxes[0].placeholder = "enter channel id";
             textboxes[1].placeholder = "ture or false";
             showAccGyrTextbox(false);
@@ -166,14 +181,18 @@
           message.type = dropdown.value;
           //set value
           switch (dropdown.value) {
-            case "sender":
+            case "login":
               message.apikey = textboxes[0].value;
-              console.log("sender");
+              console.log("login");
               break;
-            case "subscribe":
+            case "logout":
+              message.pin = textboxes[0].value;
+              console.log("login");
+              break;
+            case "observe":
               message.channel_id = textboxes[0].value;
               message.subscribe = textboxes[1].value;
-              console.log("subscribe");
+              console.log("observe");
               break;
             case "data":
               message.value = [];

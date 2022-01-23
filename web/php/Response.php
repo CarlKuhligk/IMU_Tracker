@@ -4,6 +4,10 @@ define("RP_NOT_CONNECTED", 1);
 define("RP_CONNECTED", 2);
 define("RP_GOBAL_UPDATE", 4);
 
+
+define("RP_DEVICE_LOGOUT_FAILED", 8);
+define("RP_DEVICE_LOGGED_OUT", 9);
+
 define("RP_DEVICE_REGISTERED", 10);
 define("RP_OBSERVER_REGISTERED", 11);
 define("RP_OBSERVER_UNREGISTERED", 12);

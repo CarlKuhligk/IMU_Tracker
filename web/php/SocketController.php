@@ -15,10 +15,10 @@ use DBController;
 use Device;
 
 // SendGlobalMessageFlags
-define("SGMF_OBSERVER", 1 << 1, true);
-define("SGMF_SENDER", 1 << 2, true);
-define("SGMF_CONNECTION", 1 << 3, true);
-define("SGMF_UNUSED_CONNECTION", 1 << 4, true);
+define("SGMF_OBSERVER", 1 << 1);
+define("SGMF_SENDER", 1 << 2);
+define("SGMF_CONNECTION", 1 << 3);
+define("SGMF_UNUSED_CONNECTION", 1 << 4);
 
 class SocketController implements MessageComponentInterface
 {
@@ -62,7 +62,7 @@ class SocketController implements MessageComponentInterface
 
         // handle incoming data
         switch ($data->type) {
-            case "sender":
+            case "login":
                 if (isset($data->apikey)) {
                     // apikey check
                     if ($device = $this->Database->validateApiKey($data->apikey)) {
@@ -86,6 +86,41 @@ class SocketController implements MessageComponentInterface
                     }
                 } else {
                     $from->send($this->response(RP_MISSING_API_KEY));
+                }
+                break;
+            case "logout":
+                if (isset($data->pin)) {
+                    $authenticated = false;
+                    $callingDevice = NULL;
+                    foreach ($this->devices as $device) {
+                        // check if the senders recource id has been logedin
+                        if ($device->isSender($from->resourceId)) {
+                            $authenticated = true;
+                            $callingDevice = $device;
+                            break;
+                        }
+                    }
+                    if ($authenticated) {
+                        // logout
+                        // check pni
+                        $employee = $this->Database->validatePin($data->pin, $callingDevice);
+                        if ($employee) {
+                            // logout device
+                            $this->devices[$device->id]->unsetSender($from->resourceId);
+                            $this->Database->setDeviceOnlineState($device->id, false);
+                            $from->send($this->response(RP_DEVICE_LOGGED_OUT));
+                            // send global update
+                            $this->sendGlobalMessage($this->getDeviceInfo($device->id), SGMF_OBSERVER);
+
+                            echo "Device: " . $callingDevice->id . " logged out from: " . $employee->name;
+                        } else {
+                            // wrong pin
+                            $from->send($this->response(RP_DEVICE_LOGOUT_FAILED));
+                        }
+                    } else {
+                        // cant logout
+                        $from->send($this->response(RP_DEVICE_NOT_REGISTERED));
+                    }
                 }
                 break;
             case "observe":
