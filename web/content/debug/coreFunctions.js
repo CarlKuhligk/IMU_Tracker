@@ -120,7 +120,7 @@ function generateQRCode() {
   var message = {};
   message.apikey =
     "cceb996336b98f2c9cb6136d96f47457b3dc8b301012d468a4634c8fefafe002";
-  message.host = "100.100.342.234:8080";
+  message.host = serverIP.responseText;
 
   messageText = JSON.stringify(message);
 
