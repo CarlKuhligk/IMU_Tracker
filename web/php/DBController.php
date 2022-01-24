@@ -116,10 +116,10 @@ class DBController
         return $row;
     }
 
-    public function setDeviceStatus($id, $status)
-    {
-        return $this->dbRequest("UPDATE devices SET status='$status' WHERE id='$id';");
-    }
+    #public function setDeviceStatus($id, $status)
+    #{
+    #    return $this->dbRequest("UPDATE device_'$id'_log SET status='$status' WHERE id='$id';");
+    #}
 
     public function setObserverCount($id, $count)
     {
