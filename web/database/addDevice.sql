@@ -24,6 +24,14 @@ BEGIN
 	SET @SQL = CONCAT('ALTER TABLE ',@new_table_name, ' MODIFY capture_id int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;');
 	PREPARE stmt FROM @SQL;
     EXECUTE stmt;
+    
+    # insert new row in device settings
+    INSERT INTO device_settings (device_id, acc_min, acc_max, gyr_min, gyr_max,  battery_warning, timeout, sense_freq)SELECT * FROM (SELECT devices.id AS device_id FROM devices ORDER BY id DESC LIMIT 1) AS DEVICEID,(SELECT acc_min, acc_max, gyr_min, gyr_max,  battery_warning, timeout, sense_freq FROM device_settings WHERE id = 0 LIMIT 1) AS DEFAULTSETTINGS;
+
+ 
+   
+
+    
     DEALLOCATE PREPARE stmt;
     COMMIT;
 END

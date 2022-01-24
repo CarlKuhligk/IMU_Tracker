@@ -3,7 +3,7 @@ import json
 
 
 def test(ws):
-    wsMsg = {"type": "sender"}
+    wsMsg = {"type": "login"}
     ws.send(json.dumps(wsMsg))
     message = json.loads(ws.recv())
 
