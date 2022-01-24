@@ -4,7 +4,7 @@ import json
 
 def test(ws):
     wsMsg = {
-        "type": "sender",
+        "type": "login",
         "apikey": "23b651a79c9a5136d4751e6df9659ea15ed9df4768c211ede558d1ebd3b0c5bd",
     }
     ws.send(json.dumps(wsMsg))
