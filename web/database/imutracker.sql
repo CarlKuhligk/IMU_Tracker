@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Erstellungszeit: 23. Jan 2022 um 14:15
+-- Erstellungszeit: 24. Jan 2022 um 10:57
 -- Server-Version: 10.4.22-MariaDB
 -- PHP-Version: 8.1.1
 
@@ -52,6 +52,14 @@ BEGIN
 	SET @SQL = CONCAT('ALTER TABLE ',@new_table_name, ' MODIFY capture_id int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;');
 	PREPARE stmt FROM @SQL;
     EXECUTE stmt;
+    
+    # insert new row in device settings
+    INSERT INTO device_settings (device_id, acc_min, acc_max, gyr_min, gyr_max,  battery_warning, timeout, sense_freq)SELECT * FROM (SELECT devices.id AS device_id FROM devices ORDER BY id DESC LIMIT 1) AS DEVICEID,(SELECT acc_min, acc_max, gyr_min, gyr_max,  battery_warning, timeout, sense_freq FROM device_settings WHERE id = 0 LIMIT 1) AS DEFAULTSETTINGS;
+
+ 
+   
+
+    
     DEALLOCATE PREPARE stmt;
     COMMIT;
 END$$
@@ -105,7 +113,7 @@ DELIMITER ;
 
 CREATE TABLE `devices` (
   `id` int(11) NOT NULL,
-  `stuff_id` int(11) NOT NULL,
+  `staff_id` int(11) NOT NULL,
   `api_key` char(64) NOT NULL,
   `changed` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `created` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -116,8 +124,9 @@ CREATE TABLE `devices` (
 -- Daten für Tabelle `devices`
 --
 
-INSERT INTO `devices` (`id`, `stuff_id`, `api_key`, `changed`, `created`, `online`) VALUES
-(1, 0, 'cceb996336b98f2c9cb6136d96f47457b3dc8b301012d468a4634c8fefafe002', '2022-01-17 20:55:21', '2022-01-17 20:55:21', 0);
+INSERT INTO `devices` (`id`, `staff_id`, `api_key`, `changed`, `created`, `online`) VALUES
+(1, 1, 'cceb996336b98f2c9cb6136d96f47457b3dc8b301012d468a4634c8fefafe002', '2022-01-24 09:56:58', '2022-01-17 20:55:21', 0),
+(2, 0, '7df6d13e87d8c9d6cbb997ac810bfdb74e4738fac1b98a07560399c9e9d24448', '2022-01-24 09:51:42', '2022-01-24 09:51:42', 0);
 
 -- --------------------------------------------------------
 
@@ -152,10 +161,31 @@ INSERT INTO `device_1_log` (`capture_id`, `timestamp`, `accX`, `accY`, `accZ`, `
 -- --------------------------------------------------------
 
 --
+-- Tabellenstruktur für Tabelle `device_2_log`
+--
+
+CREATE TABLE `device_2_log` (
+  `capture_id` int(11) NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `accX` float NOT NULL,
+  `accY` float NOT NULL,
+  `accZ` float NOT NULL,
+  `gyrX` float NOT NULL,
+  `gyrY` float NOT NULL,
+  `gyrZ` float NOT NULL,
+  `temp` float NOT NULL,
+  `battery` int(11) NOT NULL,
+  `status` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
 -- Tabellenstruktur für Tabelle `device_settings`
 --
 
 CREATE TABLE `device_settings` (
+  `id` int(11) NOT NULL,
   `device_id` int(11) NOT NULL,
   `acc_min` float NOT NULL,
   `acc_max` float NOT NULL,
@@ -165,6 +195,15 @@ CREATE TABLE `device_settings` (
   `timeout` int(11) NOT NULL,
   `sense_freq` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Daten für Tabelle `device_settings`
+--
+
+INSERT INTO `device_settings` (`id`, `device_id`, `acc_min`, `acc_max`, `gyr_min`, `gyr_max`, `battery_warning`, `timeout`, `sense_freq`) VALUES
+(0, 0, 0, 500, 0, 300, 15, 30, 1),
+(5, 1, 0, 500, 0, 300, 15, 30, 1),
+(6, 2, 0, 500, 0, 300, 15, 30, 1);
 
 -- --------------------------------------------------------
 
@@ -193,34 +232,21 @@ CREATE TABLE `event_log` (
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `settings`
+-- Tabellenstruktur für Tabelle `staff`
 --
 
-CREATE TABLE `settings` (
-  `id` int(11) NOT NULL,
-  `name` varchar(64) NOT NULL,
-  `value` varchar(64) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Daten für Tabelle `settings`
---
-
-INSERT INTO `settings` (`id`, `name`, `value`) VALUES
-(1, 'host_ip', 'localhost'),
-(2, 'password', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92');
-
--- --------------------------------------------------------
-
---
--- Tabellenstruktur für Tabelle `stuff`
---
-
-CREATE TABLE `stuff` (
+CREATE TABLE `staff` (
   `id` int(11) NOT NULL,
   `name` varchar(32) NOT NULL,
   `pin` varchar(256) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Daten für Tabelle `staff`
+--
+
+INSERT INTO `staff` (`id`, `name`, `pin`) VALUES
+(1, 'debugger', '12345');
 
 --
 -- Indizes der exportierten Tabellen
@@ -239,6 +265,18 @@ ALTER TABLE `device_1_log`
   ADD PRIMARY KEY (`capture_id`);
 
 --
+-- Indizes für die Tabelle `device_2_log`
+--
+ALTER TABLE `device_2_log`
+  ADD PRIMARY KEY (`capture_id`);
+
+--
+-- Indizes für die Tabelle `device_settings`
+--
+ALTER TABLE `device_settings`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indizes für die Tabelle `events`
 --
 ALTER TABLE `events`
@@ -251,15 +289,9 @@ ALTER TABLE `event_log`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indizes für die Tabelle `settings`
+-- Indizes für die Tabelle `staff`
 --
-ALTER TABLE `settings`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indizes für die Tabelle `stuff`
---
-ALTER TABLE `stuff`
+ALTER TABLE `staff`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -270,13 +302,25 @@ ALTER TABLE `stuff`
 -- AUTO_INCREMENT für Tabelle `devices`
 --
 ALTER TABLE `devices`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT für Tabelle `device_1_log`
 --
 ALTER TABLE `device_1_log`
   MODIFY `capture_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10009;
+
+--
+-- AUTO_INCREMENT für Tabelle `device_2_log`
+--
+ALTER TABLE `device_2_log`
+  MODIFY `capture_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT für Tabelle `device_settings`
+--
+ALTER TABLE `device_settings`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT für Tabelle `events`
@@ -291,16 +335,10 @@ ALTER TABLE `event_log`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT für Tabelle `settings`
+-- AUTO_INCREMENT für Tabelle `staff`
 --
-ALTER TABLE `settings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT für Tabelle `stuff`
---
-ALTER TABLE `stuff`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `staff`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
