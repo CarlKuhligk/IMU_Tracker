@@ -169,7 +169,7 @@ class WebSocketHandler {
   }
 
   buildRegistrationMessage(socketData) {
-    var _registrationMessage = {"type": "sender", "value": [], "apikey": ""};
+    var _registrationMessage = {"type": "login", "apikey": ""};
     _registrationMessage['apikey'] = socketData['apikey'];
 
     return _registrationMessage;
