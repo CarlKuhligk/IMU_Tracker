@@ -2,7 +2,7 @@
 import 'dart:convert';
 
 //QRCode String:
-//{"ServerIp":"192.168.0.20:8080","apiKey":"23b651a79c9a5136d4751e6df9659ea15ed9df4768c211ede558d1ebd3b0c5bd"}
+//{"host":"192.168.0.20:8080","apikey":"23b651a79c9a5136d4751e6df9659ea15ed9df4768c211ede558d1ebd3b0c5bd"}
 
 checkQrCode(qrCodeType, qrCodeData) {
   var decodedJSON;
@@ -18,8 +18,8 @@ checkQrCode(qrCodeType, qrCodeData) {
     }
 
     if (decodeSucceeded &&
-        decodedJSON["ServerIp"] != null &&
-        decodedJSON["apiKey"] != null) {
+        decodedJSON["host"] != null &&
+        decodedJSON["apikey"] != null) {
       print("No Null values");
       return true;
     } else {

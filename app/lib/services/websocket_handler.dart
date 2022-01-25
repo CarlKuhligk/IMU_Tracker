@@ -21,9 +21,9 @@ class WebSocketHandler {
     int _webSocketMessageNumber = 0;
 
     var _registrationMessage = buildRegistrationMessage(socketData);
-    _apiKey = socketData['apiKey'];
+    _apiKey = socketData['apikey'];
     channel = IOWebSocketChannel.connect(
-      Uri.parse('ws://${socketData['ServerIp']}'),
+      Uri.parse('ws://${socketData['host']}'),
     );
     StreamSubscription? streamSubscription;
     return await Future.delayed(Duration(seconds: 1), () async {
@@ -130,7 +130,7 @@ class WebSocketHandler {
     var _registrationMessage = buildRegistrationMessage(socketData);
 
     var _webSocket = IOWebSocketChannel.connect(
-      Uri.parse('ws://${socketData['ServerIp']}'),
+      Uri.parse('ws://${socketData['host']}'),
     );
 
     return await Future.delayed(Duration(seconds: 1), () async {
@@ -170,7 +170,7 @@ class WebSocketHandler {
 
   buildRegistrationMessage(socketData) {
     var _registrationMessage = {"type": "sender", "value": [], "apikey": ""};
-    _registrationMessage['apikey'] = socketData['apiKey'];
+    _registrationMessage['apikey'] = socketData['apikey'];
 
     return _registrationMessage;
   }
