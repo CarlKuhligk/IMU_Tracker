@@ -26,7 +26,7 @@ class Device
     {
         $this->id = $id;
         $this->name = $name;
-        $this->dataTableName = 'device_' . $this->id;
+        $this->dataTableName = 'device_' . $this->id . "_log";
         echo "Device " . $this->id . " : Name: " . $this->name . "\n";
     }
 

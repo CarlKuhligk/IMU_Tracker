@@ -56,28 +56,43 @@ class DBController
 
     public function validateApiKey($apiKey)
     {
-        $result = $this->dbQuery("SELECT id, employee_id, employee FROM devices WHERE api_key = '$apiKey';");
+        $result = $this->dbQuery("SELECT id, staff_id FROM devices WHERE api_key = '$apiKey';");
         $row = $result->fetch_row();
         if (isset($row)) {
             $device = (object)[
                 'id' => $row[0],
-                'employee_id' => $row[1],
-                'employee' => $row[2]
+                'stuff_id' => $row[1],
+
             ];
             return $device;
         }
         return false;
     }
 
+    public function validatePin($pin, $callingDevice)
+    {
+        $result = $this->dbQuery("SELECT staff.id, staff.name FROM staff WHERE id = (SELECT devices.staff_id FROM devices WHERE devices.id =" . $callingDevice->id . ") AND staff.pin = '" . $pin . "';");
+        if (isset($result)) {
+            $row = $result->fetch_row();
+            if (isset($row)) {
+                $employee = (object)[
+                    'id' => $row[0],
+                    'name' => $row[1],
+                ];
+                return $employee;
+            }
+        }
+        return false;
+    }
+
     public function validateChannelId($id)
     {
-        $result = $this->dbQuery("SELECT id, employee_id, employee FROM devices WHERE id = '$id';");
+        $result = $this->dbQuery("SELECT id, staff_id FROM devices WHERE id = '$id';");
         $row = $result->fetch_row();
         if (isset($row)) {
             $device = (object)[
                 'id' => $row[0],
-                'employee_id' => $row[1],
-                'employee' => $row[2]
+                'staff_id' => $row[1]
             ];
             return $device;
         }
@@ -101,10 +116,10 @@ class DBController
         return $row;
     }
 
-    public function setDeviceStatus($id, $status)
-    {
-        return $this->dbRequest("UPDATE devices SET status='$status' WHERE id='$id';");
-    }
+    #public function setDeviceStatus($id, $status)
+    #{
+    #    return $this->dbRequest("UPDATE device_'$id'_log SET status='$status' WHERE id='$id';");
+    #}
 
     public function setObserverCount($id, $count)
     {
@@ -126,24 +141,26 @@ class DBController
 
     public function loadDevices()
     {
-        $result = $this->dbQuery("SELECT id, employee, status FROM devices;");
-        $resultCount = $result->num_rows;
-        $channels = array();
+        $result = $this->dbQuery("SELECT id, staff_id FROM devices;");
+        if (isset($result)) {
+            $resultCount = $result->num_rows;
+            $channels = array();
 
-        for ($i = 0; $i < $resultCount; $i++) {
-            $channelRaw =  $result->fetch_row();
-            $device = (object)[
-                'id' => $channelRaw[0],
-                'name' => $channelRaw[1],
-                'state' => $channelRaw[2],
-            ];
-            array_push($channels, $device);
+            for ($i = 0; $i < $resultCount; $i++) {
+                $channelRaw =  $result->fetch_row();
+                $device = (object)[
+                    'id' => $channelRaw[0],
+                    'name' => $channelRaw[1],
+                ];
+                array_push($channels, $device);
+            }
+            return $channels;
         }
-        return $channels;
+        return NULL;
     }
 
     public function resetDevices()
     {
-        $this->dbRequest("UPDATE devices SET online=0,observer=0 WHERE 1;");
+        $this->dbRequest("UPDATE devices SET online=0 WHERE 1;");
     }
 }

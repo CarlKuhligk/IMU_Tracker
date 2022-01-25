@@ -1,65 +1,15 @@
 <html>
   <head>
-    <style>
-      .content {
-        display: block;
-        width: min-content;
-      }
-
-      .label {
-        margin: 2px;
-      }
-
-      .inputContainer {
-        width: 530px;
-        display: grid;
-        border: 1px solid black;
-        border-bottom: 0px;
-        padding: 10px;
-      }
-
-      .outputContainer {
-        display: block;
-        border: 1px solid black;
-        padding: 10px;
-      }
-
-      .textbox {
-        margin-top: 5px;
-      }
-
-      .button {
-        background-color: #4caf50; /* Green */
-        border: none;
-        width: 100%;
-        color: white;
-        padding: 10px 0px 10px 0px;
-        text-align: center;
-        display: block;
-        font-size: 16px;
-      }
-      .button:hover {
-        background-color: darkgreen;
-      }
-
-      .dropdown {
-        width: 100%;
-        margin-right: 50px;
-      }
-
-      .scrollabletextbox {
-        width: 100%;
-        height: 250px;
-      }
-    </style>
+    <link href="styles.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
     <div class="content">
       <div class="inputContainer">
         <p class="label">select type and enter data</p>
         <select class="dropdown" id="dropdown" onchange="onChange()">
-          <option value="sender">sender</option>
-          <option value="subscribe">subscribe</option>
+          <option value="login">login</option>
+          <option value="logout">logout</option>
+          <option value="observe">observe</option>
           <option value="data">data</option>
           <option value="event">event</option>
         </select>
@@ -74,124 +24,22 @@
           id="outputField"
         ></textarea>
       </div>
+      <button class="button" onclick="generateQRCode()">New Device</button>
+    </div>
+
+    <div class="modal" id="qrCodeWindow">
+      <div>
+        <a class="button" onclick="closeModal()">X</a>
+        <h2>Activation Code</h2>
+        <div id="qrcode"></div>
+        <p>Scan this code with your phone!</p>
+      </div>
     </div>
 
     <script type="text/javascript" src="../source/jquery.js"></script>
-    <script>
-      const dataTnputNames = [
-        "accX",
-        "accY",
-        "accZ",
-        "gyrX",
-        "gyrY",
-        "gyrZ",
-        "temp",
-      ];
-      var textboxes = [];
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script type="text/javascript" src="coreFunctions.js"></script>
 
-      var socket;
-      // get server ip
-      var serverIP = $.get("/debug/getServerIP.php").done(function (data) {
-        // create a new WebSocket.
-        socket = new WebSocket("ws://" + data + ":8080");
-
-        // socket message callback
-        socket.onmessage = function (e) {
-          outputField.append(e.data);
-          console.log(e.data);
-        };
-      });
-
-      // generate textboxes
-      for (var i = 0; i < 7; i++) {
-        newTextbox = document.createElement("input");
-        newTextbox.setAttribute("name", dataTnputNames[i]);
-        newTextbox.setAttribute("placeholder", dataTnputNames[i] + " value");
-        if (i > 0) {
-          newTextbox.style.display = "none";
-        }
-        //textboxes[i] = newTextbox;
-        $(".inputContainer").append(newTextbox);
-      }
-
-      // reference objects
-      var textboxes = [];
-      for (var i = 0; i < 7; i++) {
-        textboxes.push(document.getElementsByName(dataTnputNames[i])[0]);
-      }
-
-      var dropdown = document.getElementById("dropdown");
-      var outputField = document.getElementById("outputField");
-
-      $(document).ready(function () {
-        textboxes[0].placeholder = "enter api key";
-      });
-
-      // dropdown change
-      function onChange() {
-        textboxes[0].value = "";
-        switch (dropdown.value) {
-          case "sender":
-            textboxes[0].placeholder = "enter api key";
-            showAccGyrTextbox(false);
-            break;
-          case "subscribe":
-            textboxes[0].placeholder = "enter channel id";
-            textboxes[1].placeholder = "ture or false";
-            showAccGyrTextbox(false);
-            textboxes[1].style.display = "block";
-            break;
-          case "data":
-            textboxes[0].placeholder = dataTnputNames[0] + " value";
-            showAccGyrTextbox(true);
-            break;
-          case "event":
-            textboxes[0].placeholder = "enter event data";
-            showAccGyrTextbox(false);
-            break;
-        }
-      }
-
-      function showAccGyrTextbox(state) {
-        for (var i = 0; i < 6; i++) {
-          textboxes[i + 1].style.display = state ? "block" : "none";
-        }
-      }
-
-      var message = { type: "", value: [] };
-
-      function onClick() {
-        if (textboxes[0].value != "") {
-          //set type
-          message.type = dropdown.value;
-          //set value
-          switch (dropdown.value) {
-            case "sender":
-              message.apikey = textboxes[0].value;
-              console.log("sender");
-              break;
-            case "subscribe":
-              message.channel_id = textboxes[0].value;
-              message.subscribe = textboxes[1].value;
-              console.log("subscribe");
-              break;
-            case "data":
-              message.value = [];
-              for (var i = 0; i < 7; i++) {
-                message.value.push(textboxes[i].value);
-              }
-              console.log("data");
-              break;
-            case "event":
-              message.value = textboxes[0].value;
-              console.log("event");
-              break;
-          }
-          socket.send(JSON.stringify(message));
-        } else {
-          alert("no value");
-        }
-      }
-    </script>
+    <script></script>
   </body>
 </html>
