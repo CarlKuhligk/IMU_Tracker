@@ -10,11 +10,7 @@ class Device
     public $online = false;
     public $state = 0; // reserved
     public $observerCount = 0;
-    # position
-    public $alarmLatitude;
-    public $alarmLongitude;
-    public $lastLatitude;
-    public $lastLongitude;
+    public Settings $settings;
 
     #battery
     public $battery;
@@ -112,4 +108,16 @@ class Device
             return False;
         }
     }
+}
+
+class Settings
+{
+    public $accMax;
+    public $accMin;
+    public $gyrMax;
+    public $gyrMin;
+    public $idleTime;
+    public $batteryWarning;
+    public $timeout;
+    public $senseFreq;
 }
