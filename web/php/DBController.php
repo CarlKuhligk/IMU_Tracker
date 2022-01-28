@@ -126,7 +126,7 @@ class DBController
         return $this->dbRequest("UPDATE devices SET observer='$count' WHERE id = '$id';");
     }
 
-    public function writeDeviceData($tableName, $data)
+    public function writeDeviceData($tableName, $data, $state)
     {
         $accX = $data[0];
         $accY = $data[1];
@@ -136,7 +136,7 @@ class DBController
         $gyrZ = $data[5];
         $temp = $data[6];
         $batt = $data[7];
-        return $this->dbRequest("UPDATE $tableName SET accX=$accX, accY=$accY, accZ=$accZ, gyrX=$gyrX, gyrY=$gyrY, gyrZ=$gyrZ, temp=$temp, battery=$batt WHERE timestamp = (SELECT MIN(timestamp) FROM $tableName) ORDER BY id LIMIT 1;");
+        return $this->dbRequest("INSERT $tableName (accX, accY, accZ, gyrX, gyrY, gyrZ, temp, battery, status) VALUES ($accX, $accY,$accZ,$gyrX,$gyrY,$gyrZ,$temp,$batt,$state);");
     }
 
     public function loadDevices()

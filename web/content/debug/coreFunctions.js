@@ -1,4 +1,13 @@
-const dataTnputNames = ["accX", "accY", "accZ", "gyrX", "gyrY", "gyrZ", "temp"];
+const dataTnputNames = [
+  "accX",
+  "accY",
+  "accZ",
+  "gyrX",
+  "gyrY",
+  "gyrZ",
+  "temp",
+  "battery",
+];
 var textboxes = [];
 
 var socket;
@@ -15,7 +24,7 @@ var serverIP = $.get("../debug/getServerIP.php").done(function (data) {
 });
 
 // generate textboxes
-for (var i = 0; i < 7; i++) {
+for (var i = 0; i < dataTnputNames.length; i++) {
   newTextbox = document.createElement("input");
   newTextbox.setAttribute("name", dataTnputNames[i]);
   newTextbox.setAttribute("placeholder", dataTnputNames[i] + " value");
@@ -28,7 +37,7 @@ for (var i = 0; i < 7; i++) {
 
 // reference objects
 var textboxes = [];
-for (var i = 0; i < 7; i++) {
+for (var i = 0; i < dataTnputNames.length; i++) {
   textboxes.push(document.getElementsByName(dataTnputNames[i])[0]);
 }
 
@@ -69,7 +78,7 @@ function onChange() {
 }
 
 function showAccGyrTextbox(state) {
-  for (var i = 0; i < 6; i++) {
+  for (var i = 0; i < dataTnputNames.length - 1; i++) {
     textboxes[i + 1].style.display = state ? "block" : "none";
   }
 }
@@ -97,7 +106,7 @@ function onClick() {
         break;
       case "data":
         message.value = [];
-        for (var i = 0; i < 7; i++) {
+        for (var i = 0; i < dataTnputNames.length; i++) {
           message.value.push(textboxes[i].value);
         }
         console.log("data");
@@ -120,7 +129,7 @@ function generateQRCode() {
   var message = {};
   message.apikey =
     "cceb996336b98f2c9cb6136d96f47457b3dc8b301012d468a4634c8fefafe002";
-  message.host = "100.100.342.234:8080";
+  message.host = serverIP.responseText;
 
   messageText = JSON.stringify(message);
 
