@@ -1,6 +1,7 @@
 //dart packages
 import 'dart:convert';
 import 'dart:async';
+import 'dart:io';
 //additional packages
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
@@ -129,42 +130,37 @@ class WebSocketHandler {
 
     var _registrationMessage = buildRegistrationMessage(socketData);
 
-    var _webSocket = IOWebSocketChannel.connect(
-      Uri.parse('ws://${socketData['host']}'),
-    );
+    try {
+      var _webSocket = await WebSocket.connect('ws://${socketData['host']}');
+      _isWebsocketRunning = true;
+      _webSocket.add(jsonEncode(_registrationMessage));
 
-    return await Future.delayed(Duration(seconds: 1), () async {
-      if (_webSocket.innerWebSocket != null) {
-        _isWebsocketRunning = true;
-        _webSocket.sink.add(jsonEncode(_registrationMessage));
+      _webSocket.listen(
+        (message) {
+          var handledMessage = messageHandler(message);
+          if (handledMessage.hasMessageRightFormat &&
+              handledMessage.webSocketResponseType ==
+                  responseList['deviceRegistered']!.responseNumber) {
+            _isWebsocketRunning = true;
+            _webSocket.close();
+          } else {
+            _webSocket.close();
+          }
+          _webSocketMessageNumber = handledMessage.webSocketResponseType;
+        },
+        onError: (err) {
+          _isWebsocketRunning = false;
+        },
+      );
+    } catch (e) {
+      _isWebsocketRunning = false;
+      return WebSocketTestResultReturnType(
+          _isWebsocketRunning, _webSocketMessageNumber);
+    }
 
-        _webSocket.stream.listen(
-          (message) {
-            var handledMessage = messageHandler(message);
-            if (handledMessage.hasMessageRightFormat &&
-                handledMessage.webSocketResponseType ==
-                    responseList['deviceRegistered']!.responseNumber) {
-              _isWebsocketRunning = true;
-              _webSocket.sink.close();
-            } else {
-              _webSocket.sink.close();
-            }
-            _webSocketMessageNumber = handledMessage.webSocketResponseType;
-          },
-          onError: (err) {
-            _isWebsocketRunning = false;
-          },
-        );
-      } else {
-        if (_webSocket.innerWebSocket != null) {
-          _webSocket.sink.close();
-        }
-      }
-
-      return await Future.delayed(Duration(seconds: 1), () {
-        return WebSocketTestResultReturnType(
-            _isWebsocketRunning, _webSocketMessageNumber);
-      });
+    return await Future.delayed(Duration(milliseconds: 500), () {
+      return WebSocketTestResultReturnType(
+          _isWebsocketRunning, _webSocketMessageNumber);
     });
   }
 
