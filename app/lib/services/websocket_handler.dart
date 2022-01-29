@@ -2,9 +2,6 @@
 import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
-//additional packages
-import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:web_socket_channel/io.dart';
 //project specific types
 import 'package:imu_tracker/data_structures/function_return_types.dart';
 import 'package:imu_tracker/data_structures/response_types.dart';
@@ -12,7 +9,7 @@ import 'package:imu_tracker/data_structures/response_types.dart';
 class WebSocketHandler {
 //Websocket Variables
   var sucessfullyRegistered = false;
-  late IOWebSocketChannel channel; //initialize a websocket channel
+  late WebSocket channel; //initialize a websocket channel
   final streamController = StreamController.broadcast();
   bool isWebsocketRunning = false; //status of a websocket
   int retryLimit = 3;
@@ -23,57 +20,53 @@ class WebSocketHandler {
 
     var _registrationMessage = buildRegistrationMessage(socketData);
     _apiKey = socketData['apikey'];
-    channel = IOWebSocketChannel.connect(
-      Uri.parse('ws://${socketData['host']}'),
-    );
+
     StreamSubscription? streamSubscription;
-    return await Future.delayed(Duration(seconds: 1), () async {
-      if (channel.innerWebSocket != null) {
-        streamController.addStream(channel.stream);
-        isWebsocketRunning = true;
-        channel.sink.add(jsonEncode(_registrationMessage));
 
-        streamSubscription = streamController.stream.listen(
-          (message) {
-            var handledMessage = messageHandler(message);
-            if (handledMessage.hasMessageRightFormat &&
-                handledMessage.webSocketResponseType ==
-                    responseList['deviceRegistered']!.responseNumber) {
-              isWebsocketRunning = true;
-              sucessfullyRegistered = true;
-            } else {
-              channel.sink.close();
-            }
-            _webSocketMessageNumber = handledMessage.webSocketResponseType;
-          },
-          onError: (err) {
-            isWebsocketRunning = false;
-          },
-        );
-      } else {
-        if (channel.innerWebSocket != null) {
-          channel.sink.close();
-        }
+    try {
+      channel = await WebSocket.connect('ws://${socketData['host']}');
+      isWebsocketRunning = true;
+      channel.add(jsonEncode(_registrationMessage));
+
+      streamSubscription = channel.listen(
+        (message) {
+          var handledMessage = messageHandler(message);
+          if (handledMessage.hasMessageRightFormat &&
+              handledMessage.webSocketResponseType ==
+                  responseList['deviceRegistered']!.responseNumber) {
+            isWebsocketRunning = true;
+            sucessfullyRegistered = true;
+          } else {
+            channel.close();
+          }
+          _webSocketMessageNumber = handledMessage.webSocketResponseType;
+        },
+        onError: (err) {
+          isWebsocketRunning = false;
+        },
+      );
+    } catch (e) {
+      isWebsocketRunning = false;
+      return _webSocketMessageNumber;
+    }
+
+    return await Future.delayed(Duration(seconds: 1), () {
+      if (streamSubscription != null) {
+        streamSubscription.cancel();
       }
-
-      return await Future.delayed(Duration(seconds: 1), () {
-        if (streamSubscription != null) {
-          streamSubscription!.cancel();
-        }
-        return _webSocketMessageNumber;
-      });
+      return _webSocketMessageNumber;
     });
   }
 
   void sendMessage(messageString) {
     if (messageString.isNotEmpty) {
-      channel.sink.add(jsonEncode(messageString));
+      channel.add(jsonEncode(messageString));
     }
   }
 
   void registerAsSender(socketData) {
     var _registrationMessage = buildRegistrationMessage(socketData);
-    channel.sink.add(jsonEncode(_registrationMessage));
+    channel.add(jsonEncode(_registrationMessage));
     print(_registrationMessage);
   }
 
@@ -118,7 +111,7 @@ class WebSocketHandler {
 
   void dispose() {
     if (channel != null) {
-      channel.sink.close();
+      channel.close();
     }
   }
 
