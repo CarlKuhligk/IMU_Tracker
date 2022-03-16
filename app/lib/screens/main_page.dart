@@ -1,5 +1,6 @@
 //flutter packages
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 //additional packages
 import 'package:sensors/sensors.dart';
@@ -57,9 +58,12 @@ class _MyMainPageState extends State<MainPage> {
     });
     gyroscopeEvents.listen((GyroscopeEvent event) {
       gyroscopeValues = event;
-      if (websocket.sucessfullyRegistered)
+      if (websocket.sucessfullyRegistered) {
+        //print(websocket.channel.readyState);
+        //print(WebSocket.OPEN);
         websocket.buildValueMessage(
             accelerationValues, gyroscopeValues, 5); //To be implemented
+      }
     });
   }
 

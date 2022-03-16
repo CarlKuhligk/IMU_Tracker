@@ -26,9 +26,10 @@ class WebSocketHandler {
     try {
       channel = await WebSocket.connect('ws://${socketData['host']}');
       isWebsocketRunning = true;
+      streamController.addStream(channel);
       channel.add(jsonEncode(_registrationMessage));
 
-      streamSubscription = channel.listen(
+      streamSubscription = streamController.stream.listen(
         (message) {
           var handledMessage = messageHandler(message);
           if (handledMessage.hasMessageRightFormat &&
@@ -37,7 +38,7 @@ class WebSocketHandler {
             isWebsocketRunning = true;
             sucessfullyRegistered = true;
           } else {
-            channel.close();
+            //channel.close();
           }
           _webSocketMessageNumber = handledMessage.webSocketResponseType;
         },
@@ -110,9 +111,7 @@ class WebSocketHandler {
   }
 
   void dispose() {
-    if (channel != null) {
-      channel.close();
-    }
+    channel.close();
   }
 
   Future<WebSocketTestResultReturnType> testWebSocketConnection(
