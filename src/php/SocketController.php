@@ -10,7 +10,6 @@ include_once 'Device.php';
 
 include_once 'Response.php';
 
-use DBConfig;
 use DBController;
 use Device;
 
@@ -219,7 +218,7 @@ class SocketController implements MessageComponentInterface
                         $from->send($this->response(RP_DEVICE_CANT_REGISTER_AS_SUBSCRIBER));
                     }
                 } else {
-                    $from->send($this->response(RP_SUBSCRIBER_MISSING_REGESTRATION_STATE));
+                    $from->send($this->response(RP_SUBSCRIBER_MISSING_REGISTRATION_STATE));
                 }
             } else {
                 $from->send($this->response(RP_INVALID_DEVICE_ID));
@@ -241,7 +240,7 @@ class SocketController implements MessageComponentInterface
                 }
             }
         } else {
-            $from->send($this->response(PR_DATA_ITEM_CONUT_DOESNT_MATCH));
+            $from->send($this->response(PR_DATA_ITEM_COUNT_DOESNT_MATCH));
         }
 
         $authenticated = false;
