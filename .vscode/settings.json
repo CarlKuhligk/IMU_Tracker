@@ -1,3 +1,7 @@
 {
-  "python.formatting.provider": "black"
+  "python.formatting.provider": "black",
+  "python.linting.enabled": false,
+  "python.linting.pylintEnabled": true,
+  "python.linting.pycodestyleEnabled": false,
+  "python.linting.pydocstyleEnabled": false
 }
