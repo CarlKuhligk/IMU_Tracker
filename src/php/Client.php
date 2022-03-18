@@ -1,12 +1,14 @@
 <?php
+class Client {
+  public $id;
 
-class Client
-{
-    public $id;
-    public $ip = "";
+  public $ip =  "";
 
-    public function __construct($rescourdeId)
-    {
+  public function __construct($rescourdeId)
+  {
+
         $this->id = $rescourdeId;
-    }
+  }
+
 }
+
