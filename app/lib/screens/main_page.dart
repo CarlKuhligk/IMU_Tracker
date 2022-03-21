@@ -1,4 +1,6 @@
 //flutter packages
+// ignore_for_file: prefer_typing_uninitialized_variables
+
 import 'package:flutter/material.dart';
 import 'dart:io';
 
@@ -32,7 +34,7 @@ class _MyMainPageState extends State<MainPage> {
     Future.delayed(Duration.zero, () async {
       int receivedMessage =
           await websocket.connectWebSocket(authenticationData);
-      if (websocket.sucessfullyRegistered) {
+      if (websocket.successfullyRegistered) {
         setState(() {});
         websocket.streamController.stream.listen(
           (event) {
@@ -58,11 +60,11 @@ class _MyMainPageState extends State<MainPage> {
     });
     gyroscopeEvents.listen((GyroscopeEvent event) {
       gyroscopeValues = event;
-      if (websocket.sucessfullyRegistered) {
+      if (websocket.successfullyRegistered) {
         //print(websocket.channel.readyState);
         //print(WebSocket.OPEN);
-        websocket.buildValueMessage(
-            accelerationValues, gyroscopeValues, 5); //To be implemented
+        websocket.buildValueMessage(accelerationValues, gyroscopeValues,
+            5); //TODO implement all necessary values
       }
     });
   }
@@ -71,14 +73,15 @@ class _MyMainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("IMU_Tracker DEMO"),
+          title:
+              const Text("IMU_Tracker DEMO"), //TODO Change title before release
         ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               _getCheckBox(websocket.isWebsocketRunning &&
-                  websocket.sucessfullyRegistered),
+                  websocket.successfullyRegistered),
             ],
           ),
         ));
@@ -86,13 +89,13 @@ class _MyMainPageState extends State<MainPage> {
 
   _getCheckBox(bool checkBoxState) {
     if (checkBoxState) {
-      return Icon(
+      return const Icon(
         Icons.wifi,
         color: Colors.green,
         size: 80.0,
       );
     } else {
-      return Icon(
+      return const Icon(
         Icons.wifi_off,
         color: Colors.red,
         size: 80.0,

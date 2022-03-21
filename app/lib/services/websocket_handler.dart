@@ -1,4 +1,6 @@
 //dart packages
+// ignore_for_file: prefer_typing_uninitialized_variables
+
 import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
@@ -8,7 +10,7 @@ import 'package:imu_tracker/data_structures/response_types.dart';
 
 class WebSocketHandler {
 //Websocket Variables
-  var sucessfullyRegistered = false;
+  var successfullyRegistered = false;
   late WebSocket channel; //initialize a websocket channel
   final streamController = StreamController.broadcast();
   bool isWebsocketRunning = false; //status of a websocket
@@ -36,7 +38,7 @@ class WebSocketHandler {
               handledMessage.webSocketResponseType ==
                   responseList['deviceRegistered']!.responseNumber) {
             isWebsocketRunning = true;
-            sucessfullyRegistered = true;
+            successfullyRegistered = true;
           } else {
             //channel.close();
           }
@@ -51,7 +53,7 @@ class WebSocketHandler {
       return _webSocketMessageNumber;
     }
 
-    return await Future.delayed(Duration(seconds: 1), () {
+    return await Future.delayed(const Duration(seconds: 1), () {
       if (streamSubscription != null) {
         streamSubscription.cancel();
       }
@@ -77,7 +79,7 @@ class WebSocketHandler {
     try {
       decodedJSON = json.decode(message) as Map<String, dynamic>;
       decodeSucceeded = true;
-    } on FormatException catch (e) {
+    } on FormatException {
       print('The provided string is not valid JSON');
       return MessageHandlerReturnType(false, 0);
     }
@@ -150,7 +152,7 @@ class WebSocketHandler {
           _isWebsocketRunning, _webSocketMessageNumber);
     }
 
-    return await Future.delayed(Duration(milliseconds: 500), () {
+    return await Future.delayed(const Duration(milliseconds: 500), () {
       return WebSocketTestResultReturnType(
           _isWebsocketRunning, _webSocketMessageNumber);
     });

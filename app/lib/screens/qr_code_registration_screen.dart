@@ -1,4 +1,6 @@
 //dart packages
+// ignore_for_file: prefer_typing_uninitialized_variables
+
 import 'dart:developer';
 import 'dart:io';
 import 'dart:convert';
@@ -58,8 +60,8 @@ class _RegistrationScreen extends State<RegistrationScreen> {
               fit: BoxFit.contain,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  const Text('Bitte den QR-Code scannen'),
+                children: const <Widget>[
+                  Text('Bitte den QR-Code scannen'),
                 ],
               ),
             ),

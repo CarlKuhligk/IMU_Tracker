@@ -1,4 +1,6 @@
 //flutter packages
+// ignore_for_file: prefer_typing_uninitialized_variables, deprecated_member_use
+
 import 'package:flutter/material.dart';
 
 //project specific types
@@ -30,7 +32,7 @@ class QrCodeFoundPage extends StatelessWidget {
           children: <Widget>[
             Table(
               border: TableBorder.symmetric(),
-              columnWidths: {
+              columnWidths: const {
                 0: FractionColumnWidth(0.2),
                 1: FractionColumnWidth(0.8)
               },
@@ -41,8 +43,8 @@ class QrCodeFoundPage extends StatelessWidget {
                       padding: const EdgeInsets.all(8.0),
                       child: _getCheckBox(qrCheckResult),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
                       child: Text('QR - Code Format',
                           style: TextStyle(fontSize: 20.0)),
                     )
@@ -56,8 +58,8 @@ class QrCodeFoundPage extends StatelessWidget {
                         child: _getCheckBox(
                             webSocketTestResult.isWebSocketConnected),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
+                      const Padding(
+                        padding: EdgeInsets.all(8.0),
                         child: Text('Verbindung zum Server',
                             style: TextStyle(fontSize: 20.0)),
                       )
@@ -79,7 +81,7 @@ class QrCodeFoundPage extends StatelessWidget {
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
                             '${_getWebsocketResponseString(webSocketTestResult.webSocketResponseType)}',
-                            style: TextStyle(fontSize: 20.0)),
+                            style: const TextStyle(fontSize: 20.0)),
                       )
                     ],
                   ),
@@ -93,22 +95,22 @@ class QrCodeFoundPage extends StatelessWidget {
                 onPressed: () => {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => MainPage(),
+                      builder: (context) => const MainPage(),
                     ),
                   )
                 },
-                child: new Text("App starten"),
+                child: const Text("App starten"),
               )
             else
               RaisedButton(
                 onPressed: () => {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => RegistrationScreen(),
+                      builder: (context) => const RegistrationScreen(),
                     ),
                   )
                 },
-                child: new Text("QR - Code erneut scannen"),
+                child: const Text("QR - Code erneut scannen"),
               ),
           ],
         ),
@@ -118,13 +120,13 @@ class QrCodeFoundPage extends StatelessWidget {
 
   _getCheckBox(bool checkBoxState) {
     if (checkBoxState) {
-      return Icon(
+      return const Icon(
         Icons.check_box,
         color: Colors.green,
         size: 24.0,
       );
     } else {
-      return Icon(
+      return const Icon(
         Icons.indeterminate_check_box,
         color: Colors.red,
         size: 24.0,

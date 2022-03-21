@@ -27,9 +27,10 @@ class LocalStorageService {
     var _authenticationValues = _preferences.getString(authenticationValuesKey);
     if (_authenticationValues != null) {
       return jsonDecode(_authenticationValues);
-    } else
-      //! to be looked at further
+    } else {
+      //TODO Implement error handling
       return "";
+    }
   }
 
   static void setDeviceIsRegistered(isRegistered) {

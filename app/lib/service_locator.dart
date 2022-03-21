@@ -8,8 +8,8 @@ import 'package:imu_tracker/services/websocket_handler.dart';
 final getIt = GetIt.instance;
 
 Future setupLocator() async {
-  var LocalStorageInstance = await LocalStorageService.getInstance();
-  getIt.registerSingleton<LocalStorageService>(LocalStorageInstance);
+  var localStorageInstance = await LocalStorageService.getInstance();
+  getIt.registerSingleton<LocalStorageService>(localStorageInstance);
 
   getIt.registerLazySingleton<WebSocketHandler>(() => WebSocketHandler());
 }
