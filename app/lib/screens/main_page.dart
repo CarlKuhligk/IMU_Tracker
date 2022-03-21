@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'dart:io';
+import 'dart:async';
 
 //additional packages
 import 'package:sensors/sensors.dart';
@@ -24,6 +25,11 @@ class MainPage extends StatefulWidget {
 class _MyMainPageState extends State<MainPage> {
   var websocket = getIt<WebSocketHandler>();
 
+  StreamSubscription? accelerationSubscription;
+  StreamSubscription? gyroscopeSubscription;
+  Timer? timer;
+  UserAccelerometerEvent? event;
+
   var accelerationValues;
   var gyroscopeValues;
   String _connectionStateText = 'Not Connected';
@@ -35,6 +41,7 @@ class _MyMainPageState extends State<MainPage> {
       int receivedMessage =
           await websocket.connectWebSocket(authenticationData);
       if (websocket.successfullyRegistered) {
+        startTransmissionInterval();
         setState(() {});
         websocket.streamController.stream.listen(
           (event) {
@@ -55,18 +62,6 @@ class _MyMainPageState extends State<MainPage> {
     });
 
     super.initState();
-    accelerometerEvents.listen((AccelerometerEvent event) {
-      accelerationValues = event;
-    });
-    gyroscopeEvents.listen((GyroscopeEvent event) {
-      gyroscopeValues = event;
-      if (websocket.successfullyRegistered) {
-        //print(websocket.channel.readyState);
-        //print(WebSocket.OPEN);
-        websocket.buildValueMessage(accelerationValues, gyroscopeValues,
-            5); //TODO implement all necessary values
-      }
-    });
   }
 
   @override
@@ -80,14 +75,14 @@ class _MyMainPageState extends State<MainPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              _getCheckBox(websocket.isWebsocketRunning &&
+              _getConnectionStateIcon(websocket.isWebsocketRunning &&
                   websocket.successfullyRegistered),
             ],
           ),
         ));
   }
 
-  _getCheckBox(bool checkBoxState) {
+  _getConnectionStateIcon(bool checkBoxState) {
     if (checkBoxState) {
       return const Icon(
         Icons.wifi,
@@ -100,6 +95,38 @@ class _MyMainPageState extends State<MainPage> {
         color: Colors.red,
         size: 80.0,
       );
+    }
+  }
+
+  startTransmissionInterval() {
+    // if the accelerometer subscription hasn't been created, go ahead and create it
+    if (accelerationSubscription == null) {
+      accelerationSubscription =
+          userAccelerometerEvents.listen((UserAccelerometerEvent eve) {
+        accelerationValues = eve;
+      });
+    } else {
+      // it has already ben created so just resume it
+      accelerationSubscription?.resume();
+    }
+
+    if (gyroscopeSubscription == null) {
+      gyroscopeSubscription = gyroscopeEvents.listen((GyroscopeEvent eve) {
+        gyroscopeValues = eve;
+      });
+    } else {
+      // it has already ben created so just resume it
+      gyroscopeSubscription?.resume();
+    }
+
+    // Intervall for websocketconnection
+    if (timer == null || !timer!.isActive) {
+      timer = Timer.periodic(const Duration(milliseconds: 200), (_) {
+        if (websocket.successfullyRegistered) {
+          websocket.buildValueMessage(accelerationValues, gyroscopeValues,
+              5); //TODO implement all necessary values
+        }
+      });
     }
   }
 }
