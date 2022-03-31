@@ -3,5 +3,10 @@
   "python.linting.enabled": false,
   "python.linting.pylintEnabled": true,
   "python.linting.pycodestyleEnabled": false,
-  "python.linting.pydocstyleEnabled": false
+  "python.linting.pydocstyleEnabled": false,
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#54182B",
+    "titleBar.activeBackground": "#75213D",
+    "titleBar.activeForeground": "#FEFBFC"
+  }
 }

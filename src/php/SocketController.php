@@ -4,6 +4,7 @@ namespace IMUSocketCommunication;
 
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
+use \Datetime;
 
 include_once 'DBController.php';
 include_once 'Device.php';
@@ -24,16 +25,25 @@ class SocketController implements MessageComponentInterface
     private $clients = array();
     private $devices = array();
     private $Database;
+    private $date;
+
 
     function __construct()
     {
+        // used for timestaps in colsole!
+        $date = new DateTime();
+
         // read env variables from docker container
-        $this->Database = new DBController(getenv("MYSQL_HOST"), "security_service", "C15/5LOa-y8OK4jU", "security_tracker");
+        $this->Database = new DBController(getenv("MYSQL_HOST"), "web_socket_server", "NGyOxz_.8jfzBp_E", "security_motion_tracker");
         if ($this->Database->connect() === false) {
-            die("Connection to database failed!");
+            die("Connection to database failed!\n");
+        } else {
+            echo  $date->getTimestamp() . " Database connection established.\n";
         }
+        echo $date->getTimestamp() . "Resetting online state of all devices.\n";
         $this->Database->resetDevices();
         // load all devices
+        echo $date->getTimestamp() . "Load all available devices from database:\n";
         $deviceList = $this->Database->loadDevices();
         foreach ($deviceList as $device) {
             $this->devices[$device->id] = new Device($device->id, $device->name);
@@ -46,7 +56,7 @@ class SocketController implements MessageComponentInterface
     {
         // Store the new connection to send messages to later
         $this->clients[$clientConnection->resourceId] = $clientConnection;
-        echo "New connection! ({$clientConnection->resourceId})\n";
+        echo $date->getTimestamp() . "New connection! ({$clientConnection->resourceId})\n";
     }
 
     public function onMessage(ConnectionInterface $from, $message)
@@ -83,12 +93,12 @@ class SocketController implements MessageComponentInterface
         }
         // The connection is closed, remove it, as we can no longer send it messages
         unset($this->clients[$clientConnection->resourceId]);
-        echo "Connection {$clientConnection->resourceId} has disconnected\n";
+        echo $date->getTimestamp() . "Connection {$clientConnection->resourceId} has disconnected\n";
     }
 
     public function onError(ConnectionInterface $conn, \Exception $e)
     {
-        echo "An error has occurred: {$e->getMessage()}\n";
+        echo $date->getTimestamp() . "An error has occurred: {$e->getMessage()}\n";
         $conn->close();
     }
 
@@ -96,16 +106,20 @@ class SocketController implements MessageComponentInterface
     public function handleData(ConnectionInterface $from, $data)
     {
         switch ($data->type) {
-            case "login":
+                # login
+            case "i":
                 $this->handleLogin($from, $data);
                 break;
-            case "logout":
+                # logout
+            case "o":
                 $this->handleLogout($from, $data);
                 break;
-            case "subscribe":
+                # subscribe
+            case "s":
                 $this->handleSubscription($from, $data);
                 break;
-            case "data":
+                # data
+            case "d":
                 $this->handleTrackingInformations($from, $data);
                 break;
             default:

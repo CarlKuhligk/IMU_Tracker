@@ -92,11 +92,12 @@ pin<y:LabelModel><y:ErdAttributesNodeLabelModel/></y:LabelModel><y:ModelParamete
     <node id="n4">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="88.03264000000001" width="103.59296000000006" x="829.1935999999994" y="615.1373094292676"/>
+          <y:Geometry height="97.53535999999997" width="103.59296000000006" x="829.1935999999994" y="605.6345894292676"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="56.04296875" x="23.774995624999974" xml:space="preserve" y="4.0">event_log</y:NodeLabel>
-          <y:NodeLabel alignment="left" autoSizePolicy="content" configuration="com.yworks.entityRelationship.label.attributes" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="48.103515625" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="top" visible="true" width="100.7265625" x="2.0" xml:space="preserve" y="30.701171875">device_id
+          <y:NodeLabel alignment="left" autoSizePolicy="content" configuration="com.yworks.entityRelationship.label.attributes" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="62.8046875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="top" visible="true" width="100.7265625" x="2.0" xml:space="preserve" y="30.701171875">id
+device_id
 event_id
 trigger_capture_id
 <y:LabelModel><y:ErdAttributesNodeLabelModel/></y:LabelModel><y:ModelParameter><y:ErdAttributesNodeLabelModelParameter/></y:ModelParameter></y:NodeLabel>
@@ -124,8 +125,8 @@ name<y:LabelModel><y:ErdAttributesNodeLabelModel/></y:LabelModel><y:ModelParamet
     <edge id="e0" source="n4" target="n1">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="26.083509148340227" tx="0.0" ty="-24.44288944254991">
-            <y:Point x="734.8240000000001" y="685.2371385776078"/>
+          <y:Path sx="0.0" sy="35.45270440998547" tx="0.0" ty="-24.44288944254991">
+            <y:Point x="734.8240000000001" y="689.854973839253"/>
             <y:Point x="734.8240000000001" y="615.1107399867177"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
@@ -137,8 +138,8 @@ name<y:LabelModel><y:ErdAttributesNodeLabelModel/></y:LabelModel><y:ModelParamet
     <edge id="e1" source="n4" target="n0">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="-8.700408954300542" tx="0.0" ty="-23.723040000000083">
-            <y:Point x="774.8240000000001" y="650.453220474967"/>
+          <y:Path sx="0.0" sy="7.399781776457871" tx="0.0" ty="-23.723040000000083">
+            <y:Point x="774.8240000000001" y="661.8020512057254"/>
             <y:Point x="774.8240000000001" y="364.4759999999999"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
@@ -160,8 +161,8 @@ name<y:LabelModel><y:ErdAttributesNodeLabelModel/></y:LabelModel><y:ModelParamet
     <edge id="e3" source="n4" target="n5">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="11.299591045699458" tx="0.0" ty="6.676959999999951">
-            <y:Point x="754.8240000000001" y="670.453220474967"/>
+          <y:Path sx="0.0" sy="22.022050108639974" tx="0.0" ty="6.676959999999951">
+            <y:Point x="754.8240000000001" y="676.4243195379075"/>
             <y:Point x="754.8240000000001" y="498.8759999999999"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>

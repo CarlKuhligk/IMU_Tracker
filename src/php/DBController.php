@@ -56,7 +56,7 @@ class DBController
 
     public function validateApiKey($apiKey)
     {
-        $result = $this->dbQuery("SELECT id, staff_id FROM devices WHERE api_key = '$apiKey';");
+        $result = $this->dbQuery("SELECT id, staff_id FROM devices WHERE apikey = '$apiKey';");
         $row = $result->fetch_row();
         if (isset($row)) {
             $device = (object)[
@@ -116,27 +116,14 @@ class DBController
         return $row;
     }
 
-    #public function setDeviceStatus($id, $status)
-    #{
-    #    return $this->dbRequest("UPDATE device_'$id'_log SET status='$status' WHERE id='$id';");
-    #}
-
-    public function setObserverCount($id, $count)
+    public function writeDeviceData($tableName, $data)
     {
-        return $this->dbRequest("UPDATE devices SET observer='$count' WHERE id = '$id';");
-    }
+        $acceleration = $data["a"];
+        $rotation = $data["r"];
+        $temperature = $data["tp"];
+        $battery = $data["b"];
 
-    public function writeDeviceData($tableName, $data, $state)
-    {
-        $accX = $data[0];
-        $accY = $data[1];
-        $accZ = $data[2];
-        $gyrX = $data[3];
-        $gyrY = $data[4];
-        $gyrZ = $data[5];
-        $temp = $data[6];
-        $batt = $data[7];
-        return $this->dbRequest("INSERT $tableName (accX, accY, accZ, gyrX, gyrY, gyrZ, temp, battery, status) VALUES ($accX, $accY,$accZ,$gyrX,$gyrY,$gyrZ,$temp,$batt,$state);");
+        return $this->dbRequest("INSERT $tableName (acceleration, rotation, temperature, battery) VALUES ($acceleration, $rotation,$temperature,$battery);");
     }
 
     public function loadDevices()
