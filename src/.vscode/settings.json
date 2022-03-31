@@ -1,7 +1,13 @@
 {
+    "python.formatting.provider": "black",
+    "python.linting.enabled": false,
+    "python.linting.pylintEnabled": true,
+    "python.linting.pycodestyleEnabled": false,
+    "python.linting.pydocstyleEnabled": false,
     "workbench.colorCustomizations": {
-        "activityBar.background": "#1F3310",
-        "titleBar.activeBackground": "#2B4716",
-        "titleBar.activeForeground": "#F7FBF4"
+      "activityBar.background": "#54182B",
+      "titleBar.activeBackground": "#75213D",
+      "titleBar.activeForeground": "#FEFBFC"
     }
-}
+  }
+  

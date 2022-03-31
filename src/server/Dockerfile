@@ -24,7 +24,6 @@ RUN mkdir /usr/app/src
 COPY ./ /usr/app/src/
 RUN chmod a+rwx -R /usr/app
 RUN mv -f /usr/app/src/www/html/* /var/www/html/
-RUN chmod 777 /usr/app/src/bin/start.sh
 
 ###################
 # D A T A B A S E #
