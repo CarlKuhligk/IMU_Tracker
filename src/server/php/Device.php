@@ -1,108 +1,78 @@
 <?php
-
-
 class Device
 {
     public static $clients;
     public $id;
-    public $name;
-    public $dataTableName;
-    public $online = false;
+    public $staffId;
+    public $databaseTableName;
+    public $isOnline = false;
     public $state = 0; // reserved
-    public $observerCount = 0;
     public Settings $settings;
 
     #battery
     public $battery;
 
-    private $sender = null;
-    private $observers = array();
+    private $streamer = null;
+    private $subscriberList = array();
 
-    public function __construct($id, $name)
+    public function __construct($id, $staffId)
     {
         $this->id = $id;
-        $this->name = $name;
-        $this->dataTableName = 'device_' . $this->id . "_log";
-        echo "Device " . $this->id . " : Name: " . $this->name . "\n";
+        $this->staffId = $staffId;
+        $this->databaseTableName = 'device_' . $this->id . "_log";
     }
 
-    public function setSender($resourceId)
+    public function setStreamer($resourceId)
     {
-        if (isset($this->sender)) {
-            // error sender is already set
+        if (isset($this->streamer)) {
+            // error streamer is already set
             return false;
         } else {
-            $this->sender = $resourceId;
-            $this->online = true;
-            // successfuly assigned
+            $this->streamer = $resourceId;
+            $this->isOnline = true;
+            // successfully assigned
             return true;
         }
     }
 
-    public function unsetSender()
+    public function unsetStreamer()
     {
-        if (isset($this->sender)) {
-            // successfuly removed
-            $this->sender = null;
-            $this->online = false;
+        if (isset($this->streamer)) {
+            // successfully removed
+            $this->streamer = null;
+            $this->isOnline = false;
             return true;
         } else {
-            // error sender is already removed
+            // error streamer is already removed
             return false;
         }
     }
 
-    public function addObserver($resourceId)
+    public function isSubscriber($resourceId)
     {
-        if ($this->isObserver($resourceId)) {
-            // error cant add resourceId
-            return false;
-        } else {
-            $this->observers[$resourceId] = $resourceId;
-            $this->observerCount++;
-            // successfuly added
-            return true;
-        }
+        return array_key_exists($resourceId, $this->subscriberList);
     }
 
-    public function removeObserver($resourceId)
-    {
-        if ($this->isObserver($resourceId)) {
-            // successfuly removed
-            unset($this->observers[$resourceId]);
-            $this->observerCount--;
-            return true;
-        } else {
-            // error resourceId do not exsits
-            return false;
-        }
-    }
-
-    public function isObserver($resourceId)
-    {
-        return array_key_exists($resourceId, $this->observers);
-    }
-
-    // send local message to all Device observer
+    // send local message to all Device subscriber
     public function send($message)
     {
-        foreach ($this->observers as $observer) {
-            #send message only to observers
-            if ($observer != $this->sender) {
-                Device::$clients[$observer]->send($message);
+        foreach ($this->subscriberList as $subscriber) {
+            #send message only to subscriberList
+            if ($subscriber != $this->streamer) {
+                Device::$clients[$subscriber]->send($message);
             }
         }
     }
 
-    public function isSender($resourceId)
+    public function isStreamer($resourceId)
     {
-        return ($this->sender == $resourceId ? True : False);
+        return ($this->streamer == $resourceId ? True : False);
     }
 
-    public function sendSender($message)
+    public function sendStreamer($message)
     {
-        if (isset($this->sender)) {
-            Device::$clients[$this->sender]->send($message);
+        if (isset($this->streamer)) {
+            Device::$clients[$this->streamer]->send($message);
             return True;
         } else {
             return False;

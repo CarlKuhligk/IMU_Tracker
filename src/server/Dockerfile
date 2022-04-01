@@ -1,13 +1,16 @@
-FROM php:7.4.28-apache
+FROM php:apache
 
 RUN groupadd -g 1000 www
 RUN useradd -u 1000 -ms /bin/bash -g www www
 
-# INSTALL RATCHET + COMPOSER #
-RUN apt-get update && apt-get install -y \
+###############################################
+# INSTALL RATCHET + COMPOSER + MARIADB CLIENT #
+###############################################
+RUN apt-get update && apt-get dist-upgrade && apt-get install -y \
     zlib1g-dev \
     libzip-dev \
-    unzip
+    unzip \
+    mariadb-client
 RUN docker-php-ext-install zip
 RUN docker-php-ext-install mysqli
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
@@ -28,10 +31,11 @@ RUN mv -f /usr/app/src/www/html/* /var/www/html/
 ###################
 # D A T A B A S E #
 ###################
-ENV MYSQL_HOST = "localhost"
-ENV MYSQL_DATABASE = "helloworld"
-ENV MYSQL_USER = "mrdatabase"
-ENV MYSQL_PASSWORD = "mydatabase"
+ENV MYSQL_HOST "localhost"
+ENV MYSQL_DATABASE "security_motion_tracker"
+ENV MYSQL_USER "mrdatabase"
+ENV MYSQL_PASSWORD "mydatabase"
+ENV MYSQL_PATH "/usr/app/src/sql/tables.sql"
 
 #######################
 # W E B C O N T E N T #
@@ -45,4 +49,4 @@ EXPOSE 8080
 WORKDIR /usr/app/src
 USER www
 RUN composer update
-CMD [ "php", "./bin/IMUSocketServer.php" ]
+CMD service apache2 start && php ./bin/IMUSocketServer.php -F

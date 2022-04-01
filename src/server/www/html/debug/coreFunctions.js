@@ -1,23 +1,15 @@
-const dataTnputNames = [
-  "accX",
-  "accY",
-  "accZ",
-  "gyrX",
-  "gyrY",
-  "gyrZ",
-  "temp",
-  "battery",
-];
+const dataTnputNames = ["acceleration", "rotation", "temperature", "battery"];
 var textboxes = [];
 
-var socket;
+var websocket;
+
 // get server ip
 var serverIP = $.get("../debug/getServerIP.php").done(function (data) {
   // create a new WebSocket.
-  socket = new WebSocket("ws://" + data + ":8080");
+  websocket = new WebSocket("ws://" + data + ":8080");
 
   // socket message callback
-  socket.onmessage = function (e) {
+  websocket.onmessage = function (e) {
     outputField.append(e.data);
     console.log(e.data);
   };
@@ -31,7 +23,6 @@ for (var i = 0; i < dataTnputNames.length; i++) {
   if (i > 0) {
     newTextbox.style.display = "none";
   }
-  //textboxes[i] = newTextbox;
   $(".inputContainer").append(newTextbox);
 }
 
@@ -60,8 +51,8 @@ function onChange() {
       textboxes[0].placeholder = "enter pin";
       showAccGyrTextbox(false);
       break;
-    case "observe":
-      textboxes[0].placeholder = "enter channel id";
+    case "subscribe":
+      textboxes[0].placeholder = "enter device id";
       textboxes[1].placeholder = "ture or false";
       showAccGyrTextbox(false);
       textboxes[1].style.display = "block";
@@ -83,40 +74,44 @@ function showAccGyrTextbox(state) {
   }
 }
 
-var message = { type: "", value: [] };
+var message = {};
 
 function onClick() {
   if (textboxes[0].value != "") {
-    //set type
-    message.type = dropdown.value;
     //set value
     switch (dropdown.value) {
       case "login":
-        message.apikey = textboxes[0].value;
+        message.t = "i"; // login
+        message.a = textboxes[0].value;
         console.log("login");
         break;
       case "logout":
-        message.pin = textboxes[0].value;
+        message.t = "o"; // logout
+        message.p = textboxes[0].value;
         console.log("logout");
         break;
       case "subscribe":
-        message.channel_id = textboxes[0].value;
-        message.subscribe = textboxes[1].value;
+        message.t = "s"; // subscribe
+        message.i = textboxes[0].value;
+        message.s = textboxes[1].value;
         console.log("subscribe");
         break;
       case "data":
-        message.value = [];
-        for (var i = 0; i < dataTnputNames.length; i++) {
-          message.value.push(textboxes[i].value);
-        }
+        message.t = "d"; // tracking data
+        message.a = [];
+        message.r = [];
+        message.tp = [];
+        message.b = [];
+
         console.log("data");
         break;
       case "event":
+        message.t = "e"; // event
         message.value = textboxes[0].value;
         console.log("event");
         break;
     }
-    socket.send(JSON.stringify(message));
+    websocket.send(JSON.stringify(message));
   } else {
     alert("no value");
   }
