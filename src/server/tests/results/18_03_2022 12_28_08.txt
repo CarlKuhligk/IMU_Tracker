@@ -1,9 +1,0 @@
-WEBSOCKETTEST Date: 18.03.2022 Time: 12:28:08
-
---------------------------------------------------------------
-|Test | Description                    | Passed| Response ID |
---------------------------------------------------------------
-| 001 | connect websocket              |  True |       2     |
-| 002 | unknown datatype               |  True |      32     |
-| 003 | missing data                   |  True |      30     |
-| 004 | empty apikey                   |  True |      19     |
