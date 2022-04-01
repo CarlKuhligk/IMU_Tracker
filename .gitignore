@@ -1,1 +1,5 @@
-src/server/readme.txt
+# vscode settings
+.vscode/
+
+# docker build commands
+/src/server/readme.txt
