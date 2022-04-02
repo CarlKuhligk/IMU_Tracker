@@ -1,11 +1,10 @@
-{    
-	"autoload": {
-        "psr-4": {
-            "IMUSocketCommunication\\": "php"
-        }
-    },
-    
-    "require": {
-        "cboden/ratchet": "^0.4.3"
+{
+  "autoload": {
+    "psr-4": {
+      "WebsocketServer\\": "php"
     }
+  },
+  "require": {
+    "cboden/ratchet": "^0.4.3"
+  }
 }
