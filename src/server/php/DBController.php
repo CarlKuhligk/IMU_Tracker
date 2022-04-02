@@ -9,7 +9,7 @@ class DBController
     private $user;
     private $password;
     private $dbname;
-    private $connectionAttempt;
+    private $connectionAttempts;
     private $nextAttemptDelay = 3;
     private $maxConnectionAttempts = 20;
 
@@ -35,7 +35,7 @@ class DBController
 
     public function initializingDatabaseIfNecessary()
     {
-        console_log("Initialize database check.\n");
+        consoleLog("Initialize database check.\n");
         if ($this->checkIfRequiredDatabaseTableIsMissing()) {
             $this->importSQLFileToDatabase(getenv("MYSQL_PATH"));
         }
@@ -43,19 +43,19 @@ class DBController
 
     public function importSQLFileToDatabase($filepath)
     {
-        console_log("Importing database from '{$filepath}'\n");
+        consoleLog("Importing database from '{$filepath}'\n");
         $output = shell_exec("mysql -h {$this->host} -u{$this->user} -p{$this->password} {$this->dbname} < {$filepath}"); // requires mariadb-client or default-mysql-client
-        console_log($output . "\n");
-        console_log("Tables imported successfully\n");
+        consoleLog($output . "\n");
+        consoleLog("Tables imported successfully\n");
     }
 
 
-    private function tryConnection()
+    private function tryToConnect()
     {
         try {
             $this->mariadbClient = new mysqli($this->host, $this->user, $this->password, $this->dbname);
         } catch (Exception $e) {
-            console_log(" -> {$e->getMessage()} \n");
+            consoleLog(" -> {$e->getMessage()} \n");
             return false;
         }
         return true;
@@ -63,21 +63,21 @@ class DBController
 
     public function connect()
     {
-        $this->connectionAttempt = 0;
+        $this->connectionAttempts = 0;
 
-        while ($this->connectionAttempt <= $this->maxConnectionAttempts) {
-            console_log("Connecting to {$this->dbname}\n");
-            if ($this->tryConnection()) {
-                console_log("-> Connection successfully!\n");
+        while ($this->connectionAttempts <= $this->maxConnectionAttempts) {
+            consoleLog("Connecting to {$this->dbname}\n");
+            if ($this->tryToConnect()) {
+                consoleLog("-> Connection successfully!\n");
                 $this->initializingDatabaseIfNecessary();
                 return true;
             } else {
-                $this->connectionAttempt++;
-                console_log("--> Retry {$this->connectionAttempt} in {$this->nextAttemptDelay} seconds.\n");
+                $this->connectionAttempts++;
+                consoleLog("--> Connection attempt {$this->connectionAttempts} in {$this->nextAttemptDelay} seconds.\n");
                 sleep($this->nextAttemptDelay);
             }
         }
-        console_log("Maximum connection attempts ({$this->maxConnectionAttempts}) exceeded!\n");
+        consoleLog("Maximum connection attempts ({$this->maxConnectionAttempts}) exceeded!\n");
         return false;
     }
 
@@ -99,73 +99,92 @@ class DBController
         if (isset($sql)) {
             $result = $this->mariadbClient->query($sql);
             if ($result === false) {
-                console_log("DB Request -> {$this->mariadbClient->error}\n");
+                consoleLog("DB Request -> {$this->mariadbClient->error}\n");
             }
             return true;
         }
         return false;
     }
 
-    public function validateApiKey($apiKey)
+    public function getDevice($id)
     {
-        $result = $this->dbQuery("SELECT id, staff_id FROM devices WHERE apikey = '$apiKey';");
+        $result = $this->dbQuery("SELECT id, connected, loginState, lastSeen, employee, idleTimeout, batteryWarning, connectionTimeout, measurementInterval FROM devices WHERE id = '$id';");
         $row = $result->fetch_row();
         if (isset($row)) {
             $device = (object)[
                 'id' => $row[0],
-                'stuffId' => $row[1],
-
+                'connected' => $row[1],
+                'loginState' => $row[2],
+                'lastSeen' => $row[3],
+                'employee' => $row[4],
+                'idleTime' => $row[5],
+                'batteryWarning' => $row[6],
+                'timeout' => $row[7],
+                'measurementInterval' => $row[8]
             ];
             return $device;
         }
         return false;
     }
 
-    public function validatePin($pin, $callingDevice)
+    public function validateKey($apikey)
     {
-        $result = $this->dbQuery("SELECT staff.id, staff.name FROM staff WHERE id = (SELECT devices.staff_id FROM devices WHERE devices.id =" . $callingDevice->id . ") AND staff.pin = '" . $pin . "';");
+        $result = $this->dbQuery("SELECT id FROM devices WHERE apikey = '$apikey';");
+        $row = $result->fetch_row();
+        if (isset($row)) {
+            $deviceID = $row[0];
+            return $deviceID;
+        }
+        return false;
+    }
+
+    public function validatePin($pin, $requestingDevice)
+    {
+        $result = $this->dbQuery("SELECT loginstate FROM devices WHERE id = '$requestingDevice->id' AND pin = '$pin';");
         if (isset($result)) {
             $row = $result->fetch_row();
             if (isset($row)) {
-                $employee = (object)[
-                    'stuffId' => $row[0],
-                    'name' => $row[1],
-                ];
-                return $employee;
+                return true;
             }
         }
         return false;
     }
 
-    public function validateChannelId($id)
+    public function validateDeviceId($id)
     {
-        $result = $this->dbQuery("SELECT id, staff_id FROM devices WHERE id = '$id';");
+        $result = $this->dbQuery("SELECT id FROM devices WHERE id = '$id';");
         $row = $result->fetch_row();
         if (isset($row)) {
-            $device = (object)[
-                'id' => $row[0],
-                'staffId' => $row[1]
-            ];
-            return $device;
+            $deviceID = $row[0];
+            return $deviceID;
         }
         return false;
     }
 
-    public function setDeviceOnlineState($id, $state)
+    public function setDeviceIsConnected($id, $isConnected)
     {
-        if ($state) {
-            $this->dbRequest("UPDATE devices SET online=1 WHERE id='$id';");
+        if ($isConnected) {
+            $this->dbRequest("UPDATE devices SET connected=1 WHERE id='$id';");
         } else {
-            $this->dbRequest("UPDATE devices SET online=0 WHERE id='$id';");
+            $this->dbRequest("UPDATE devices SET connected=0 WHERE id='$id';");
         }
     }
 
-    public function getDeviceOnlineState($id)
+    public function setLoginState($id, $successfullyLoggedOut)
     {
-        $result = $this->dbQuery("SELECT online FROM devices WHERE id='$id';");
+        if ($successfullyLoggedOut) {
+            $this->dbRequest("UPDATE devices SET loginState=0 WHERE id='$id';");
+        } else {
+            $this->dbRequest("UPDATE devices SET loginState=1 WHERE id='$id';");
+        }
+    }
+
+    public function getDeviceIsConnected($id)
+    {
+        $result = $this->dbQuery("SELECT connected FROM devices WHERE id='$id';");
         $row = $result->fetch_row();
-        $row = filter_var($row['online'], FILTER_VALIDATE_BOOLEAN);
-        return $row;
+        $isConnected = filter_var($row['connected'], FILTER_VALIDATE_BOOLEAN);
+        return $isConnected;
     }
 
     public function writeTrackingData($tableName, $data)
@@ -175,22 +194,20 @@ class DBController
         $temperature = $data->tp;
         $battery = $data->b;
 
-        return $this->dbRequest("INSERT $tableName (acceleration, rotation, temperature, battery) VALUES ($acceleration, $rotation,$temperature,$battery);");
+        return $this->dbRequest("INSERT $tableName (acceleration, rotation, temperature, battery) VALUES ($acceleration, $rotation, $temperature, $battery);");
     }
 
-    public function loadDevices()
+    public function getDevices()
     {
-        $result = $this->dbQuery("SELECT id, staff_id FROM devices;");
+        $result = $this->dbQuery("SELECT id FROM devices;");
         if (isset($result)) {
             $resultCount = $result->num_rows;
             $deviceList = array();
 
             for ($i = 0; $i < $resultCount; $i++) {
-                $channelRaw =  $result->fetch_row();
-                $device = (object)[
-                    'id' => $channelRaw[0],
-                    'staffId' => $channelRaw[1]
-                ];
+                $row =  $result->fetch_row();
+                $deviceID = $row[0];
+                $device = $this->getDevice($deviceID);
                 array_push($deviceList, $device);
             }
             return $deviceList;
@@ -198,8 +215,8 @@ class DBController
         return NULL;
     }
 
-    public function resetDevices()
+    public function resetDevicesIsConnected()
     {
-        $this->dbRequest("UPDATE devices SET online=0 WHERE 1;");
+        $this->dbRequest("UPDATE devices SET connected=0 WHERE connected=1;");
     }
 }

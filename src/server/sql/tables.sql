@@ -1,86 +1,224 @@
--- phpMyAdmin SQL Dump
--- version 5.1.3
--- https://www.phpmyadmin.net/
+-- MySQL dump 10.13  Distrib 5.5.62, for Win64 (AMD64)
 --
--- Host: mariadb
--- Erstellungszeit: 18. Mrz 2022 um 23:49
--- Server-Version: 10.7.3-MariaDB-1:10.7.3+maria~focal
--- PHP-Version: 8.0.16
+-- Host: localhost    Database: security_motion_tracker
+-- ------------------------------------------------------
+-- Server version	5.5.5-10.7.3-MariaDB-1:10.7.3+maria~focal
 
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Datenbank: `security_motion_tracker`
+-- Table structure for table `devices`
 --
--- CREATE DATABASE IF NOT EXISTS `security_motion_tracker` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE `security_motion_tracker`;
 
-DELIMITER $$
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `devices` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `apikey` char(64) NOT NULL COMMENT 'this key is used for regestration',
+  `changed` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() COMMENT 'last change',
+  `created` timestamp NOT NULL DEFAULT current_timestamp(),
+  `connected` tinyint(1) NOT NULL COMMENT 'connection state',
+  `loginState` tinyint(1) NOT NULL COMMENT 'login state',
+  `lastSeen` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() COMMENT 'last recived message',
+  `employee` varchar(16) NOT NULL COMMENT 'name of employee',
+  `pin` char(64) NOT NULL COMMENT 'pin to logout',
+  `idleTimeout` int(10) unsigned NOT NULL COMMENT 'in seconds',
+  `batteryWarning` tinyint(4) unsigned NOT NULL COMMENT 'in %',
+  `connectionTimeout` int(10) unsigned NOT NULL COMMENT 'in seconds',
+  `measurementInterval` int(10) unsigned NOT NULL COMMENT 'in milliseconds',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
--- Prozeduren
+-- Dumping data for table `devices`
 --
-CREATE PROCEDURE `addDevice` ()   BEGIN
+
+LOCK TABLES `devices` WRITE;
+/*!40000 ALTER TABLE `devices` DISABLE KEYS */;
+/*!40000 ALTER TABLE `devices` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `event_log`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `event_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `device` int(11) NOT NULL,
+  `event` int(11) NOT NULL,
+  `capture_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `event_log`
+--
+
+LOCK TABLES `event_log` WRITE;
+/*!40000 ALTER TABLE `event_log` DISABLE KEYS */;
+/*!40000 ALTER TABLE `event_log` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `events`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `events` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(64) NOT NULL,
+  `weight` tinyint(3) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `events`
+--
+
+LOCK TABLES `events` WRITE;
+/*!40000 ALTER TABLE `events` DISABLE KEYS */;
+/*!40000 ALTER TABLE `events` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping routines for database 'security_motion_tracker'
+--
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`securitymotiontracker`@`%` PROCEDURE `addDevice`(IN `in_employee` VARCHAR(16), IN `in_pin` VARCHAR(8), IN `in_idleTimeout` INT(10) Unsigned, IN `in_batteryWarning` TINYINT(4) Unsigned, IN `in_connectionTimeout` INT(10) Unsigned, IN `in_measurementInterval` INT(10) Unsigned, OUT `out_apikey` CHAR(64))
+BEGIN
 	
-  SET @last_device_id = (SELECT devices.id FROM devices ORDER BY devices.id DESC LIMIT 1);
-  
-  SET @new_device_id = COALESCE (@last_device_id +1,1);
-  SET @new_table_name = CONCAT("device_", @new_device_id,"_log");
-  
-  
-  SET @new_api_key = (SELECT SHA2(CONCAT(CURRENT_TIMESTAMP(),@new_table_name),256));
-	INSERT INTO devices(devices.id, devices.apikey, devices.staff_id, devices.online) VALUES(@new_device_id, @new_api_key, 0, 0);
-    
-  SET @table_settings = '(`capture_id` int(11) NOT NULL,`timestamp` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `acceleration` float NOT NULL, `rotation` float NOT NULL, `temperature` float NOT NULL, `battery` int(11) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';
-  
-  
-  SET @SQL = CONCAT('CREATE TABLE ',@new_table_name, @table_settings);
-  PREPARE stmt FROM @SQL;
-  EXECUTE stmt;
-  
-  
-  SET @SQL = CONCAT('ALTER TABLE ',@new_table_name, ' ADD PRIMARY KEY (capture_id);');
-	PREPARE stmt FROM @SQL;
-  EXECUTE stmt;
+	IF EXISTS(SELECT devices.id FROM devices ORDER BY devices.id DESC LIMIT 1) THEN
+		-- use last device id
+		SET @last_device_id = (SELECT devices.id FROM devices ORDER BY devices.id DESC LIMIT 1);
+	ELSE
+		-- use device id 0 if table is empty
+		SET @last_device_id = 0;
+	END IF;
 
-	SET @SQL = CONCAT('ALTER TABLE ',@new_table_name, ' MODIFY capture_id int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;');
-	PREPARE stmt FROM @SQL;
-  EXECUTE stmt;
-  
-  
-  INSERT INTO device_settings (device_id, idle_time,  battery_warning, timeout, sense_freq)SELECT * FROM (SELECT devices.id AS device_id FROM devices ORDER BY id DESC LIMIT 1) AS DEVICEID,(SELECT idle_time,  battery_warning, timeout, sense_freq FROM device_settings WHERE device_id = 1 LIMIT 1) AS DEFAULTSETTINGS;
-  
-  DEALLOCATE PREPARE stmt;
-  COMMIT;
-END$$
+	
+	-- define new device id and log table name
+	SET @new_device_id = COALESCE (@last_device_id +1,1);
+	SET @new_table_name = CONCAT("device_", @new_device_id,"_log");
 
-CREATE PROCEDURE `delete_device_data` (IN `days` INT(11))   BEGIN
-  DECLARE temp_tablename CHAR(32);
+	-- generate api key based on tablename and timestamp
+	SET @new_api_key = (SELECT SHA2(CONCAT(CURRENT_TIMESTAMP(),@new_table_name),256));
+	SET out_apikey =  @new_api_key;
+
+	-- pin
+	SET @sha256_pin = (SELECT SHA2(in_pin ,256));
+
+	-- add new device
+	INSERT INTO devices(id, apikey, connected, loginState, employee, pin, idleTimeout, batteryWarning, connectionTimeout, measurementInterval) VALUES(@new_device_id, @new_api_key, 0, 0, in_employee, @sha256_pin, in_idleTimeout, in_batteryWarning, in_connectionTimeout, in_measurementInterval);
+
+	-- prepare device log table settings
+	SET @table_settings = '(`id` int(11) NOT NULL,`timestamp` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `acceleration` float NOT NULL, `rotation` float NOT NULL, `temperature` float NOT NULL, `battery` int(11) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';
+ 
+	-- create new device log table
+	SET @SQL = CONCAT('CREATE TABLE ',@new_table_name, @table_settings);
+	PREPARE stmt FROM @SQL;
+	EXECUTE stmt;
+    -- add primary key
+	SET @SQL = CONCAT('ALTER TABLE ',@new_table_name, ' ADD PRIMARY KEY (id);');
+	PREPARE stmt FROM @SQL;
+	EXECUTE stmt;
+	-- add autoincrement
+	SET @SQL = CONCAT('ALTER TABLE ',@new_table_name, ' MODIFY id int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;');
+	PREPARE stmt FROM @SQL;
+	EXECUTE stmt;
+  
+	DEALLOCATE PREPARE stmt;
+	COMMIT;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`securitymotiontracker`@`%` PROCEDURE `delete_device_data`(IN `days` INT(11))
+    COMMENT 'deletes data from all device logs older than the specified time'
+BEGIN
+
+	DECLARE temp_tablename CHAR(32);
+
 	DECLARE not_done INT DEFAULT TRUE;
-  DECLARE db_cursor CURSOR FOR SELECT table_name FROM INFORMATION_SCHEMA.TABLES WHERE engine = 'innodb' AND table_schema = 'security_motion_tracker' AND table_name LIKE 'device_%%_log%';
 
-  
+	DECLARE db_cursor CURSOR FOR SELECT table_name FROM INFORMATION_SCHEMA.TABLES WHERE engine = 'innodb' AND table_schema = 'security_motion_tracker' AND table_name LIKE 'device_%%_log%';
 
 	DECLARE CONTINUE HANDLER FOR NOT FOUND SET not_done = FALSE;
 
 	OPEN db_cursor;
 
-  WHILE not_done DO
-    FETCH db_cursor INTO temp_tablename;
-      
-    SET @SQL = CONCAT('DELETE FROM ',temp_tablename, ' WHERE TIMESTAMPDIFF(DAY, timestamp, CURRENT_TIMESTAMP) >= ',days,';');
-    PREPARE stmt FROM @SQL;
-    EXECUTE stmt;
-  END WHILE;
+
+
+	WHILE not_done DO
+
+    	FETCH db_cursor INTO temp_tablename;    
+
+    	SET @SQL = CONCAT('DELETE FROM ',temp_tablename, ' WHERE TIMESTAMPDIFF(DAY, timestamp, CURRENT_TIMESTAMP) >= ',days,';');
+
+    	PREPARE stmt FROM @SQL;
+
+    	EXECUTE stmt;
+
+	END WHILE;
+
+
 
 DEALLOCATE PREPARE stmt;
+
 COMMIT;
+
 CLOSE db_cursor;
 
-END$$
-
-CREATE PROCEDURE `resetTable` (IN `tableName` VARCHAR(32))   BEGIN
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = latin1 */ ;
+/*!50003 SET character_set_results = latin1 */ ;
+/*!50003 SET collation_connection  = latin1_swedish_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_AUTO_VALUE_ON_ZERO' */ ;
+DELIMITER ;;
+CREATE DEFINER=`securitymotiontracker`@`%` PROCEDURE `resetTable`(IN `tableName` VARCHAR(32))
+BEGIN
   SET @SQL = CONCAT('DELETE FROM ', tableName);
   PREPARE stmt FROM @SQL;
   EXECUTE stmt;
@@ -90,183 +228,20 @@ CREATE PROCEDURE `resetTable` (IN `tableName` VARCHAR(32))   BEGIN
   EXECUTE stmt;
   
   DEALLOCATE PREPARE stmt;
-END$$
-
+END ;;
 DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
--- --------------------------------------------------------
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
---
--- Tabellenstruktur für Tabelle `devices`
---
-
-CREATE TABLE `devices` (
-  `id` int(11) NOT NULL,
-  `staff_id` int(11) NOT NULL COMMENT 'contains the ip of the staff',
-  `apikey` char(64) NOT NULL COMMENT 'this key is used for regestration',
-  `changed` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() COMMENT 'last change',
-  `created` timestamp NOT NULL DEFAULT current_timestamp() COMMENT 'created',
-  `online` tinyint(1) NOT NULL COMMENT 'online status'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Daten für Tabelle `devices`
---
-
-INSERT INTO `devices` (`id`, `staff_id`, `apikey`, `changed`, `created`, `online`) VALUES
-(1, 0, '2d186bb64f3a0c56f72c75f05dca98935b893136c43245a2068f4314cef84935', '2022-03-18 23:39:13', '2022-03-18 23:32:24', 0);
-
--- --------------------------------------------------------
-
---
--- Tabellenstruktur für Tabelle `device_1_log`
---
-
-CREATE TABLE `device_1_log` (
-  `capture_id` int(11) NOT NULL,
-  `timestamp` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `acceleration` float NOT NULL,
-  `rotation` float NOT NULL,
-  `temperature` float NOT NULL,
-  `battery` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- --------------------------------------------------------
-
---
--- Tabellenstruktur für Tabelle `device_settings`
---
-
-CREATE TABLE `device_settings` (
-  `device_id` int(11) NOT NULL,
-  `idle_time` float NOT NULL,
-  `battery_warning` int(11) NOT NULL,
-  `timeout` int(11) NOT NULL,
-  `sense_freq` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Daten für Tabelle `device_settings`
---
-
-INSERT INTO `device_settings` (`device_id`, `idle_time`, `battery_warning`, `timeout`, `sense_freq`) VALUES
-(1, 0, 0, 0, 0),
-(2, 0, 0, 0, 0);
-
--- --------------------------------------------------------
-
---
--- Tabellenstruktur für Tabelle `events`
---
-
-CREATE TABLE `events` (
-  `id` int(11) NOT NULL,
-  `name` varchar(64) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- --------------------------------------------------------
-
---
--- Tabellenstruktur für Tabelle `event_log`
---
-
-CREATE TABLE `event_log` (
-  `id` int(11) NOT NULL,
-  `device_id` int(11) NOT NULL,
-  `event_id` int(11) NOT NULL,
-  `trigger_capture_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- --------------------------------------------------------
-
---
--- Tabellenstruktur für Tabelle `staff`
---
-
-CREATE TABLE `staff` (
-  `id` int(11) NOT NULL,
-  `name` varchar(32) NOT NULL COMMENT 'fist name',
-  `pin` varchar(256) NOT NULL COMMENT 'logout pin'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Daten für Tabelle `staff`
---
-
-INSERT INTO `staff` (`id`, `name`, `pin`) VALUES
-(0, 'template', '00000');
-
---
--- Indizes der exportierten Tabellen
---
-
---
--- Indizes für die Tabelle `devices`
---
-ALTER TABLE `devices`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indizes für die Tabelle `device_1_log`
---
-ALTER TABLE `device_1_log`
-  ADD PRIMARY KEY (`capture_id`);
-
---
--- Indizes für die Tabelle `device_settings`
---
-ALTER TABLE `device_settings`
-  ADD PRIMARY KEY (`device_id`);
-
---
--- Indizes für die Tabelle `events`
---
-ALTER TABLE `events`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indizes für die Tabelle `event_log`
---
-ALTER TABLE `event_log`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indizes für die Tabelle `staff`
---
-ALTER TABLE `staff`
-  ADD PRIMARY KEY (`id`);
-
---
--- AUTO_INCREMENT für exportierte Tabellen
---
-
---
--- AUTO_INCREMENT für Tabelle `devices`
---
-ALTER TABLE `devices`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT für Tabelle `device_1_log`
---
-ALTER TABLE `device_1_log`
-  MODIFY `capture_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT für Tabelle `events`
---
-ALTER TABLE `events`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT für Tabelle `event_log`
---
-ALTER TABLE `event_log`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT für Tabelle `staff`
---
-ALTER TABLE `staff`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-COMMIT;
+-- Dump completed on 2022-04-02 15:39:32
