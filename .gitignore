@@ -1,5 +1,2 @@
 # vscode settings
 .vscode/
-
-# docker build commands
-/src/server/readme.txt
