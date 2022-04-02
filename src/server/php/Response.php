@@ -1,5 +1,5 @@
 <?php
-# responselist
+# responses
 define("RP_NOT_CONNECTED", 1);
 define("RP_CONNECTED", 2);
 define("RP_GLOBAL_UPDATE", 4);
@@ -27,5 +27,5 @@ define("RP_MISSING_DATA", 31);
 define("RP_UNKNOWN_DATA_TYPE", 32);
 define("PR_DATA_ITEM_COUNT_DOESNT_MATCH", 33);
 
-define("RP_SERVER_OFFILNE", 40);
+define("RP_SERVER_OFFLINE", 40);
 define("RP_UNKNOWN_ERROR", 42);
