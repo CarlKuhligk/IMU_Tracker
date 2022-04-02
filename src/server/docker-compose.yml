@@ -10,6 +10,8 @@ services:
       - MARIADB_PASSWORD=${DB_PASSWORD}
       - MARIADB_DATABASE=security_motion_tracker
       - TZ=Europe/Berlin
+    ports:
+    - 3306:3306
     
     volumes:
       - securitytracker-sql-data:/var/lib/mysql
@@ -36,7 +38,7 @@ services:
       - PMA_HOST=mariadb
 
   app:
-    image: carlkuhligk/securitymotiontracker:debug
+    image: carlkuhligk/securitymotiontracker:latest
     container_name: securitytracker
     restart: unless-stopped
 
