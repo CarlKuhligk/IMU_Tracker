@@ -1,5 +1,15 @@
 <?php
 
+
+class Settings
+{
+    public $idleTimeout;
+    public $batteryWarning;
+    public $connectionTimeout;
+    public $measurementInterval;
+}
+
+
 class Device
 {
     public static $clients;
@@ -12,7 +22,7 @@ class Device
     public $lastSeen;
     public $elapsedTime;
 
-    public Settings $settings;
+    public $settings;
 
     public $databaseTableName;
     private $streamer = null;
@@ -27,6 +37,7 @@ class Device
         $this->lastSeen = $deviceData->lastSeen;
         $this->calculateElapsedTime();
         // settings
+        $this->settings = new Settings;
         $this->settings->idleTimeout = $deviceData->idleTimeout;
         $this->settings->batteryWarning = $deviceData->batteryWarning;
         $this->settings->connectionTimeout = $deviceData->connectionTimeout;
@@ -36,13 +47,26 @@ class Device
     public function calculateElapsedTime()
     {
         // timeout initial monitoring ##################################################################################################
-        $this->lastSeen = new DateTime(strtotime($this->lastSeen), new DateTimeZone(getenv("TZ")));
+        $this->lastSeen = new DateTime($this->lastSeen, new DateTimeZone(getenv("TZ")));
         $now = new DateTime(strtotime(time()), new DateTimeZone(getenv("TZ")));
         $this->elapsedTime = $this->lastSeen->diff($now)->s;
     }
 
 
-    public function setStreamer($resourceId)
+    public function connectionLost()
+    {
+        if (isset($this->streamer)) {
+            // successfully removed
+            $this->streamer = null;
+            $this->isConnected = false;
+            return true;
+        } else {
+            // error streamer is already removed
+            return false;
+        }
+    }
+
+    public function login($resourceId)
     {
         if (isset($this->streamer)) {
             // error streamer is already set
@@ -50,17 +74,19 @@ class Device
         } else {
             $this->streamer = $resourceId;
             $this->isConnected = true;
+            $this->loginState = true;
             // successfully assigned
             return true;
         }
     }
 
-    public function unsetStreamer()
+    public function logout()
     {
         if (isset($this->streamer)) {
             // successfully removed
             $this->streamer = null;
             $this->isConnected = false;
+            $this->loginState = false;
             return true;
         } else {
             // error streamer is already removed
@@ -99,12 +125,4 @@ class Device
             return False;
         }
     }
-}
-
-class Settings
-{
-    public $idleTimeout;
-    public $batteryWarning;
-    public $connectionTimeout;
-    public $measurementInterval;
 }

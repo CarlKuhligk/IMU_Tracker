@@ -35,7 +35,7 @@ class DBController
 
     public function initializingDatabaseIfNecessary()
     {
-        consoleLog("Initialize database check.\n");
+        consoleLog("Initialize database check.");
         if ($this->checkIfRequiredDatabaseTableIsMissing()) {
             $this->importSQLFileToDatabase(getenv("MYSQL_PATH"));
         }
@@ -43,10 +43,10 @@ class DBController
 
     public function importSQLFileToDatabase($filepath)
     {
-        consoleLog("Importing database from '{$filepath}'\n");
+        consoleLog("Importing database from '{$filepath}'");
         $output = shell_exec("mysql -h {$this->host} -u{$this->user} -p{$this->password} {$this->dbname} < {$filepath}"); // requires mariadb-client or default-mysql-client
-        consoleLog($output . "\n");
-        consoleLog("Tables imported successfully\n");
+        consoleLog($output . "");
+        consoleLog("Tables imported successfully");
     }
 
 
@@ -55,7 +55,7 @@ class DBController
         try {
             $this->mariadbClient = new mysqli($this->host, $this->user, $this->password, $this->dbname);
         } catch (Exception $e) {
-            consoleLog(" -> {$e->getMessage()} \n");
+            consoleLog(" -> {$e->getMessage()} ");
             return false;
         }
         return true;
@@ -66,18 +66,18 @@ class DBController
         $this->connectionAttempts = 0;
 
         while ($this->connectionAttempts <= $this->maxConnectionAttempts) {
-            consoleLog("Connecting to {$this->dbname}\n");
+            consoleLog("Connecting to {$this->dbname}");
             if ($this->tryToConnect()) {
-                consoleLog("-> Connection successfully!\n");
+                consoleLog("-> Connection successfully!");
                 $this->initializingDatabaseIfNecessary();
                 return true;
             } else {
                 $this->connectionAttempts++;
-                consoleLog("--> Connection attempt {$this->connectionAttempts} in {$this->nextAttemptDelay} seconds.\n");
+                consoleLog("--> Connection attempt {$this->connectionAttempts} in {$this->nextAttemptDelay} seconds.");
                 sleep($this->nextAttemptDelay);
             }
         }
-        consoleLog("Maximum connection attempts ({$this->maxConnectionAttempts}) exceeded!\n");
+        consoleLog("Maximum connection attempts ({$this->maxConnectionAttempts}) exceeded!");
         return false;
     }
 
@@ -99,7 +99,7 @@ class DBController
         if (isset($sql)) {
             $result = $this->mariadbClient->query($sql);
             if ($result === false) {
-                consoleLog("DB Request -> {$this->mariadbClient->error}\n");
+                consoleLog("DB Request -> {$this->mariadbClient->error}");
             }
             return true;
         }
@@ -117,9 +117,9 @@ class DBController
                 'loginState' => $row[2],
                 'lastSeen' => $row[3],
                 'employee' => $row[4],
-                'idleTime' => $row[5],
+                'idleTimeout' => $row[5],
                 'batteryWarning' => $row[6],
-                'timeout' => $row[7],
+                'connectionTimeout' => $row[7],
                 'measurementInterval' => $row[8]
             ];
             return $device;
@@ -140,7 +140,7 @@ class DBController
 
     public function validatePin($pin, $requestingDevice)
     {
-        $result = $this->dbQuery("SELECT loginstate FROM devices WHERE id = '$requestingDevice->id' AND pin = '$pin';");
+        $result = $this->dbQuery("SELECT loginState FROM devices WHERE id = '$requestingDevice->id' AND pin = '$pin';");
         if (isset($result)) {
             $row = $result->fetch_row();
             if (isset($row)) {
