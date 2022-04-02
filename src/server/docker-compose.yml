@@ -38,7 +38,7 @@ services:
       - PMA_HOST=mariadb
 
   app:
-    image: carlkuhligk/securitymotiontracker:latest
+    image: carlkuhligk/securitymotiontracker:debug
     container_name: securitytracker
     restart: unless-stopped
 
