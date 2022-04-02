@@ -1,26 +1,46 @@
 <?php
+
 class Device
 {
     public static $clients;
     public $id;
-    public $staffId;
-    public $databaseTableName;
-    public $isOnline = false;
-    public $state = 0; // reserved
+    public $employee;
+    public $loginState = false;
+    public $isConnected = false;
+
+    // timeout trigger
+    public $lastSeen;
+    public $elapsedTime;
+
     public Settings $settings;
 
-    #battery
-    public $battery;
-
+    public $databaseTableName;
     private $streamer = null;
     private $subscriberList = array();
 
-    public function __construct($id, $staffId)
+    public function __construct($deviceData)
     {
-        $this->id = $id;
-        $this->staffId = $staffId;
+        $this->id = $deviceData->id;
+        $this->employee = $deviceData->employee;
         $this->databaseTableName = 'device_' . $this->id . "_log";
+        $this->loginState = $deviceData->loginState;
+        $this->lastSeen = $deviceData->lastSeen;
+        $this->calculateElapsedTime();
+        // settings
+        $this->settings->idleTimeout = $deviceData->idleTimeout;
+        $this->settings->batteryWarning = $deviceData->batteryWarning;
+        $this->settings->connectionTimeout = $deviceData->connectionTimeout;
+        $this->settings->measurementInterval = $deviceData->measurementInterval;
     }
+
+    public function calculateElapsedTime()
+    {
+        // timeout initial monitoring ##################################################################################################
+        $this->lastSeen = new DateTime(strtotime($this->lastSeen), new DateTimeZone(getenv("TZ")));
+        $now = new DateTime(strtotime(time()), new DateTimeZone(getenv("TZ")));
+        $this->elapsedTime = $this->lastSeen->diff($now)->s;
+    }
+
 
     public function setStreamer($resourceId)
     {
@@ -29,7 +49,7 @@ class Device
             return false;
         } else {
             $this->streamer = $resourceId;
-            $this->isOnline = true;
+            $this->isConnected = true;
             // successfully assigned
             return true;
         }
@@ -40,7 +60,7 @@ class Device
         if (isset($this->streamer)) {
             // successfully removed
             $this->streamer = null;
-            $this->isOnline = false;
+            $this->isConnected = false;
             return true;
         } else {
             // error streamer is already removed
@@ -53,7 +73,7 @@ class Device
         return array_key_exists($resourceId, $this->subscriberList);
     }
 
-    // send local message to all Device subscriber
+    // send local message to all device subscriber
     public function send($message)
     {
         foreach ($this->subscriberList as $subscriber) {
@@ -69,6 +89,7 @@ class Device
         return ($this->streamer == $resourceId ? True : False);
     }
 
+    // send message to all streamer devices
     public function sendStreamer($message)
     {
         if (isset($this->streamer)) {
@@ -82,12 +103,8 @@ class Device
 
 class Settings
 {
-    public $accMax;
-    public $accMin;
-    public $gyrMax;
-    public $gyrMin;
-    public $idleTime;
+    public $idleTimeout;
     public $batteryWarning;
-    public $timeout;
-    public $senseFreq;
+    public $connectionTimeout;
+    public $measurementInterval;
 }
