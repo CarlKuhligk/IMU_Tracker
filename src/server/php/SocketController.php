@@ -9,7 +9,7 @@ use Ratchet\ConnectionInterface;
 include_once 'Console.php';
 include_once 'DBController.php';
 include_once 'Device.php';
-include_once 'Response.php';
+include_once 'ResponseList.php';
 
 use DBController;
 use Device;
