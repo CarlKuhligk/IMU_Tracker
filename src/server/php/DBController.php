@@ -45,8 +45,10 @@ class DBController
     {
         consoleLog("Importing database from '{$filepath}'");
         $output = shell_exec("mysql -h {$this->host} -u{$this->user} -p{$this->password} {$this->dbname} < {$filepath}"); // requires mariadb-client or default-mysql-client
-        consoleLog($output . "");
-        consoleLog("Tables imported successfully");
+        if ($output)
+            consoleLog("Import result: {$output}");
+        else
+            consoleLog("Tables imported successfully");
     }
 
 
@@ -108,19 +110,38 @@ class DBController
 
     public function getDevice($id)
     {
-        $result = $this->dbQuery("SELECT id, connected, loginState, lastSeen, employee, idleTimeout, batteryWarning, connectionTimeout, measurementInterval FROM devices WHERE id = '$id';");
+        $result = $this->dbQuery("SELECT id,
+                                        connected,
+                                        isLoggedIn,
+                                        lastConnection,
+                                        employee,
+                                        idleTimeout,
+                                        batteryWarning,
+                                        connectionTimeout,
+                                        measurementInterval,
+                                        accelerationMin,
+                                        accelerationMax,
+                                        rotationMin,
+                                        rotationMax 
+                                        FROM devices WHERE id = '$id';");
         $row = $result->fetch_row();
         if (isset($row)) {
             $device = (object)[
                 'id' => $row[0],
                 'connected' => $row[1],
-                'loginState' => $row[2],
-                'lastSeen' => $row[3],
+                'isLoggedIn' => $row[2],
+                'lastConnection' => $row[3],
                 'employee' => $row[4],
-                'idleTimeout' => $row[5],
-                'batteryWarning' => $row[6],
-                'connectionTimeout' => $row[7],
-                'measurementInterval' => $row[8]
+                'settings' => (object)[
+                    'idleTimeout' => $row[5],
+                    'batteryWarning' => $row[6],
+                    'connectionTimeout' => $row[7],
+                    'measurementInterval' => $row[8],
+                    'accelerationMin' => $row[9],
+                    'accelerationMax' => $row[10],
+                    'rotationMin' => $row[11],
+                    'rotationMax' => $row[12],
+                ]
             ];
             return $device;
         }
@@ -140,7 +161,7 @@ class DBController
 
     public function validatePin($pin, $requestingDevice)
     {
-        $result = $this->dbQuery("SELECT loginState FROM devices WHERE id = '$requestingDevice->id' AND pin = '$pin';");
+        $result = $this->dbQuery("SELECT isLoggedIn FROM devices WHERE id = '$requestingDevice->id' AND pin = '$pin';");
         if (isset($result)) {
             $row = $result->fetch_row();
             if (isset($row)) {
@@ -173,9 +194,9 @@ class DBController
     public function setLoginState($id, $successfullyLoggedOut)
     {
         if ($successfullyLoggedOut) {
-            $this->dbRequest("UPDATE devices SET loginState=0 WHERE id='$id';");
+            $this->dbRequest("UPDATE devices SET isLoggedIn=0 WHERE id='$id';");
         } else {
-            $this->dbRequest("UPDATE devices SET loginState=1 WHERE id='$id';");
+            $this->dbRequest("UPDATE devices SET isLoggedIn=1 WHERE id='$id';");
         }
     }
 
@@ -218,5 +239,17 @@ class DBController
     public function resetDevicesIsConnected()
     {
         $this->dbRequest("UPDATE devices SET connected=0 WHERE connected=1;");
+    }
+
+
+    public function setLastConnectionTime($id, $time)
+    {
+        $this->dbRequest("UPDATE devices SET lastConnection='$time->format('Y-m-d H:i:s')' WHERE id='$id';");
+    }
+
+    public function getLastConnectionTime($id, $time)
+    {
+        $timeString = $this->dbRequest("SELECT lastConnection FROM devices WHERE id='$id';");
+        return new DateTime($timeString, new DateTimeZone($this->settings->timezone));
     }
 }

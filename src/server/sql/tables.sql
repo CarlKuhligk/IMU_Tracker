@@ -27,14 +27,18 @@ CREATE TABLE `devices` (
   `changed` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() COMMENT 'last change',
   `created` timestamp NOT NULL DEFAULT current_timestamp(),
   `connected` tinyint(1) NOT NULL COMMENT 'connection state',
-  `loginState` tinyint(1) NOT NULL COMMENT 'login state',
-  `lastSeen` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() COMMENT 'last recived message',
+  `isLoggedIn` tinyint(1) NOT NULL COMMENT 'login state',
+  `lastConnection` timestamp NOT NULL COMMENT 'last recived message',
   `employee` varchar(16) NOT NULL COMMENT 'name of employee',
   `pin` char(64) NOT NULL COMMENT 'pin to logout',
   `idleTimeout` int(10) unsigned NOT NULL COMMENT 'in seconds',
   `batteryWarning` tinyint(4) unsigned NOT NULL COMMENT 'in %',
   `connectionTimeout` int(10) unsigned NOT NULL COMMENT 'in seconds',
   `measurementInterval` int(10) unsigned NOT NULL COMMENT 'in milliseconds',
+  `accelerationMin` float unsigned NOT NULL COMMENT 'in ?',
+  `accelerationMax` float unsigned NOT NULL COMMENT 'in ?',
+  `rotationMin` float unsigned NOT NULL COMMENT 'in ?',
+  `rotationMax` float unsigned NOT NULL COMMENT 'in ?',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -107,7 +111,17 @@ UNLOCK TABLES;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'IGNORE_SPACE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`securitymotiontracker`@`%` PROCEDURE `addDevice`(IN `in_employee` VARCHAR(16), IN `in_pin` VARCHAR(8), IN `in_idleTimeout` INT(10) Unsigned, IN `in_batteryWarning` TINYINT(4) Unsigned, IN `in_connectionTimeout` INT(10) Unsigned, IN `in_measurementInterval` INT(10) Unsigned, OUT `out_apikey` CHAR(64))
+CREATE DEFINER=`securitymotiontracker`@`%` PROCEDURE `addDevice`(IN `in_employee` VARCHAR(16),
+																IN `in_pin` VARCHAR(8),
+																IN `in_idleTimeout` INT(10) Unsigned,
+																IN `in_batteryWarning` TINYINT(4) Unsigned,
+																IN `in_connectionTimeout` INT(10) Unsigned,
+																IN `in_measurementInterval` INT(10) Unsigned,
+																IN `in_accelerationMin` FLOAT Unsigned,
+																IN `in_accelerationMax` FLOAT Unsigned,
+																IN `in_rotationMin` FLOAT Unsigned,
+																IN `in_rotationMax` FLOAT Unsigned,
+																OUT `out_apikey` CHAR(64))
 BEGIN
 	
 	IF EXISTS(SELECT devices.id FROM devices ORDER BY devices.id DESC LIMIT 1) THEN
@@ -131,7 +145,34 @@ BEGIN
 	SET @sha256_pin = (SELECT SHA2(in_pin ,256));
 
 	-- add new device
-	INSERT INTO devices(id, apikey, connected, loginState, employee, pin, idleTimeout, batteryWarning, connectionTimeout, measurementInterval) VALUES(@new_device_id, @new_api_key, 0, 0, in_employee, @sha256_pin, in_idleTimeout, in_batteryWarning, in_connectionTimeout, in_measurementInterval);
+	INSERT INTO devices(id,
+						apikey,
+						connected,
+						isLoggedIn,
+						employee,
+						pin,
+						idleTimeout,
+						batteryWarning,
+						connectionTimeout,
+						measurementInterval,
+						accelerationMin,
+						accelerationMax,
+						rotationMin,
+						rotationMax)
+	VALUES(@new_device_id,
+			@new_api_key,
+			0,
+			0,
+			in_employee,
+			@sha256_pin,
+			in_idleTimeout,
+			in_batteryWarning,
+			in_connectionTimeout,
+			in_measurementInterval,
+			in_accelerationMin,
+			in_accelerationMax,
+			in_rotationMin,
+			in_rotationMax);
 
 	-- prepare device log table settings
 	SET @table_settings = '(`id` int(11) NOT NULL,`timestamp` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `acceleration` float NOT NULL, `rotation` float NOT NULL, `temperature` float NOT NULL, `battery` int(11) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';

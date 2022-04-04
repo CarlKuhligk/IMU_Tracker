@@ -20,6 +20,7 @@ RUN php composer-setup.php
 RUN php -r "unlink('composer-setup.php');"
 RUN mv composer.phar /usr/local/bin/composer
 
+
 ####################################
 # C O P Y  P R O J E C T F I L E S #
 ####################################
@@ -65,4 +66,4 @@ EXPOSE 8080
 WORKDIR /usr/app
 USER www
 RUN composer update
-CMD service apache2 start && php ./bin/IMUSocketServer.php -F
+CMD service apache2 start && php ./bin/WebsocketServer.php -F
