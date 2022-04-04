@@ -40,8 +40,8 @@ class SocketController implements MessageComponentInterface
         $this->Database->resetDevicesIsConnected();
         $this->updateDeviceList();
         consoleLog("System has started");
-        // set static links
-        Device::$Database = $this->Database;
+        // set static references
+        Device::$Database = &$this->Database;
         Device::$clientList = &$this->clientList;
     }
 
@@ -277,12 +277,13 @@ class SocketController implements MessageComponentInterface
     public function watchDog()
     {
         foreach ($this->deviceList as $device) {
-            $events = $device->monitorTimeouts();
-            foreach ($events as $event) {
-                #################################e
-                # send event
-                #34##################################
-            }
+            $events = $device->monitoringTimeouts();
+            if (isset($events))
+                foreach ($events as $event) {
+                    #################################e
+                    # send event
+                    #34##################################
+                }
         }
     }
 
@@ -311,7 +312,7 @@ class SocketController implements MessageComponentInterface
         }
     }
 
-    private function createConnectionUpdateMessage($id)
+    private function createConnectionUpdateMessage(int $id)
     {
         $device = $this->deviceList[$id];
 
