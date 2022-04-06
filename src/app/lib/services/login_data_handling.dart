@@ -15,14 +15,12 @@ checkQrCode(qrCodeType, qrCodeData) {
       decodedJSON = json.decode(qrCodeData) as Map<String, dynamic>;
       decodeSucceeded = true;
     } on FormatException {
-      print('The provided string is not valid JSON');
       return false;
     }
 
     if (decodeSucceeded &&
         decodedJSON["host"] != null &&
         decodedJSON["apikey"] != null) {
-      print("No Null values");
       return true;
     } else {
       return false;

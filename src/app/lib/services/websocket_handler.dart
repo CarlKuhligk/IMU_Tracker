@@ -152,7 +152,6 @@ class WebSocketHandler {
   void registerAsSender(socketData) {
     var _registrationMessage = buildRegistrationMessage(socketData);
     channel.add(jsonEncode(_registrationMessage));
-    print(_registrationMessage);
   }
 
   MessageHandlerReturnType messageHandler(message) {
