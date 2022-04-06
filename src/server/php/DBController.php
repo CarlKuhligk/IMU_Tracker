@@ -158,7 +158,7 @@ class DBController
         $a = $newSettings->a;
         $ri = $newSettings->ri;
         $r = $newSettings->r;
-        $this->dbRequest("UPDATE devices SET (idleTimeout=$it, batteryWarning=$b, connectionTimeout=$c, measurementInterval=$m, accelerationMin=$ai, accelerationMax=$a, rotationMin=$ri, rotationMax=$r) WHERE id='$id';");
+        $this->dbRequest("UPDATE devices SET idleTimeout = $it, batteryWarning = $b, connectionTimeout = $c, measurementInterval = $m, accelerationMin = $ai, accelerationMax = $a, rotationMin = $ri, rotationMax = $r WHERE id='$id';");
     }
 
     public function validateKey($apikey)
@@ -260,7 +260,7 @@ class DBController
         $this->dbRequest("UPDATE devices SET lastConnection='{$time->format('Y-m-d H:i:s')}' WHERE id='$id';");
     }
 
-    public function getLastConnectionTime($id, $time)
+    public function getLastConnectionTime($id)
     {
         $timeString = $this->dbRequest("SELECT lastConnection FROM devices WHERE id='$id';");
         return new DateTime($timeString, new DateTimeZone($this->settings->timezone));

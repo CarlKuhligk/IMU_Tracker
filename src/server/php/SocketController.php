@@ -144,11 +144,15 @@ class SocketController implements MessageComponentInterface
                     if (in_array($client->resourceId, $this->subscriberList)) {
                         $client->send(createResponseMessage(R_SUBSCRIBER_CANT_REGISTER_AS_STREAMER));
                     } else {
-                        $device->login($client->resourceId);
-                        $client->send(createResponseMessage(R_DEVICE_REGISTERED));
-                        $device->sendSettings(); // send recent settings
-                        $this->sendGlobalMessage(createUpdateConnectionResponseMessage($requestingDeviceId, true), MF_SUBSCRIBER);
-                        consoleLog("Device {$requestingDeviceId} logged in.");
+                        if ($data->c) {
+                            $client->send(createResponseMessage(R_KEY_IS_VALID));
+                        } else {
+                            $device->login($client->resourceId);
+                            $client->send(createResponseMessage(R_DEVICE_REGISTERED));
+                            $device->sendSettings(); // send recent settings
+                            $this->sendGlobalMessage(createUpdateConnectionResponseMessage($requestingDeviceId, true), MF_SUBSCRIBER);
+                            consoleLog("Device {$requestingDeviceId} logged in.");
+                        }
                     }
                 }
             } else {

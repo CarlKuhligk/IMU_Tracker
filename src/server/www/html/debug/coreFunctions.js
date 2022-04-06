@@ -10,7 +10,7 @@ var serverIP = $.get("../debug/getServerIP.php").done(function (data) {
   // socket message callback
   websocket.onmessage = function (e) {
     outputField.append(e.data);
-    console.log(e.data);
+    console.log(e.data + "\n");
 
     input = JSON.parse(e.data);
     if (input.t === "k") {
@@ -43,6 +43,7 @@ function onDropdownChange() {
     case "login":
       mainButton.firstChild.data = "send";
       createTextbox("input1", "enter apikey", true);
+      createTextbox("input2", "validate key", true);
       break;
 
     case "logout":
@@ -104,6 +105,7 @@ function onClick() {
     case "login":
       message.t = "i";
       message.a = document.getElementsByName("input1")[0].value;
+      message.c = document.getElementsByName("input2")[0].value;
       sendMessage(message);
       console.log("login");
       break;

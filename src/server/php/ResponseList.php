@@ -27,7 +27,7 @@ define("R_MISSING_TYPE", 30);
 define("R_MISSING_DATA", 31);
 define("R_UNKNOWN_DATA_TYPE", 32);
 define("R_NOT_AUTHORIZED", 33);
-
+define("R_KEY_IS_VALID", 34);
 
 define("R_SERVER_OFFLINE", 40);
 define("R_UNKNOWN_ERROR", 42);
