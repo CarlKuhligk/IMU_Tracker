@@ -9,10 +9,15 @@
 
 .inputContainer {
     width: 530px;
-    display: grid;
     border: 1px solid black;
     border-bottom: 0px;
     padding: 10px;
+    }
+
+.textboxes {
+    width: 100%;
+    display: grid;
+    border-bottom: 0px;
     }
 
 .outputContainer {
