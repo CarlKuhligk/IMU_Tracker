@@ -1,13 +1,15 @@
 class WebSocketTestResultReturnType {
   bool isWebSocketConnected;
-  int webSocketResponseType;
-  WebSocketTestResultReturnType(
-      this.isWebSocketConnected, this.webSocketResponseType);
+  bool isApiKeyValid;
+  int webSocketResponseNumber;
+  WebSocketTestResultReturnType(this.isWebSocketConnected, this.isApiKeyValid,
+      this.webSocketResponseNumber);
 }
 
 class MessageHandlerReturnType {
   bool hasMessageRightFormat;
-  int webSocketResponseType;
-  MessageHandlerReturnType(
-      this.hasMessageRightFormat, this.webSocketResponseType);
+  String webSocketResponseType;
+  int webSocketResponseNumber;
+  MessageHandlerReturnType(this.hasMessageRightFormat,
+      this.webSocketResponseType, this.webSocketResponseNumber);
 }

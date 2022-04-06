@@ -106,12 +106,10 @@ class _RegistrationScreen extends State<RegistrationScreen> {
         socketData = scanData.code;
         var webSocketTestResult =
             await websocket.testWebSocketConnection(json.decode(socketData));
-        if (webSocketTestResult.isWebSocketConnected) {
-          if (webSocketTestResult.webSocketResponseType ==
-              responseList['deviceRegistered']!.responseNumber) {
-            LocalStorageService.writeAuthenticationToMemory(scanData.code);
-            LocalStorageService.setDeviceIsRegistered(true);
-          }
+        if (webSocketTestResult.isWebSocketConnected &
+            webSocketTestResult.isApiKeyValid) {
+          LocalStorageService.writeAuthenticationToMemory(scanData.code);
+          LocalStorageService.setDeviceIsRegistered(true);
         }
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -122,7 +120,8 @@ class _RegistrationScreen extends State<RegistrationScreen> {
         );
       } else {
         var qrCodeHasRightFormat = false;
-        var webSocketTestResult = WebSocketTestResultReturnType(false, 0);
+        var webSocketTestResult =
+            WebSocketTestResultReturnType(false, false, 0);
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => QrCodeFoundPage(

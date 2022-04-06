@@ -35,14 +35,14 @@ class WebSocketHandler {
         (message) {
           var handledMessage = messageHandler(message);
           if (handledMessage.hasMessageRightFormat &&
-              handledMessage.webSocketResponseType ==
+              handledMessage.webSocketResponseNumber ==
                   responseList['deviceRegistered']!.responseNumber) {
             isWebsocketRunning = true;
             successfullyRegistered = true;
           } else {
             //channel.close();
           }
-          _webSocketMessageNumber = handledMessage.webSocketResponseType;
+          _webSocketMessageNumber = handledMessage.webSocketResponseNumber;
         },
         onError: (err) {
           isWebsocketRunning = false;
@@ -80,17 +80,21 @@ class WebSocketHandler {
       decodedJSON = json.decode(message) as Map<String, dynamic>;
       decodeSucceeded = true;
     } on FormatException {
-      print('The provided string is not valid JSON');
-      return MessageHandlerReturnType(false, 0);
+      return MessageHandlerReturnType(false, 'w', 0);
     }
 
-    if (decodeSucceeded &&
-        decodedJSON["type"] != null &&
-        decodedJSON["id"] != null) {
-      print("Right message format");
-      return MessageHandlerReturnType(true, int.parse(decodedJSON['id']));
+    if (decodeSucceeded && decodedJSON["t"] != null) {
+      switch (decodedJSON["t"]) {
+        case "r":
+          return MessageHandlerReturnType(
+              true, 'r', int.parse(decodedJSON['i']));
+        case "s":
+          return MessageHandlerReturnType(true, 's', int.parse(message));
+        default:
+          return MessageHandlerReturnType(true, 'u', 0);
+      }
     } else {
-      return MessageHandlerReturnType(false, 0);
+      return MessageHandlerReturnType(false, 'w', 0);
     }
   }
 
@@ -114,41 +118,48 @@ class WebSocketHandler {
       socketData) async {
     bool _isWebsocketRunning = false;
 
+    bool _isApiKeyValid = false;
     var _webSocketMessageNumber = 0;
 
-    var _registrationMessage = buildRegistrationMessage(socketData);
+    var _apiKeyTestMessage = buildApiKeyTestMessage(socketData);
+
+    var _webSocket;
 
     try {
-      var _webSocket = await WebSocket.connect('ws://${socketData['host']}');
+      _webSocket = await WebSocket.connect('ws://${socketData['host']}');
       _isWebsocketRunning = true;
-      _webSocket.add(jsonEncode(_registrationMessage));
+      _webSocket.add(jsonEncode(_apiKeyTestMessage));
 
       _webSocket.listen(
         (message) {
           var handledMessage = messageHandler(message);
           if (handledMessage.hasMessageRightFormat &&
-              handledMessage.webSocketResponseType ==
-                  responseList['deviceRegistered']!.responseNumber) {
-            _isWebsocketRunning = true;
-            _webSocket.close();
-          } else {
-            _webSocket.close();
+              handledMessage.webSocketResponseNumber ==
+                  responseList['validApiKey']!.responseNumber) {
+            _isApiKeyValid = true;
           }
-          _webSocketMessageNumber = handledMessage.webSocketResponseType;
+          _webSocketMessageNumber = handledMessage.webSocketResponseNumber;
         },
         onError: (err) {
           _isWebsocketRunning = false;
+          if (_webSocket != null) {
+            _webSocket.close();
+          }
         },
       );
     } catch (e) {
       _isWebsocketRunning = false;
+      _isApiKeyValid = false;
       return WebSocketTestResultReturnType(
-          _isWebsocketRunning, _webSocketMessageNumber);
+          _isWebsocketRunning, _isApiKeyValid, _webSocketMessageNumber);
     }
 
     return await Future.delayed(const Duration(milliseconds: 500), () {
+      if (_webSocket != null) {
+        _webSocket.close();
+      }
       return WebSocketTestResultReturnType(
-          _isWebsocketRunning, _webSocketMessageNumber);
+          _isWebsocketRunning, _isApiKeyValid, _webSocketMessageNumber);
     });
   }
 
@@ -157,6 +168,13 @@ class WebSocketHandler {
     _registrationMessage['a'] = socketData['apikey'];
 
     return _registrationMessage;
+  }
+
+  buildApiKeyTestMessage(socketData) {
+    var _apiKeyTestMessage = {"t": "i", "a": "", "c": true};
+    _apiKeyTestMessage['a'] = socketData['apikey'];
+
+    return _apiKeyTestMessage;
   }
 
   buildLogOutMessage(personalPin) {
