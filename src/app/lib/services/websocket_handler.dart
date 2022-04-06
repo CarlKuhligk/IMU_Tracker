@@ -61,59 +61,6 @@ class WebSocketHandler {
     });
   }
 
-  void sendMessage(messageString) {
-    if (messageString.isNotEmpty) {
-      channel.add(jsonEncode(messageString));
-    }
-  }
-
-  void registerAsSender(socketData) {
-    var _registrationMessage = buildRegistrationMessage(socketData);
-    channel.add(jsonEncode(_registrationMessage));
-    print(_registrationMessage);
-  }
-
-  MessageHandlerReturnType messageHandler(message) {
-    var decodedJSON;
-    bool decodeSucceeded = false;
-    try {
-      decodedJSON = json.decode(message) as Map<String, dynamic>;
-      decodeSucceeded = true;
-    } on FormatException {
-      return MessageHandlerReturnType(false, 'w', 0);
-    }
-
-    if (decodeSucceeded && decodedJSON["t"] != null) {
-      switch (decodedJSON["t"]) {
-        case "r":
-          return MessageHandlerReturnType(
-              true, 'r', int.parse(decodedJSON['i']));
-        case "s":
-          return MessageHandlerReturnType(true, 's', int.parse(message));
-        default:
-          return MessageHandlerReturnType(true, 'u', 0);
-      }
-    } else {
-      return MessageHandlerReturnType(false, 'w', 0);
-    }
-  }
-
-  void buildValueMessage(
-      accelerationValue, gyroscopeValue, temperatureValue, batteryState) {
-    var buildMessage = {
-      "t": "d",
-      "a": accelerationValue,
-      "r": gyroscopeValue,
-      "tp": temperatureValue,
-      "b": batteryState
-    };
-    sendMessage(buildMessage);
-  }
-
-  void dispose() {
-    channel.close();
-  }
-
   Future<WebSocketTestResultReturnType> testWebSocketConnection(
       socketData) async {
     bool _isWebsocketRunning = false;
@@ -163,6 +110,18 @@ class WebSocketHandler {
     });
   }
 
+  void buildValueMessage(
+      accelerationValue, gyroscopeValue, temperatureValue, batteryState) {
+    var buildMessage = {
+      "t": "d",
+      "a": accelerationValue,
+      "r": gyroscopeValue,
+      "tp": temperatureValue,
+      "b": batteryState
+    };
+    sendMessage(buildMessage);
+  }
+
   buildRegistrationMessage(socketData) {
     var _registrationMessage = {"t": "i", "a": ""};
     _registrationMessage['a'] = socketData['apikey'];
@@ -182,5 +141,46 @@ class WebSocketHandler {
     _logOutMessage['p'] = personalPin;
 
     return _logOutMessage;
+  }
+
+  void sendMessage(messageString) {
+    if (messageString.isNotEmpty) {
+      channel.add(jsonEncode(messageString));
+    }
+  }
+
+  void registerAsSender(socketData) {
+    var _registrationMessage = buildRegistrationMessage(socketData);
+    channel.add(jsonEncode(_registrationMessage));
+    print(_registrationMessage);
+  }
+
+  MessageHandlerReturnType messageHandler(message) {
+    var decodedJSON;
+    bool decodeSucceeded = false;
+    try {
+      decodedJSON = json.decode(message) as Map<String, dynamic>;
+      decodeSucceeded = true;
+    } on FormatException {
+      return MessageHandlerReturnType(false, 'w', 0);
+    }
+
+    if (decodeSucceeded && decodedJSON["t"] != null) {
+      switch (decodedJSON["t"]) {
+        case "r":
+          return MessageHandlerReturnType(
+              true, 'r', int.parse(decodedJSON['i']));
+        case "s":
+          return MessageHandlerReturnType(true, 's', int.parse(message));
+        default:
+          return MessageHandlerReturnType(true, 'u', 0);
+      }
+    } else {
+      return MessageHandlerReturnType(false, 'w', 0);
+    }
+  }
+
+  void dispose() {
+    channel.close();
   }
 }
