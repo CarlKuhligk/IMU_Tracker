@@ -164,4 +164,11 @@ class WebSocketHandler {
 
     return _registrationMessage;
   }
+
+  buildLogOutMessage(personalPin) {
+    var _logOutMessage = {"t": "o"};
+    _logOutMessage['p'] = personalPin;
+
+    return _logOutMessage;
+  }
 }
