@@ -26,7 +26,56 @@ define("R_STREAMER_CANT_REGISTER_AS_SUBSCRIBER", 29);
 define("R_MISSING_TYPE", 30);
 define("R_MISSING_DATA", 31);
 define("R_UNKNOWN_DATA_TYPE", 32);
-define("PR_DATA_ITEM_COUNT_DOESNT_MATCH", 33);
+define("R_NOT_AUTHORIZED", 33);
+
 
 define("R_SERVER_OFFLINE", 40);
 define("R_UNKNOWN_ERROR", 42);
+
+
+
+function createUpdateConnectionResponseMessage($id, $state)
+{
+    $message = (object)[
+        't' => "uc",
+        'i' => "{$id}",
+        'c' => "{$state}"
+    ];
+    return json_encode($message);
+}
+
+function createResponseMessage($responseId)
+{
+    $response = (object)[
+        't' => "r",
+        'i' => "{$responseId}"
+    ];
+    return json_encode($response);
+}
+
+function createEventResponseMessage($deviceId, $eventId)
+{
+    $response = (object)[
+        't' => "e",
+        'e' => "{$eventId}",
+        'i' => "{$deviceId}"
+    ];
+    return json_encode($response);
+}
+
+function createDeviceCreatedMessage($newApikey)
+{
+    $response = (object)[
+        't' => "k",
+        'a' => "{$newApikey}"
+    ];
+    return json_encode($response);
+}
+
+function createUpdateDeviceListMessage()
+{
+    $response = (object)[
+        't' => "ud",
+    ];
+    return json_encode($response);
+}
