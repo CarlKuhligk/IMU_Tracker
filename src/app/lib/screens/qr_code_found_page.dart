@@ -135,8 +135,12 @@ class QrCodeFoundPage extends StatelessWidget {
   }
 
   _getWebsocketResponseString(webSocketResponseTypeNumber) {
-    var responseType = responseList.values.firstWhere(
-        (element) => element.responseNumber == webSocketResponseTypeNumber);
-    return responseType.responseString;
+    try {
+      var responseType = responseList.values.firstWhere(
+          (element) => element.responseNumber == webSocketResponseTypeNumber);
+      return responseType.responseString;
+    } catch (e) {
+      return "unknown response";
+    }
   }
 }
