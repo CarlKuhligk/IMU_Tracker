@@ -214,19 +214,34 @@ class Device
         Device::$clientList[$this->streamerResourceId]->send($message);
     }
 
+    public function updateSettings($newSettings)
+    {
+        Device::$Database->updateDeviceSettings($this->id, $newSettings);
+        $this->settings->idleTimeout = $newSettings->it;
+        $this->settings->batteryWarning = $newSettings->b;
+        $this->settings->connectionTimeout = $newSettings->c;
+        $this->settings->measurementInterval = $newSettings->m;
+        $this->settings->accelerationMin = $newSettings->ai;
+        $this->settings->accelerationMax = $newSettings->a;
+        $this->settings->rotationMin = $newSettings->ri;
+        $this->settings->rotationMax = $newSettings->r;
+    }
+
     public function sendSettings()
     {
         $settingsMessage = (object)[
             't' => "s",
             'it' => "{$this->settings->idleTimeout}",
             'b' => "{$this->settings->batteryWarning}",
+            'c' => "{$this->settings->connectionTimeout}",
             'm' => "{$this->settings->measurementInterval}",
             'ai' => "{$this->settings->accelerationMax}",
             'a' => "{$this->settings->accelerationMin}",
             'ri' => "{$this->settings->rotationMin}",
             'r' => "{$this->settings->rotationMax}"
         ];
-        $this->sendToStreamingDevice(json_encode($settingsMessage));
+        $settingsMessage = json_encode($settingsMessage);
+        $this->sendToStreamingDevice($settingsMessage);
     }
 
     private function sendEvent($eventId)

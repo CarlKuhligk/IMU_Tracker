@@ -111,8 +111,8 @@ UNLOCK TABLES;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'IGNORE_SPACE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`securitymotiontracker`@`%` PROCEDURE `addDevice`(IN `in_employee` VARCHAR(16),
-																IN `in_pin` VARCHAR(8),
+CREATE DEFINER=`securitymotiontracker`@`%` PROCEDURE `addDevice`(IN `in_employee` CHAR(32),
+																IN `in_pin` CHAR(64),
 																IN `in_idleTimeout` INT(10) Unsigned,
 																IN `in_batteryWarning` TINYINT(4) Unsigned,
 																IN `in_connectionTimeout` INT(10) Unsigned,
