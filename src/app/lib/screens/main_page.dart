@@ -24,6 +24,10 @@ class MainPage extends StatefulWidget {
 
 class _MyMainPageState extends State<MainPage> {
   var websocket = getIt<WebSocketHandler>();
+  final Battery _battery = Battery();
+
+  BatteryState? _batteryState;
+  StreamSubscription<BatteryState>? _batteryStateSubscription;
 
   StreamSubscription? accelerationSubscription;
   StreamSubscription? gyroscopeSubscription;
@@ -32,6 +36,7 @@ class _MyMainPageState extends State<MainPage> {
 
   var accelerationValues;
   var gyroscopeValues;
+  var batteryState;
   String _connectionStateText = 'Not Connected';
   @override
   void initState() {
@@ -99,6 +104,16 @@ class _MyMainPageState extends State<MainPage> {
   }
 
   startTransmissionInterval() {
+    if (_batteryStateSubscription == null) {
+      _batteryStateSubscription =
+          _battery.onBatteryStateChanged.listen((BatteryState state) {
+        batteryState = state;
+      });
+    } else {
+      // it has already ben created so just resume it
+      _batteryStateSubscription?.resume();
+    }
+
     // if the accelerometer subscription hasn't been created, go ahead and create it
     if (accelerationSubscription == null) {
       accelerationSubscription =
@@ -123,8 +138,8 @@ class _MyMainPageState extends State<MainPage> {
     if (timer == null || !timer!.isActive) {
       timer = Timer.periodic(const Duration(milliseconds: 200), (_) {
         if (websocket.successfullyRegistered) {
-          websocket.buildValueMessage(accelerationValues, gyroscopeValues,
-              5); //TODO implement all necessary values
+          websocket.buildValueMessage(accelerationValues, gyroscopeValues, 5,
+              batteryState); //TODO implement all necessary values
         }
       });
     }

@@ -94,20 +94,14 @@ class WebSocketHandler {
     }
   }
 
-  void buildValueMessage(accelerationValues, gyroscopeValues, batteryState) {
+  void buildValueMessage(
+      accelerationValue, gyroscopeValue, temperatureValue, batteryState) {
     var buildMessage = {
-      "type": "data",
-      "value": [
-        accelerationValues.x,
-        accelerationValues.y,
-        accelerationValues.z,
-        gyroscopeValues.x,
-        gyroscopeValues.y,
-        gyroscopeValues.z,
-        "0",
-        batteryState,
-      ],
-      "apikey": _apiKey
+      "t": "d",
+      "a": accelerationValue,
+      "r": gyroscopeValue,
+      "tp": temperatureValue,
+      "b": batteryState
     };
     sendMessage(buildMessage);
   }
