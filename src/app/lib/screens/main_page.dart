@@ -6,13 +6,12 @@ import 'dart:io';
 import 'dart:async';
 
 //additional packages
-import 'package:sensors/sensors.dart';
-import 'package:battery_plus/battery_plus.dart';
 
 //project internal services / dependency injection
 import 'package:imu_tracker/service_locator.dart';
 import 'package:imu_tracker/services/websocket_handler.dart';
 import 'package:imu_tracker/services/localstorage_service.dart';
+import 'package:imu_tracker/services/internal_sensor_service.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({
@@ -24,19 +23,9 @@ class MainPage extends StatefulWidget {
 
 class _MyMainPageState extends State<MainPage> {
   var websocket = getIt<WebSocketHandler>();
-  final Battery _battery = Battery();
+  var internalSensors = getIt<InternalSensorService>();
 
-  BatteryState? _batteryState;
-  StreamSubscription<BatteryState>? _batteryStateSubscription;
-
-  StreamSubscription? accelerationSubscription;
-  StreamSubscription? gyroscopeSubscription;
   Timer? timer;
-  UserAccelerometerEvent? event;
-
-  var accelerationValues;
-  var gyroscopeValues;
-  var batteryState;
   String _connectionStateText = 'Not Connected';
   @override
   void initState() {
@@ -104,42 +93,17 @@ class _MyMainPageState extends State<MainPage> {
   }
 
   startTransmissionInterval() {
-    if (_batteryStateSubscription == null) {
-      _batteryStateSubscription =
-          _battery.onBatteryStateChanged.listen((BatteryState state) {
-        batteryState = state;
-      });
-    } else {
-      // it has already ben created so just resume it
-      _batteryStateSubscription?.resume();
-    }
-
-    // if the accelerometer subscription hasn't been created, go ahead and create it
-    if (accelerationSubscription == null) {
-      accelerationSubscription =
-          userAccelerometerEvents.listen((UserAccelerometerEvent eve) {
-        accelerationValues = eve;
-      });
-    } else {
-      // it has already ben created so just resume it
-      accelerationSubscription?.resume();
-    }
-
-    if (gyroscopeSubscription == null) {
-      gyroscopeSubscription = gyroscopeEvents.listen((GyroscopeEvent eve) {
-        gyroscopeValues = eve;
-      });
-    } else {
-      // it has already ben created so just resume it
-      gyroscopeSubscription?.resume();
-    }
-
     // Intervall for websocketconnection
+    internalSensors.startInternalSensors();
     if (timer == null || !timer!.isActive) {
       timer = Timer.periodic(const Duration(milliseconds: 200), (_) {
         if (websocket.successfullyRegistered) {
-          websocket.buildValueMessage(accelerationValues, gyroscopeValues, 5,
-              batteryState); //TODO implement all necessary values
+          websocket.buildValueMessage(
+              internalSensors.accelerationValues,
+              internalSensors.gyroscopeValues,
+              5,
+              internalSensors
+                  .batteryState); //TODO implement all necessary values
         }
       });
     }
