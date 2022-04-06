@@ -1,4 +1,6 @@
+// ignore_for_file: prefer_typing_uninitialized_variables
 //dart packages
+
 import 'dart:async';
 
 import 'package:sensors/sensors.dart';
@@ -19,16 +21,24 @@ class InternalSensorService {
   var gyroscopeValues;
 
   startInternalSensors() {
-    if (_batteryStateSubscription == null) {
-      _batteryStateSubscription =
-          _battery.onBatteryStateChanged.listen((BatteryState state) {
-        batteryState = state;
+    startGyroscopeSensor();
+    startAccelerationSensor();
+    startBatterySensor();
+  }
+
+  startGyroscopeSensor() {
+    // if the gyroscope subscription hasn't been created, go ahead and create it
+    if (gyroscopeSubscription == null) {
+      gyroscopeSubscription = gyroscopeEvents.listen((GyroscopeEvent eve) {
+        gyroscopeValues = eve;
       });
     } else {
       // it has already ben created so just resume it
-      _batteryStateSubscription?.resume();
+      gyroscopeSubscription?.resume();
     }
+  }
 
+  startAccelerationSensor() {
     // if the accelerometer subscription hasn't been created, go ahead and create it
     if (accelerationSubscription == null) {
       accelerationSubscription =
@@ -39,14 +49,18 @@ class InternalSensorService {
       // it has already ben created so just resume it
       accelerationSubscription?.resume();
     }
+  }
 
-    if (gyroscopeSubscription == null) {
-      gyroscopeSubscription = gyroscopeEvents.listen((GyroscopeEvent eve) {
-        gyroscopeValues = eve;
+  startBatterySensor() {
+    // if the battery subscription hasn't been created, go ahead and create it
+    if (_batteryStateSubscription == null) {
+      _batteryStateSubscription =
+          _battery.onBatteryStateChanged.listen((BatteryState state) {
+        batteryState = state;
       });
     } else {
       // it has already ben created so just resume it
-      gyroscopeSubscription?.resume();
+      _batteryStateSubscription?.resume();
     }
   }
 }
