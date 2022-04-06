@@ -131,11 +131,6 @@ class _RegistrationScreen extends State<RegistrationScreen> {
           ),
         );
       }
-
-      controller.resumeCamera();
-      setState(() {
-        result = scanData;
-      });
     });
   }
 
