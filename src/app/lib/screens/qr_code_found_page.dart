@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 //project specific types
 import 'package:imu_tracker/data_structures/function_return_types.dart';
-import 'package:imu_tracker/data_structures/response_types.dart';
+import 'package:imu_tracker/data_structures/response_numbers.dart';
 
 //screens
 import 'package:imu_tracker/screens/main_page.dart';
@@ -70,27 +70,19 @@ class QrCodeFoundPage extends StatelessWidget {
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: _getCheckBox(
-                            (webSocketTestResult.webSocketResponseType ==
-                                    responseList['deviceRegistered']!
-                                        .responseNumber)
-                                ? true
-                                : false),
+                        child: _getCheckBox(webSocketTestResult.isApiKeyValid),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
-                            '${_getWebsocketResponseString(webSocketTestResult.webSocketResponseType)}',
+                            '${_getWebsocketResponseString(webSocketTestResult.webSocketResponseNumber)}',
                             style: const TextStyle(fontSize: 20.0)),
                       )
                     ],
                   ),
               ],
             ),
-            if (qrCheckResult &&
-                webSocketTestResult.isWebSocketConnected &&
-                webSocketTestResult.webSocketResponseType ==
-                    responseList['deviceRegistered']!.responseNumber)
+            if (webSocketTestResult.isApiKeyValid)
               RaisedButton(
                 onPressed: () => {
                   Navigator.of(context).push(

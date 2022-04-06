@@ -20,7 +20,7 @@ import 'package:imu_tracker/services/localstorage_service.dart';
 
 //project specific types
 import 'package:imu_tracker/data_structures/function_return_types.dart';
-import 'package:imu_tracker/data_structures/response_types.dart';
+import 'package:imu_tracker/data_structures/response_numbers.dart';
 
 //screens
 import 'package:imu_tracker/screens/qr_code_found_page.dart';

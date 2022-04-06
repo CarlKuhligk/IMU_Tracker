@@ -13,4 +13,5 @@ final responseList = {
   'missingType': ResponseType(30, 'MISSING TYPE'),
   'missingData': ResponseType(31, 'MISSING DATA'),
   'unknownDataType': ResponseType(32, 'UNKNOWN DATA TYPE'),
+  'validApiKey': ResponseType(43, 'VALID API KEY'),
 };
