@@ -219,7 +219,9 @@ class SocketController implements MessageComponentInterface
                 else {
                     array_push($this->subscriberList, $client->resourceId);
                     $client->send(createResponseMessage(R_SUBSCRIBER_REGISTERED));
-                    $client->send(createAddDeviceResponseMessage($this->deviceList));
+                    if (count($this->deviceList) > 0) {
+                        $client->send(createAddDeviceResponseMessage($this->deviceList));
+                    }
                     consoleLog("Client {$client->resourceId} subscribed.");
                 }
             }

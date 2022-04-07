@@ -17,6 +17,12 @@ var serverIP = $.get("../debug/getServerIP.php").done(function (data) {
       generateQRCode(input.a);
     }
   };
+
+  // socket message callback
+  websocket.onclose = function (e) {
+    outputField.append(e.data);
+    console.log(e.data + "\n");
+  };
 });
 
 function createTextbox(name, placeholder, visible) {
@@ -174,7 +180,7 @@ function onClick() {
 
     case "removeDevice":
       message.t = "R";
-      message.e = document.getElementsByName("input0")[0].value;
+      message.i = document.getElementsByName("input0")[0].value;
       console.log("remove device message send:");
       sendMessage(message);
       break;
