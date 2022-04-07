@@ -28,6 +28,7 @@ define("R_MISSING_DATA", 31);
 define("R_UNKNOWN_DATA_TYPE", 32);
 define("R_NOT_AUTHORIZED", 33);
 define("R_KEY_IS_VALID", 34);
+define("R_KEY_IS_NOT_LONGER_VALID", 35);
 
 define("R_SERVER_OFFLINE", 40);
 define("R_UNKNOWN_ERROR", 42);
@@ -107,6 +108,15 @@ function createDeviceCreatedResponseMessage($newApikey)
     $response = (object)[
         't' => "k",
         'a' => "{$newApikey}"
+    ];
+    return json_encode($response);
+}
+
+function createRemoveDeviceResponseMessage($id)
+{
+    $response = (object)[
+        't' => "rd",
+        'i' => "{$id}"
     ];
     return json_encode($response);
 }

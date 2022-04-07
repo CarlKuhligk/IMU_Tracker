@@ -77,7 +77,7 @@ function onDropdownChange() {
       break;
 
     case "newDevice":
-      mainButton.firstChild.data = "add device";
+      mainButton.firstChild.data = "send";
       createTextbox("input0", "employee", true);
       createTextbox("input1", "pin", true);
       createTextbox("input2", "idleTimeout", true);
@@ -88,6 +88,11 @@ function onDropdownChange() {
       createTextbox("input7", "accelerationMax", true);
       createTextbox("input8", "rotationMin", true);
       createTextbox("input9", "rotationMax", true);
+      break;
+
+    case "removeDevice":
+      mainButton.firstChild.data = "send";
+      createTextbox("input0", "device id", true);
       break;
   }
 }
@@ -106,15 +111,15 @@ function onClick() {
       message.t = "i";
       message.a = document.getElementsByName("input1")[0].value;
       message.c = document.getElementsByName("input2")[0].value;
+      console.log("login message send:");
       sendMessage(message);
-      console.log("login");
       break;
     case "logout":
       message.t = "o";
       pin = hash(document.getElementsByName("input1")[0].value);
       message.p = pin;
+      console.log("logout message send:");
       sendMessage(message);
-      console.log("logout");
       break;
     case "transmitData":
       message.t = "m";
@@ -122,8 +127,8 @@ function onClick() {
       message.r = document.getElementsByName("input2")[0].value;
       message.b = document.getElementsByName("input3")[0].value;
       message.tp = document.getElementsByName("input4")[0].value;
+      console.log("measurement message send:");
       sendMessage(message);
-      console.log("transmitData");
       break;
     case "settingsUpdate":
       message.t = "S";
@@ -136,20 +141,20 @@ function onClick() {
       message.a = document.getElementsByName("input6")[0].value;
       message.ri = document.getElementsByName("input7")[0].value;
       message.r = document.getElementsByName("input8")[0].value;
+      console.log("settings update message send:");
       sendMessage(message);
-      console.log("event");
       break;
     case "subscribe":
       message.t = "s";
       message.s = 1;
+      console.log("subscribe message send:");
       sendMessage(message);
-      console.log("subscribe");
       break;
     case "unsubscribe":
       message.t = "s";
       message.s = 0;
+      console.log("unsubscribe message send:");
       sendMessage(message);
-      console.log("subscribe");
       break;
     case "newDevice":
       message.t = "A";
@@ -163,7 +168,14 @@ function onClick() {
       message.a = document.getElementsByName("input7")[0].value;
       message.ri = document.getElementsByName("input8")[0].value;
       message.r = document.getElementsByName("input9")[0].value;
+      console.log("create device message send:");
+      sendMessage(message);
+      break;
 
+    case "removeDevice":
+      message.t = "R";
+      message.e = document.getElementsByName("input0")[0].value;
+      console.log("remove device message send:");
       sendMessage(message);
       break;
   }

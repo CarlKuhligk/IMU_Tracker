@@ -45,6 +45,7 @@ class Device
     public bool $isLoggedIn;            // indicates the login state
     public Settings $settings;                  // contains all editable device settings
     private $timezone;
+    public $isObsolete = false;
 
 
     public bool $isConnected = false;   // indicates the connection state of the websocket connection
@@ -55,7 +56,7 @@ class Device
 
 
     public string $databaseTableName = "";   // used for database operations
-    private $streamerResourceId = null; // equals the ratchat resource id of the websocket client connection if the client registers as streamerResourceId otherwise its empty
+    public $streamerResourceId = null; // equals the ratchat resource id of the websocket client connection if the client registers as streamerResourceId otherwise its empty
 
 
     public function __construct($deviceData)

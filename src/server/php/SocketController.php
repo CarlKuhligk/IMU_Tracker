@@ -149,6 +149,8 @@ class SocketController implements MessageComponentInterface
                 // check if device is already registered
                 if ($device->isConnected) {
                     $client->send(createResponseMessage(R_DEVICE_ALREADY_REGISTERED));
+                } elseif ($device->isObsolete) {
+                    $client->send(createResponseMessage(R_KEY_IS_NOT_LONGER_VALID));
                 } else {
                     // check if device has subscribed
                     if (in_array($client->resourceId, $this->subscriberList)) {
@@ -262,6 +264,9 @@ class SocketController implements MessageComponentInterface
                     $device = $this->deviceList[$data->i];
                     $device->updateSettings($data);
                     $device->sendSettings();
+                    //#region [todo]
+                    #$this->sendGlobalMessage(createMeasurementOutResponseMessage($device->id, $data), MF_SUBSCRIBER);
+                    //#endregion
                 } else
                     $client->send(createResponseMessage(R_INVALID_DEVICE_ID));
             } else
@@ -289,9 +294,16 @@ class SocketController implements MessageComponentInterface
             if (isset($data->i)) {
                 // check if device id is valid
                 if (array_key_exists($data->i, $this->deviceList)) {
-                    //#region[keepInMind]
-                    # removeing device
-                    //#endregion
+                    $device = $this->deviceList[$data->i];
+                    if ($device->isConnected) {
+                        // device is connected lets close the connection and prevent re login 
+                        $device->isObsolete = true;
+                        $this->clientList[$device->streamerResourceId]->close();
+                    }
+                    $this->Database->removeDevice($device->id);
+                    $this->sendGlobalMessage(createRemoveDeviceResponseMessage($device->id), MF_SUBSCRIBER);
+                    // finally remove the device from the server internal device list
+                    $this->updateDeviceList();
                 } else
                     $client->send(createResponseMessage(R_INVALID_DEVICE_ID));
             } else
