@@ -17,6 +17,7 @@ class Settings
     public $accelerationMax = 0;
     public $rotationMin = 0;
     public $rotationMax = 0;
+    public $batteryEmpty = 5;
 
     public function __construct($settings)
     {
@@ -53,7 +54,7 @@ class Device
     private $idlingStarted;     // used to measure the elapsed time till idling is detected
 
 
-    public string $databaseTableName;   // used for database operations
+    public string $databaseTableName = "";   // used for database operations
     private $streamerResourceId = null; // equals the ratchat resource id of the websocket client connection if the client registers as streamerResourceId otherwise its empty
 
 
@@ -156,7 +157,7 @@ class Device
             $this->idleDetected = false;
         }
 
-        Device::$Database->writeTrackingData($this->dataTableName, $data);
+        Device::$Database->writeTrackingData($this->databaseTableName, $data);
         // send values to all "device" subscriber
         $this->send($data);
 

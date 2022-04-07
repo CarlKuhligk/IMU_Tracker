@@ -120,8 +120,8 @@ function onClick() {
       message.t = "m";
       message.a = document.getElementsByName("input1")[0].value;
       message.r = document.getElementsByName("input2")[0].value;
-      message.tp = document.getElementsByName("input3")[0].value;
-      message.b = document.getElementsByName("input4")[0].value;
+      message.b = document.getElementsByName("input3")[0].value;
+      message.tp = document.getElementsByName("input4")[0].value;
       sendMessage(message);
       console.log("transmitData");
       break;

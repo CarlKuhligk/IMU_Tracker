@@ -49,7 +49,7 @@ class SocketController implements MessageComponentInterface
     {
         // store the new unassigned connection
         $this->clientList[$client->resourceId] = $client;
-        consoleLog("New unassigned connection! Client id: {$client->resourceId} source: {$client->remoteAddress}");
+        consoleLog("Client {$client->resourceId} connected. Source: {$client->remoteAddress}");
     }
 
     public function onMessage(ConnectionInterface $client, $message)
@@ -110,14 +110,14 @@ class SocketController implements MessageComponentInterface
             case "s":
                 $this->handleSubscription($client, $data);
                 break;
-            case "d":
+            case "m":
                 $this->handleNewTrackingData($client, $data);
                 break;
             case "S":
-                $this->handleNewSettings($client, $data);
+                $this->handleChangeSettings($client, $data);
                 break;
             case "A":
-                $this->handleAddDevice($client, $data);
+                $this->handleCreateNewDevice($client, $data);
                 break;
             case "R":
                 $this->handleRemoveDevice($client, $data);
@@ -203,10 +203,11 @@ class SocketController implements MessageComponentInterface
                     $client->send(createResponseMessage(R_STREAMER_CANT_REGISTER_AS_SUBSCRIBER));
                 }
 
-                // assign/register client as subscriber
+                // register client as subscriber
                 else {
                     array_push($this->subscriberList, $client->resourceId);
                     $client->send(createResponseMessage(R_SUBSCRIBER_REGISTERED));
+                    consoleLog("Client {$client->resourceId} subscribed.");
                 }
             }
             // try unregister
@@ -220,6 +221,7 @@ class SocketController implements MessageComponentInterface
                 else {
                     $this->removeSubscriber($client->resourceId);
                     $client->send(createResponseMessage(R_SUBSCRIBER_UNREGISTERED));
+                    consoleLog("Client {$client->resourceId} unsubscribed");
                 }
             }
         } else {
@@ -238,7 +240,7 @@ class SocketController implements MessageComponentInterface
         }
     }
 
-    private function handleNewSettings(ConnectionInterface $client, $data)
+    private function handleChangeSettings(ConnectionInterface $client, $data)
     {
         // check if the resource id is registered
         if (in_array($client->resourceId, $this->subscriberList)) {
@@ -256,13 +258,13 @@ class SocketController implements MessageComponentInterface
             $client->send(createResponseMessage(R_NOT_AUTHORIZED));
     }
 
-    private function handleAddDevice(ConnectionInterface $client, $data)
+    private function handleCreateNewDevice(ConnectionInterface $client, $data)
     {
         // check if the resource id is registered
         if (in_array($client->resourceId, $this->subscriberList)) {
             $newApikey = $this->Database->addDevice($data);
-            $client->send(createDeviceCreatedMessage($newApikey));
-            $this->sendGlobalMessage(createUpdateDeviceListMessage(), MF_SUBSCRIBER);
+            $client->send(createDeviceCreatedResponseMessage($newApikey));
+            $this->sendGlobalMessage(createUpdateDeviceListResponseMessage(), MF_SUBSCRIBER);
         } else
             $client->send(createResponseMessage(R_NOT_AUTHORIZED));
     }

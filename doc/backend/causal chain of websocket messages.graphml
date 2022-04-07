@@ -1668,7 +1668,7 @@ as streamer?<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
           <data key="d6">
             <y:ShapeNode>
               <y:Geometry height="17.30289712086227" width="18.2514485604313" x="-449.52101360332495" y="336.7237489480769"/>
-              <y:Fill color="#FFFF00" transparent="false"/>
+              <y:Fill color="#00FF00" transparent="false"/>
               <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="28.0" horizontalTextPosition="center" iconData="1" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="28.0" x="-4.87427571978435" y="-5.348551439568837">
                 <y:LabelModel>
@@ -2121,7 +2121,7 @@ as streamer?<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
               <y:Geometry height="263.6345440000009" width="221.00171519999958" x="714.0176417932871" y="201.28921900064302"/>
               <y:Fill color="#00CCFF" transparent="false"/>
               <y:BorderStyle color="#000000" raised="false" type="line" width="2.0"/>
-              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="14" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="21.1513671875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" underlinedText="true" verticalTextPosition="bottom" visible="true" width="67.0341796875" x="76.98376775624979" xml:space="preserve" y="4.0">settings in</y:NodeLabel>
+              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="14" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="21.1513671875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" underlinedText="true" verticalTextPosition="bottom" visible="true" width="102.068359375" x="59.46667791249979" xml:space="preserve" y="4.0">change settings</y:NodeLabel>
               <y:Shape type="rectangle"/>
             </y:ShapeNode>
           </data>

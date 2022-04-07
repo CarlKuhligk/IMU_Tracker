@@ -63,7 +63,7 @@ function createEventResponseMessage($deviceId, $eventId)
     return json_encode($response);
 }
 
-function createDeviceCreatedMessage($newApikey)
+function createDeviceCreatedResponseMessage($newApikey)
 {
     $response = (object)[
         't' => "k",
@@ -72,7 +72,7 @@ function createDeviceCreatedMessage($newApikey)
     return json_encode($response);
 }
 
-function createUpdateDeviceListMessage()
+function createUpdateDeviceListResponseMessage()
 {
     $response = (object)[
         't' => "ud",
