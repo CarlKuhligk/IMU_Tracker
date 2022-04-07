@@ -43,7 +43,7 @@ class Device
     public int $id;                     // device id
     public string $employee;            // contains the name of the operating employee
     public bool $isLoggedIn;            // indicates the login state
-    private Settings $settings;                  // contains all editable device settings
+    public Settings $settings;                  // contains all editable device settings
     private $timezone;
 
 

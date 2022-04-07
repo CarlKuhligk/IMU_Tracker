@@ -266,9 +266,9 @@ class DBController
         return new DateTime($timeString, new DateTimeZone($this->settings->timezone));
     }
 
-    public function addDevice($initializationData)
+    public function createDevice($initializationData)
     {
-        $call = $this->mariadbClient->prepare('CALL addDevice(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @apikey)');
+        $call = $this->mariadbClient->prepare('CALL addDevice(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @id, @apikey)');
         $call->bindParam(1, $initializationData->e, PDO::PARAM_STR);
         $call->bindParam(2, $initializationData->p, PDO::PARAM_STR);
         $call->bindParam(3, $initializationData->it);
@@ -281,9 +281,12 @@ class DBController
         $call->bindParam(10, $initializationData->r);
 
         $call->execute();
-        $select = $this->mariadbClient->query('SELECT @apikey');
-        $result = $select->fetch(PDO::FETCH_ASSOC);
-        $result     = $result['@apikey'];
+        $select = $this->mariadbClient->query('SELECT @id, @apikey');
+        $sqlResult = $select->fetch(PDO::FETCH_ASSOC);
+        $result     = (object)[
+            "id" => $sqlResult['@id'],
+            "apikey" => $sqlResult['@apikey']
+        ];
         return $result;
     }
 }

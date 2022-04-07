@@ -43,6 +43,10 @@ RUN chmod a+rwx -R /usr/app
 # WEBCONTENT #
 COPY ./www/html/ /var/www/html/
 RUN chmod a+rwx -R /var/www/html
+# ANDROID APP #
+#COPY ../../app/web/ /usr/app/bin/
+#RUN chmod a+rwx -R /var/www/html
+
 
 ##########################################
 # E N V I R O M E N T  V A R I A B L E S #

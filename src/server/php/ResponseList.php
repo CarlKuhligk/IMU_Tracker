@@ -46,10 +46,32 @@ function createMeasurementOutResponseMessage($id, $measurement)
     return json_encode($response);
 }
 
+function createAddDeviceResponseMessage($deviceList)
+{
+    $convertedDEviceList = array();
 
+    foreach ($deviceList as $device) {
+        $convertedDevice = (object)[
+            'i' => "{$device->id}",
+            'e' => "{$device->employee}",
+            'it' => "{$device->settings->idleTimeout}",
+            'b' => "{$device->settings->batteryWarning}",
+            'c' => "{$device->settings->connectionTimeout}",
+            'm' => "{$device->settings->measurementInterval}",
+            'ai' => "{$device->settings->accelerationMin}",
+            'a' => "{$device->settings->accelerationMax}",
+            'ri' => "{$device->settings->rotationMin}",
+            'r' => "{$device->settings->rotationMax}",
+        ];
+        array_push($convertedDEviceList, $convertedDevice);
+    }
 
-
-
+    $response = (object)[
+        't' => "ad",
+        'd' => $convertedDEviceList
+    ];
+    return json_encode($response);
+}
 
 function createUpdateConnectionResponseMessage($id, $state)
 {
@@ -85,14 +107,6 @@ function createDeviceCreatedResponseMessage($newApikey)
     $response = (object)[
         't' => "k",
         'a' => "{$newApikey}"
-    ];
-    return json_encode($response);
-}
-
-function createUpdateDeviceListResponseMessage()
-{
-    $response = (object)[
-        't' => "ud",
     ];
     return json_encode($response);
 }

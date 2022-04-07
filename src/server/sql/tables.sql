@@ -121,6 +121,7 @@ CREATE DEFINER=`securitymotiontracker`@`%` PROCEDURE `addDevice`(IN `in_employee
 																IN `in_accelerationMax` FLOAT Unsigned,
 																IN `in_rotationMin` FLOAT Unsigned,
 																IN `in_rotationMax` FLOAT Unsigned,
+																OUT `out_id` INT(10) Unsigned,
 																OUT `out_apikey` CHAR(64))
 BEGIN
 	
@@ -135,6 +136,7 @@ BEGIN
 	
 	-- define new device id and log table name
 	SET @new_device_id = COALESCE (@last_device_id +1,1);
+	SET out_id =  @new_device_id;
 	SET @new_table_name = CONCAT("device_", @new_device_id,"_log");
 
 	-- generate api key based on tablename and timestamp

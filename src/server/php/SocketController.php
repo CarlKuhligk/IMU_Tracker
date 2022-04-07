@@ -207,6 +207,7 @@ class SocketController implements MessageComponentInterface
                 else {
                     array_push($this->subscriberList, $client->resourceId);
                     $client->send(createResponseMessage(R_SUBSCRIBER_REGISTERED));
+                    $client->send(createAddDeviceResponseMessage($this->deviceList));
                     consoleLog("Client {$client->resourceId} subscribed.");
                 }
             }
@@ -263,9 +264,11 @@ class SocketController implements MessageComponentInterface
     {
         // check if the resource id is registered
         if (in_array($client->resourceId, $this->subscriberList)) {
-            $newApikey = $this->Database->addDevice($data);
-            $client->send(createDeviceCreatedResponseMessage($newApikey));
-            $this->sendGlobalMessage(createUpdateDeviceListResponseMessage(), MF_SUBSCRIBER);
+            $result = $this->Database->createDevice($data);
+            $client->send(createDeviceCreatedResponseMessage($result->apikey));
+            $this->updateDeviceList();
+            $newDevice = [$this->deviceList[$result->id]];
+            $this->sendGlobalMessage(createAddDeviceResponseMessage($newDevice), MF_SUBSCRIBER);
         } else
             $client->send(createResponseMessage(R_NOT_AUTHORIZED));
     }
