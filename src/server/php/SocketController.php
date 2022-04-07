@@ -235,6 +235,7 @@ class SocketController implements MessageComponentInterface
         if ($requestingDeviceId = $this->getDeviceIdByResourceId($client->resourceId)) {
             $device = $this->deviceList[$requestingDeviceId];
             $device->processTrackingData($data);
+            $this->sendGlobalMessage(createMeasurementOutResponseMessage($device->id, $data), MF_SUBSCRIBER);
         } else {
             $client->send(createResponseMessage(R_DEVICE_NOT_REGISTERED));
         }

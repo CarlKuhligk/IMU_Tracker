@@ -3606,7 +3606,7 @@ as streamer?<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
           <data key="d6">
             <y:ShapeNode>
               <y:Geometry height="17.30289712086227" width="18.2514485604313" x="1205.7324560498325" y="-260.67145479755936"/>
-              <y:Fill color="#FFFF00" transparent="false"/>
+              <y:Fill color="#00FF00" transparent="false"/>
               <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="28.0" horizontalTextPosition="center" iconData="1" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="28.0" x="-4.874275719784237" y="-5.348551439568837">
                 <y:LabelModel>

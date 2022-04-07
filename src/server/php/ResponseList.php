@@ -33,15 +33,32 @@ define("R_SERVER_OFFLINE", 40);
 define("R_UNKNOWN_ERROR", 42);
 
 
+function createMeasurementOutResponseMessage($id, $measurement)
+{
+    $response = (object)[
+        't' => "M",
+        'i' => "{$id}",
+        'a' => "{$measurement->a}",
+        'r' => "{$measurement->r}",
+        'tp' => "{$measurement->tp}",
+        'b' => "{$measurement->b}",
+    ];
+    return json_encode($response);
+}
+
+
+
+
+
 
 function createUpdateConnectionResponseMessage($id, $state)
 {
-    $message = (object)[
+    $response = (object)[
         't' => "uc",
         'i' => "{$id}",
         'c' => "{$state}"
     ];
-    return json_encode($message);
+    return json_encode($response);
 }
 
 function createResponseMessage($responseId)
