@@ -20,29 +20,39 @@ define("MF_STREAMER", 1 << 2);
 define("MF_CONNECTION", 1 << 3);
 
 
+
 class SocketController implements MessageComponentInterface
 {
     private $subscriberList = array();  // stores resources id's of subscribers (web client)
     private $clientList = array();      // stores ConnectionInterface objects
     private $deviceList = array();      // stores Devices objects
     private DBController $Database;
+    private $dataIsObsoleteAfterNDays;
+    private $watchdogAIsActive = false;
+    private $watchdogBIsActive = false;
 
     function __construct()
     {
+        $this->dataIsObsoleteAfterNDays =  getenv("OBSOLETE_AFTER_DAYS");
         $this->Database = new DBController(getenv("MYSQL_HOST"), getenv("MYSQL_USER"), getenv("MYSQL_PASSWORD"), getenv("MYSQL_DATABASE"));
 
         // try to connect to database
-        if ($this->Database->connect() == false) {
+        if ($this->Database->connect() === false) {
             die("Check your database server!\n");
         }
+        consoleLog("Setting: Data is obsolete after {$this->dataIsObsoleteAfterNDays} days.");
         consoleLog("Start system:");
-        consoleLog("-> Reset online state");
-        $this->Database->resetDevicesIsConnected();
-        $this->updateDeviceList();
-        consoleLog("System has started");
         // set static references
         Device::$Database = &$this->Database;
         Device::$clientList = &$this->clientList;
+        consoleLog("-> Reset online state");
+        $this->Database->resetDevicesIsConnected();
+        $this->updateDeviceList();
+        consoleLog("-> Enable watchdog a");
+        $this->watchdogAIsActive = true;
+        consoleLog("-> Enable watchdog b");
+        $this->watchdogBIsActive = true;
+        consoleLog("System has started");
     }
 
     public function onOpen(ConnectionInterface $client)
@@ -330,33 +340,34 @@ class SocketController implements MessageComponentInterface
         return false;
     }
 
-
     private function removeSubscriber($resourceId)
     {
         $key = array_search($resourceId, $this->subscriberList);
         unset($this->subscriberList[$key]);
     }
 
-
-
-
-
     public function watchDogA()
     {
-        foreach ($this->deviceList as $device) {
-            $events = $device->monitoringTimeouts();
-            if (isset($events))
-                foreach ($events as $event) {
-                    #################################e
-                    # send event
-                    #34##################################
-                }
+        if ($this->watchdogAIsActive) {
+            foreach ($this->deviceList as $device) {
+                $events = $device->monitoringTimeouts();
+                if (isset($events))
+                    foreach ($events as $event) {
+                        #################################e
+                        # send event
+                        #34##################################
+                    }
+            }
         }
     }
 
     public function watchDogB()
     {
-        // delete obsolete data
+        if ($this->watchdogBIsActive) {
+            // delete obsolete data
+            $this->Database->removeObsoleteData($this->dataIsObsoleteAfterNDays);
+            consoleLog("Auto cleanup: Remove obsolete data older as {$this->dataIsObsoleteAfterNDays} day's.");
+        }
     }
 
     // sends a message to the specified groupe (by default to all open connections)

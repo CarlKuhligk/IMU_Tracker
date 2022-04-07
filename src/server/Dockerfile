@@ -43,6 +43,7 @@ RUN chmod a+rwx -R /usr/app
 # WEBCONTENT #
 COPY ./www/html/ /var/www/html/
 RUN chmod a+rwx -R /var/www/html
+
 # ANDROID APP #
 #COPY ../../app/web/ /usr/app/bin/
 #RUN chmod a+rwx -R /var/www/html
@@ -60,6 +61,8 @@ ENV MYSQL_PASSWORD "mydatabase"
 ENV MYSQL_PATH "/usr/app/sql/tables.sql"
 # CONSOLE LOGGING #
 ENV CONSOLE_OUTPUT 1
+# OBSOLETE DATA AFTER N DAYS #
+ENV OBSOLETE_AFTER_DAYS 7
 
 #######################
 # W E B C O N T E N T #

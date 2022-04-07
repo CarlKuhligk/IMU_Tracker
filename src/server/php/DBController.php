@@ -289,4 +289,18 @@ class DBController
         ];
         return $result;
     }
+
+    public function removeObsoleteData($timeInDays)
+    {
+        $call = $this->mariadbClient->prepare('CALL removeObsoleteData(?)');
+        $call->bindParam(1, $timeInDays);
+        $call->execute();
+    }
+
+    public function removeDevice($id)
+    {
+        $call = $this->mariadbClient->prepare('CALL removeDevice(?)');
+        $call->bindParam(1, $id);
+        $call->execute();
+    }
 }
