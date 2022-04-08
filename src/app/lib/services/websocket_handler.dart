@@ -167,8 +167,8 @@ class WebSocketHandler {
         case "r":
           return messageDecoderReturnType(
               true, 'r', int.parse(decodedJSON['i']));
-        case "su":
-          return messageDecoderReturnType(true, 'su', int.parse(message));
+        case "s":
+          return messageDecoderReturnType(true, 's', int.parse(message));
         default:
           return messageDecoderReturnType(true, 'u', 0);
       }
@@ -185,7 +185,7 @@ class WebSocketHandler {
         case 'r':
           _handleResponseMessages(decodedMessage);
           break;
-        case 'su':
+        case 's':
           deviceSettings
               .writeNewDeviceSettingsToInternalStorage(decodedMessage);
           break;
