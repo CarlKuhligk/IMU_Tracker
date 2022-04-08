@@ -113,12 +113,13 @@ class WebSocketHandler {
   void buildValueMessage(
       accelerationValue, gyroscopeValue, temperatureValue, batteryState) {
     var buildMessage = {
-      "t": "d",
+      "t": "m",
       "a": accelerationValue,
       "r": gyroscopeValue,
       "tp": temperatureValue,
       "b": batteryState
     };
+
     sendMessage(buildMessage);
   }
 
