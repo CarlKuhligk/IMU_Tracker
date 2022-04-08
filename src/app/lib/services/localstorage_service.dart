@@ -8,8 +8,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 class LocalStorageService {
   static late LocalStorageService _instance;
   static late SharedPreferences _preferences;
+  static late var deviceSettings;
   static const String deviceIsSetUpKey = 'deviceIsSetUp';
   static const String authenticationValuesKey = 'AuthenticationValues';
+  static const String deviceSettingsValuesKey = 'deviceSettingsValues';
 
   static Future<LocalStorageService> getInstance() async {
     _instance = LocalStorageService();
@@ -23,10 +25,24 @@ class LocalStorageService {
     _preferences.setString(authenticationValuesKey, authenticationValues);
   }
 
+  static void writeDeviceSettingsToMemory(deviceSettings) {
+    _preferences.setString(deviceSettingsValuesKey, deviceSettings);
+  }
+
   static getAuthenticationFromMemory() {
     var _authenticationValues = _preferences.getString(authenticationValuesKey);
     if (_authenticationValues != null) {
       return jsonDecode(_authenticationValues);
+    } else {
+      //TODO Implement error handling
+      return "";
+    }
+  }
+
+  static getDeviceSettingsFromMemory() {
+    var _deviceSettingsValues = _preferences.getString(deviceSettingsValuesKey);
+    if (_deviceSettingsValues != null) {
+      return jsonDecode(_deviceSettingsValues);
     } else {
       //TODO Implement error handling
       return "";
