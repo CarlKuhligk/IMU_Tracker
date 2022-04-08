@@ -6,10 +6,10 @@ class WebSocketTestResultReturnType {
       this.webSocketResponseNumber);
 }
 
-class MessageHandlerReturnType {
+class messageDecoderReturnType {
   bool hasMessageRightFormat;
   String webSocketResponseType;
   int webSocketResponseNumber;
-  MessageHandlerReturnType(this.hasMessageRightFormat,
+  messageDecoderReturnType(this.hasMessageRightFormat,
       this.webSocketResponseType, this.webSocketResponseNumber);
 }

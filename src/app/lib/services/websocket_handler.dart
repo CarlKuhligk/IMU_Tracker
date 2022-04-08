@@ -5,59 +5,50 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
 //project specific types
+import 'package:flutter/services.dart';
 import 'package:imu_tracker/data_structures/function_return_types.dart';
 import 'package:imu_tracker/data_structures/response_numbers.dart';
+
+//project internal services / dependency injection
+import 'package:imu_tracker/services/localstorage_service.dart';
 
 class WebSocketHandler {
 //Websocket Variables
   var successfullyRegistered = false;
-  late WebSocket channel; //initialize a websocket channel
+  var successfullyLoggedOut = false;
+  late WebSocket _channel; //initialize a websocket channel
   final streamController = StreamController.broadcast();
   bool isWebsocketRunning = false; //status of a websocket
   int retryLimit = 3;
-  var _apiKey;
 
   Future<int> connectWebSocket(socketData) async {
-    int _webSocketMessageNumber = 0;
-
-    var _registrationMessage = buildRegistrationMessage(socketData);
-    _apiKey = socketData['apikey'];
-
-    StreamSubscription? streamSubscription;
+    int _webSocketResponseNumber = 0;
 
     try {
-      channel = await WebSocket.connect('ws://${socketData['host']}');
+      _channel = await WebSocket.connect('ws://${socketData['host']}');
       isWebsocketRunning = true;
-      streamController.addStream(channel);
-      channel.add(jsonEncode(_registrationMessage));
-
-      streamSubscription = streamController.stream.listen(
+      registerAsSender(socketData);
+      _channel.listen(
         (message) {
-          var handledMessage = messageHandler(message);
-          if (handledMessage.hasMessageRightFormat &&
-              handledMessage.webSocketResponseNumber ==
-                  responseList['deviceRegistered']!.responseNumber) {
-            isWebsocketRunning = true;
-            successfullyRegistered = true;
-          } else {
-            //channel.close();
-          }
-          _webSocketMessageNumber = handledMessage.webSocketResponseNumber;
+          _messageHandler(message);
+        },
+        onDone: () {
+          isWebsocketRunning = false;
+          //TODO: Errorhandling via errorhandlingpackige
         },
         onError: (err) {
           isWebsocketRunning = false;
+          //TODO: Errorhandling via errorhandlingpackige
         },
       );
     } catch (e) {
       isWebsocketRunning = false;
-      return _webSocketMessageNumber;
+      //TODO: Errorhandling via errorhandlingpackige
+      return _webSocketResponseNumber;
     }
 
     return await Future.delayed(const Duration(seconds: 1), () {
-      if (streamSubscription != null) {
-        streamSubscription.cancel();
-      }
-      return _webSocketMessageNumber;
+      return _webSocketResponseNumber;
     });
   }
 
@@ -66,7 +57,8 @@ class WebSocketHandler {
     bool _isWebsocketRunning = false;
 
     bool _isApiKeyValid = false;
-    var _webSocketMessageNumber = 0;
+
+    var _webSocketResponseNumber = 0;
 
     var _apiKeyTestMessage = buildApiKeyTestMessage(socketData);
 
@@ -79,13 +71,12 @@ class WebSocketHandler {
 
       _webSocket.listen(
         (message) {
-          var handledMessage = messageHandler(message);
-          if (handledMessage.hasMessageRightFormat &&
-              handledMessage.webSocketResponseNumber ==
-                  responseList['validApiKey']!.responseNumber) {
+          var decodedMessage = messageDecoder(message);
+
+          if (_isWebSocketMessageLogInMessage(message)) {
             _isApiKeyValid = true;
           }
-          _webSocketMessageNumber = handledMessage.webSocketResponseNumber;
+          _webSocketResponseNumber = decodedMessage.webSocketResponseNumber;
         },
         onError: (err) {
           _isWebsocketRunning = false;
@@ -98,7 +89,7 @@ class WebSocketHandler {
       _isWebsocketRunning = false;
       _isApiKeyValid = false;
       return WebSocketTestResultReturnType(
-          _isWebsocketRunning, _isApiKeyValid, _webSocketMessageNumber);
+          _isWebsocketRunning, _isApiKeyValid, _webSocketResponseNumber);
     }
 
     return await Future.delayed(const Duration(milliseconds: 500), () {
@@ -106,7 +97,7 @@ class WebSocketHandler {
         _webSocket.close();
       }
       return WebSocketTestResultReturnType(
-          _isWebsocketRunning, _isApiKeyValid, _webSocketMessageNumber);
+          _isWebsocketRunning, _isApiKeyValid, _webSocketResponseNumber);
     });
   }
 
@@ -146,41 +137,96 @@ class WebSocketHandler {
 
   void sendMessage(messageString) {
     if (messageString.isNotEmpty) {
-      channel.add(jsonEncode(messageString));
+      _channel.add(jsonEncode(messageString));
     }
   }
 
   void registerAsSender(socketData) {
     var _registrationMessage = buildRegistrationMessage(socketData);
-    channel.add(jsonEncode(_registrationMessage));
+    _channel.add(jsonEncode(_registrationMessage));
   }
 
-  MessageHandlerReturnType messageHandler(message) {
+  messageDecoderReturnType messageDecoder(message) {
     var decodedJSON;
     bool decodeSucceeded = false;
     try {
       decodedJSON = json.decode(message) as Map<String, dynamic>;
       decodeSucceeded = true;
     } on FormatException {
-      return MessageHandlerReturnType(false, 'w', 0);
+      return messageDecoderReturnType(false, 'w', 0);
     }
 
     if (decodeSucceeded && decodedJSON["t"] != null) {
       switch (decodedJSON["t"]) {
         case "r":
-          return MessageHandlerReturnType(
+          return messageDecoderReturnType(
               true, 'r', int.parse(decodedJSON['i']));
         case "s":
-          return MessageHandlerReturnType(true, 's', int.parse(message));
+          return messageDecoderReturnType(true, 's', int.parse(message));
         default:
-          return MessageHandlerReturnType(true, 'u', 0);
+          return messageDecoderReturnType(true, 'u', 0);
       }
     } else {
-      return MessageHandlerReturnType(false, 'w', 0);
+      return messageDecoderReturnType(false, 'w', 0);
+    }
+  }
+
+  _messageHandler(message) {
+    var decodedMessage = messageDecoder(message);
+
+    if (decodedMessage.hasMessageRightFormat) {
+      switch (decodedMessage.webSocketResponseType) {
+        case 'r':
+          _handleResponseMessages(message);
+          break;
+        case 's':
+          //TODO: Handle new settings via settingshandler package
+          break;
+        default:
+        //TODO: Handle unknown response via errorhandler package
+      }
+    } else {
+      //channel.close();
+    }
+  }
+
+  _handleResponseMessages(message) {
+    switch (message.webSocketResponseNumber) {
+      case 8:
+        successfullyLoggedOut = false;
+        break;
+      case 9:
+        successfullyRegistered = false;
+        successfullyLoggedOut = true;
+        break;
+      case 10:
+        successfullyRegistered = true;
+        break;
+      case 24:
+        successfullyRegistered = false;
+        break;
+      default:
+        try {
+          var responseType = responseList.values.firstWhere((element) =>
+              element.responseNumber == message.webSocketResponseNumber);
+          return responseType.responseString;
+        } catch (e) {
+          return "unknown response";
+        }
+    }
+  }
+
+  _isWebSocketMessageLogInMessage(message) {
+    if (message.hasMessageRightFormat &&
+        message.webSocketResponseNumber ==
+            responseList['validApiKey']!.responseNumber) {
+      return true;
+    } else {
+      return false;
     }
   }
 
   void dispose() {
-    channel.close();
+    _channel.close();
   }
 }

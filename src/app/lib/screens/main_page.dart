@@ -39,7 +39,7 @@ class _MyMainPageState extends State<MainPage> {
         setState(() {});
         websocket.streamController.stream.listen(
           (event) {
-            var response = websocket.messageHandler(event);
+            var response = websocket.messageDecoder(event);
           },
           onDone: () {
             websocket.isWebsocketRunning = false;
