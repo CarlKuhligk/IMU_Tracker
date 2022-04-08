@@ -1,6 +1,7 @@
 <?php
 include_once 'DBController.php';
 include_once 'EventList.php';
+include_once 'ResponseList.php';
 
 class EventStates
 {
@@ -62,25 +63,27 @@ class Device
     public function __construct($deviceData)
     {
         $this->eventState = new EventStates();
-        $this->timezone = getenv("TZ");
+        $this->timezone = new DateTimeZone(getenv("TZ"));
         // initialize object -> copy initial data
         $this->id = $deviceData->id;
         $this->employee = $deviceData->employee;
         $this->databaseTableName = "device_{$this->id}_log";
         $this->isLoggedIn = $deviceData->isLoggedIn;
-        $this->lastConnection = new DateTime($deviceData->lastConnection, new DateTimeZone($this->timezone));
+        $this->lastConnection = new DateTime($deviceData->lastConnection, $this->timezone);
         $this->settings = new Settings($deviceData->settings);
     }
 
     private function getTimeNow()
     {
-        return new DateTime(strtotime(time()), new DateTimeZone($this->timezone));
+        $now = new DateTime();
+        $now->setTimezone($this->timezone);
+        return $now;
     }
 
     private function getElapsedTimeInSeconds($timeToCompareWith)
     {
         $now = $this->getTimeNow();
-        return $timeToCompareWith->diff($now)->s;
+        return $now->getTimestamp() - $timeToCompareWith->getTimestamp();
     }
 
     public function login($resourceId)
@@ -89,8 +92,9 @@ class Device
         $this->isConnected = true;
         $this->isLoggedIn = true;
 
-        //#region [keepInMind]
-        // event connected##############################################
+        //#region [events]
+        Device::$Database->insertEvent($this->id, E_CONNECTED);
+        $this->eventState->connectionTimeoutIsTriggered = false;
         //#endregion
 
         // update database
@@ -110,6 +114,7 @@ class Device
     }
 
 
+    //#region [events]
     public function connectionClosed()
     {
         if (isset($this->streamerResourceId) || $this->isLoggedIn) {
@@ -117,38 +122,44 @@ class Device
             $this->streamerResourceId = null;
             $this->isConnected = false;
             $this->lastConnection = $this->getTimeNow();
-
             Device::$Database->setDeviceIsConnected($this->id, false);
-
-            //#region [keepInMind]
-            return E_CONNECTION_LOST;
-            //#endregion
-
+            Device::$Database->setLastConnectionTime($this->id, $this->lastConnection);
+            Device::$Database->insertEvent($this->id, E_CONNECTION_LOST);
+            return true;
         } else {
             return false;
             // client successfully closed connection with logout
         }
     }
 
+
     public function processTrackingData($data)
     {
-        // detected events
-        $eventList = array();
+        // storage for detected events
+        $idListOfDetectedEvents = array();
 
         // triggers
         // battery
-        if ($data->b <= $this->settings->batteryEmpty)
-            array_push($eventList, E_BATTERY_EMPTY);
-        elseif ($data->b <= $this->settings->batteryWarning)
-            array_push($eventList, E_BATTERY_LOW);
+        if ($data->b <= $this->settings->batteryEmpty) {
+            Device::$Database->insertEvent($this->id, E_BATTERY_EMPTY);
+            array_push($idListOfDetectedEvents, E_BATTERY_EMPTY);
+        } elseif ($data->b <= $this->settings->batteryWarning) {
+            Device::$Database->insertEvent($this->id, E_BATTERY_LOW);
+            array_push($idListOfDetectedEvents, E_BATTERY_LOW);
+        }
 
         // acceleration exceeds limits
-        if ($data->a >= $this->settings->accelerationMax)
-            array_push($eventList, E_ACCELERATION_LIMIT_EXCEEDED);
+        if ($data->a >= $this->settings->accelerationMax) {
+            Device::$Database->insertEvent($this->id, E_ACCELERATION_LIMIT_EXCEEDED);
+            array_push($idListOfDetectedEvents, E_ACCELERATION_LIMIT_EXCEEDED);
+        }
 
         // rotation exceeds limits
-        if ($data->r >= $this->settings->rotationMax)
-            array_push($eventList, E_ROTATION_LIMIT_EXCEEDED);
+        if ($data->r >= $this->settings->rotationMax) {
+            Device::$Database->insertEvent($this->id, E_ROTATION_LIMIT_EXCEEDED);
+            array_push($idListOfDetectedEvents, E_ROTATION_LIMIT_EXCEEDED);
+        }
+
 
         // monitor idling
         if ($data->a <= $this->settings->accelerationMin && $data->r <= $this->settings->rotationMin) {
@@ -158,35 +169,42 @@ class Device
             $this->idleDetected = false;
         }
 
-        Device::$Database->writeTrackingData($this->databaseTableName, $data);
+        Device::$Database->insertTrackingData($this->databaseTableName, $data);
         // send values to all "device" subscriber
         $this->send($data);
 
-        return $eventList;
+        return $idListOfDetectedEvents;
     }
 
     public function monitoringTimeouts()
     {
-        $eventList = array();
+        $idListOfDetectedEvents = array();
 
         if ($this->isConnected) {
             // check if idle time is exceeded
             if ($this->idleDetected) {
                 $idleTime = $this->getElapsedTimeInSeconds($this->idlingStarted);
-                if ($idleTime >= $this->settings->idleTimeout)
-                    array_push($eventList, E_IDLE);
+                if ($idleTime >= $this->settings->idleTimeout) {
+                    Device::$Database->insertEvent($this->id, E_IDLE);
+                    array_push($idListOfDetectedEvents, E_IDLE);
+                }
             }
         } else {
             // connection timeout
-            if (!$this->eventState->connectionTimeoutIsTriggered && $this->isLoggedIn) {
+            if ((!$this->eventState->connectionTimeoutIsTriggered) && $this->isLoggedIn) {
                 $time = $this->getElapsedTimeInSeconds($this->lastConnection);
                 if ($time >= $this->settings->connectionTimeout) {
-                    $this->connectionTimeoutIsTriggered = true;
-                    array_push($eventList, E_CONNECTION_TIMEOUT);
+                    $this->eventState->connectionTimeoutIsTriggered = true;
+                    Device::$Database->insertEvent($this->id, E_CONNECTION_TIMEOUT);
+                    array_push($idListOfDetectedEvents, E_CONNECTION_TIMEOUT);
                 }
             }
         }
+        consoleLog(var_dump($idListOfDetectedEvents));
+        return $idListOfDetectedEvents;
     }
+
+    //#endregion
 
     public function isSubscriber($resourceId)
     {
@@ -227,26 +245,5 @@ class Device
         $this->settings->accelerationMax = $newSettings->a;
         $this->settings->rotationMin = $newSettings->ri;
         $this->settings->rotationMax = $newSettings->r;
-    }
-
-    public function sendSettings()
-    {
-        $settingsMessage = (object)[
-            't' => "s",
-            'it' => "{$this->settings->idleTimeout}",
-            'b' => "{$this->settings->batteryWarning}",
-            'c' => "{$this->settings->connectionTimeout}",
-            'm' => "{$this->settings->measurementInterval}",
-            'ai' => "{$this->settings->accelerationMax}",
-            'a' => "{$this->settings->accelerationMin}",
-            'ri' => "{$this->settings->rotationMin}",
-            'r' => "{$this->settings->rotationMax}"
-        ];
-        $settingsMessage = json_encode($settingsMessage);
-        $this->sendToStreamingDevice($settingsMessage);
-    }
-
-    private function sendEvent($eventId)
-    {
     }
 }

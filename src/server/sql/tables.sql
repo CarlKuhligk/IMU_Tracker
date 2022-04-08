@@ -17,7 +17,7 @@ CREATE TABLE `devices` (
   `rotationMin` float unsigned NOT NULL COMMENT 'in ?',
   `rotationMax` float unsigned NOT NULL COMMENT 'in ?',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `event_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -25,7 +25,7 @@ CREATE TABLE `event_log` (
   `event` int(11) NOT NULL,
   `capture_id` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `events` (
   `id` int(11) NOT NULL AUTO_INCREMENT,

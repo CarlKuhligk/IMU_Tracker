@@ -5,7 +5,8 @@
 function consoleLog($message)
 {
     if (getenv("CONSOLE_OUTPUT")) {
-        $now = new DateTime(strtotime(time()), new DateTimeZone(getenv("TZ")));
+        $now = new DateTime();
+        $now->setTimezone(new DateTimeZone(getenv("TZ")));
         echo  "{$now->format('Y-m-d H:i:s')} :  {$message} \n";
     }
 }

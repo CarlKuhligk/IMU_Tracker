@@ -736,7 +736,7 @@ state<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:Mode
               <y:Geometry height="20.40000000000009" width="94.09371028179021" x="434.94945972610185" y="314.73084874561664"/>
               <y:Fill color="#FFCC00" transparent="false"/>
               <y:BorderStyle color="#000000" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="45.35546875" x="24.369120765895104" xml:space="preserve" y="0.8494140625000455">settings<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="65.37109375" x="14.361308265895104" xml:space="preserve" y="0.8494140625000455">settings out<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
             </y:GenericNode>
           </data>
         </node>
@@ -941,10 +941,10 @@ as streamer?<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
         <node id="n4::n75">
           <data key="d6">
             <y:GenericNode configuration="com.yworks.flowchart.predefinedProcess">
-              <y:Geometry height="20.40000000000009" width="152.34028075138224" x="-62.15407459943316" y="1371.4303551750713"/>
+              <y:Geometry height="20.40000000000009" width="164.31443142038927" x="-68.14114993393667" y="1371.4303551750713"/>
               <y:Fill color="#3366FF" transparent="false"/>
               <y:BorderStyle color="#000000" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="131.4296875" x="10.455296625691119" xml:space="preserve" y="0.8494140625000455">update connection state<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="131.4296875" x="16.442371960194635" xml:space="preserve" y="0.8494140625000455">update connection state<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
             </y:GenericNode>
           </data>
         </node>
@@ -2602,10 +2602,10 @@ as streamer?<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
         <node id="n6::n73">
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="117.2541440000009" width="156.40287999999964" x="1056.1841403353162" y="-63.718924345952644"/>
+              <y:Geometry height="160.98346405647152" width="174.7705330715171" x="1044.4385403353165" y="-63.718924345952644"/>
               <y:Fill color="#3366FF" transparent="false"/>
               <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="14" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="21.1513671875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" underlinedText="true" verticalTextPosition="bottom" visible="true" width="45.248046875" x="55.57741656249982" xml:space="preserve" y="4.0">events</y:NodeLabel>
+              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="14" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="21.1513671875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" underlinedText="true" verticalTextPosition="bottom" visible="true" width="65.49609375" x="54.63721966075855" xml:space="preserve" y="4.0">add event</y:NodeLabel>
               <y:Shape type="rectangle"/>
             </y:ShapeNode>
           </data>
@@ -2613,7 +2613,7 @@ as streamer?<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
         <node id="n6::n74">
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="20.40000000000009" width="81.26931200000001" x="1073.8025403353156" y="-13.57838034595187"/>
+              <y:Geometry height="20.40000000000009" width="93.0149119999993" x="1062.2153688388728" y="-13.57838034595187"/>
               <y:Fill color="#F4F4F4" transparent="false"/>
               <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="l" textColor="#000000" verticalTextPosition="bottom" visible="true" width="22.0" x="4.0" xml:space="preserve" y="0.8494140625000455">t: e</y:NodeLabel>
@@ -2624,7 +2624,7 @@ as streamer?<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
         <node id="n6::n75">
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="20.40000000000009" width="144.6572799999998" x="1062.0569403353159" y="-33.97838034595196"/>
+              <y:Geometry height="20.40000000000009" width="156.40287999999953" x="1050.469768838873" y="-33.97838034595196"/>
               <y:Fill color="#FFFFFF" transparent="false"/>
               <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="l" textColor="#000000" verticalTextPosition="bottom" visible="true" width="88.046875" x="4.0" xml:space="preserve" y="0.8494140625000455">message object</y:NodeLabel>
@@ -2635,10 +2635,10 @@ as streamer?<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
         <node id="n6::n76">
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="61.20000000000027" width="11.745599999999854" x="1062.0569403353159" y="-13.57838034595187"/>
+              <y:Geometry height="102.00000000000045" width="11.745599999999854" x="1050.469768838873" y="-13.57838034595187"/>
               <y:Fill color="#FFFFFF" transparent="false"/>
               <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="l" textColor="#000000" verticalTextPosition="bottom" visible="true" width="4.0" x="4.0" y="28.600000000000136"/>
+              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="l" textColor="#000000" verticalTextPosition="bottom" visible="true" width="4.0" x="4.0" y="49.00000000000023"/>
               <y:Shape type="rectangle"/>
             </y:ShapeNode>
           </data>
@@ -2646,7 +2646,7 @@ as streamer?<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
         <node id="n6::n77">
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="20.40000000000009" width="81.26931200000001" x="1073.8025403353156" y="27.22161965404831"/>
+              <y:Geometry height="20.40000000000009" width="81.26931200000001" x="1073.9609688388725" y="47.6216196540484"/>
               <y:Fill color="#FFFFF4" transparent="false"/>
               <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="l" textColor="#000000" verticalTextPosition="bottom" visible="true" width="59.37109375" x="4.0" xml:space="preserve" y="0.8494140625000455">e: event id</y:NodeLabel>
@@ -2657,7 +2657,7 @@ as streamer?<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
         <node id="n6::n78">
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="20.40000000000009" width="81.26931200000001" x="1073.8025403353156" y="6.82161965404822"/>
+              <y:Geometry height="20.40000000000009" width="81.26931200000001" x="1073.9609688388725" y="27.22161965404831"/>
               <y:Fill color="#FFFFF4" transparent="false"/>
               <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="l" textColor="#000000" verticalTextPosition="bottom" visible="true" width="60.6953125" x="4.0" xml:space="preserve" y="0.8494140625000455">i: device id</y:NodeLabel>
@@ -2668,7 +2668,7 @@ as streamer?<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
         <node id="n6::n79">
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="20.40000000000009" width="51.64236799999995" x="1155.071852335316" y="-13.57838034595187"/>
+              <y:Geometry height="20.40000000000009" width="51.64236799999995" x="1155.2302808388724" y="-13.57838034595187"/>
               <y:Fill color="#FFFFFF" transparent="false"/>
               <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="l" textColor="#000000" verticalTextPosition="bottom" visible="true" width="42.009765625" x="4.0" xml:space="preserve" y="0.8494140625000455">char(1)</y:NodeLabel>
@@ -2679,7 +2679,7 @@ as streamer?<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
         <node id="n6::n80">
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="20.40000000000009" width="51.64236799999995" x="1155.071852335316" y="27.22161965404831"/>
+              <y:Geometry height="20.40000000000009" width="51.64236799999995" x="1155.2302808388724" y="47.6216196540484"/>
               <y:Fill color="#FFFFFF" transparent="false"/>
               <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="l" textColor="#000000" verticalTextPosition="bottom" visible="true" width="26.681640625" x="4.0" xml:space="preserve" y="0.8494140625000455">byte</y:NodeLabel>
@@ -2690,7 +2690,7 @@ as streamer?<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
         <node id="n6::n81">
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="20.40000000000009" width="51.64236799999995" x="1155.071852335316" y="6.82161965404822"/>
+              <y:Geometry height="20.40000000000009" width="51.64236799999995" x="1155.2302808388724" y="27.22161965404831"/>
               <y:Fill color="#FFFFFF" transparent="false"/>
               <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="l" textColor="#000000" verticalTextPosition="bottom" visible="true" width="16.673828125" x="4.0" xml:space="preserve" y="0.8494140625000455">int</y:NodeLabel>
@@ -3745,8 +3745,8 @@ as streamer?<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
         <node id="n6::n173">
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="17.30289712086227" width="18.2514485604313" x="1189.2706328388736" y="-59.35533181400689"/>
-              <y:Fill color="#FF0000" transparent="false"/>
+              <y:Geometry height="17.30289712086227" width="18.2514485604313" x="1195.127048838873" y="-59.35533181400689"/>
+              <y:Fill color="#FFFF00" transparent="false"/>
               <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="28.0" horizontalTextPosition="center" iconData="1" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="28.0" x="-4.874275719784237" y="-5.348551439568865">
                 <y:LabelModel>
@@ -3764,7 +3764,7 @@ as streamer?<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
           <data key="d6">
             <y:ShapeNode>
               <y:Geometry height="17.30289712086227" width="18.2514485604313" x="1220.7780651089765" y="464.2800442623192"/>
-              <y:Fill color="#FF0000" transparent="false"/>
+              <y:Fill color="#FFFF00" transparent="false"/>
               <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="28.0" horizontalTextPosition="center" iconData="1" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="28.0" x="-4.874275719784237" y="-5.348551439568894">
                 <y:LabelModel>
@@ -3781,7 +3781,7 @@ as streamer?<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
         <node id="n6::n175">
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="17.30289712086227" width="18.2514485604313" x="1224.230703640061" y="875.4753755877352"/>
+              <y:Geometry height="17.30289712086227" width="18.2514485604313" x="1237.349499657002" y="875.4753755877352"/>
               <y:Fill color="#00FF00" transparent="false"/>
               <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="28.0" horizontalTextPosition="center" iconData="1" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="28.0" x="-4.874275719784464" y="-5.348551439568837">
@@ -3872,6 +3872,61 @@ as streamer?<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
               <y:Fill hasColor="false" transparent="false"/>
               <y:BorderStyle hasColor="false" raised="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="14" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="21.1513671875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="221.888671875" x="-14.4443359375" xml:space="preserve" y="4.0">(responds to the source web client)</y:NodeLabel>
+              <y:Shape type="rectangle"/>
+            </y:ShapeNode>
+          </data>
+        </node>
+        <node id="n6::n182">
+          <data key="d6">
+            <y:ShapeNode>
+              <y:Geometry height="61.20000000000027" width="11.745599999999854" x="1062.2153688388728" y="27.22161965404831"/>
+              <y:Fill color="#FFFFFF" transparent="false"/>
+              <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
+              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="l" textColor="#000000" verticalTextPosition="bottom" visible="true" width="4.0" x="4.0" y="28.600000000000136"/>
+              <y:Shape type="rectangle"/>
+            </y:ShapeNode>
+          </data>
+        </node>
+        <node id="n6::n183">
+          <data key="d6">
+            <y:ShapeNode>
+              <y:Geometry height="20.40000000000009" width="93.0149119999993" x="1062.2153688388728" y="6.82161965404822"/>
+              <y:Fill color="#FFFFFF" transparent="false"/>
+              <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
+              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="l" textColor="#000000" verticalTextPosition="bottom" visible="true" width="30.68359375" x="4.0" xml:space="preserve" y="0.8494140625000455">d: [n]</y:NodeLabel>
+              <y:Shape type="rectangle"/>
+            </y:ShapeNode>
+          </data>
+        </node>
+        <node id="n6::n184">
+          <data key="d6">
+            <y:ShapeNode>
+              <y:Geometry height="20.40000000000009" width="51.64236799999995" x="1155.2302808388722" y="6.82161965404822"/>
+              <y:Fill color="#FFFFFF" transparent="false"/>
+              <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
+              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="l" textColor="#000000" verticalTextPosition="bottom" visible="true" width="33.35546875" x="4.0" xml:space="preserve" y="0.8494140625000455">event</y:NodeLabel>
+              <y:Shape type="rectangle"/>
+            </y:ShapeNode>
+          </data>
+        </node>
+        <node id="n6::n185">
+          <data key="d6">
+            <y:ShapeNode>
+              <y:Geometry height="20.40000000000009" width="81.26931200000001" x="1073.9609688388725" y="68.0216196540485"/>
+              <y:Fill color="#FFFFF4" transparent="false"/>
+              <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
+              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="l" textColor="#000000" verticalTextPosition="bottom" visible="true" width="69.3671875" x="4.0" xml:space="preserve" y="0.8494140625000455">c: capture id</y:NodeLabel>
+              <y:Shape type="rectangle"/>
+            </y:ShapeNode>
+          </data>
+        </node>
+        <node id="n6::n186">
+          <data key="d6">
+            <y:ShapeNode>
+              <y:Geometry height="20.40000000000009" width="51.64236799999995" x="1155.2302808388724" y="68.0216196540485"/>
+              <y:Fill color="#FFFFFF" transparent="false"/>
+              <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
+              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="l" textColor="#000000" verticalTextPosition="bottom" visible="true" width="16.673828125" x="4.0" xml:space="preserve" y="0.8494140625000455">int</y:NodeLabel>
               <y:Shape type="rectangle"/>
             </y:ShapeNode>
           </data>
@@ -4076,10 +4131,11 @@ trigger<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:Mo
         <node id="n12::n8">
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="20.16960000000006" width="98.70318334620504" x="-1324.8487519056434" y="-273.2417846655892"/>
-              <y:Fill color="#3366FF" transparent="false"/>
+              <y:Geometry height="30.0" width="30.0" x="-1246.2101491772646" y="-239.62789434612068"/>
+              <y:Fill color="#CCFFCC" transparent="false"/>
               <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="8" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="13.80078125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="88.953125" x="4.875029173102575" xml:space="preserve" y="3.1844093750000297">update connection state<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="8" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="23.6015625" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="28.46875" x="0.765625" xml:space="preserve" y="3.19921875">update
+trigger<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
               <y:Shape type="ellipse"/>
             </y:ShapeNode>
           </data>
@@ -4087,7 +4143,7 @@ trigger<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:Mo
         <node id="n12::n9">
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="30.0" width="30.0" x="-1246.2101491772646" y="-239.62789434612068"/>
+              <y:Geometry height="30.0" width="30.0" x="-1359.769845764699" y="-397.9011340086909"/>
               <y:Fill color="#CCFFCC" transparent="false"/>
               <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="8" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="23.6015625" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="28.46875" x="0.765625" xml:space="preserve" y="3.19921875">update
@@ -4098,14 +4154,12 @@ trigger<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:Mo
         </node>
         <node id="n12::n10">
           <data key="d6">
-            <y:ShapeNode>
-              <y:Geometry height="30.0" width="30.0" x="-1359.769845764699" y="-397.9011340086909"/>
-              <y:Fill color="#CCFFCC" transparent="false"/>
-              <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="8" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="23.6015625" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="28.46875" x="0.765625" xml:space="preserve" y="3.19921875">update
-trigger<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
-              <y:Shape type="ellipse"/>
-            </y:ShapeNode>
+            <y:GenericNode configuration="com.yworks.flowchart.predefinedProcess">
+              <y:Geometry height="10.925313987764866" width="101.58510329908984" x="-1330.7039262742887" y="-260.6471346930223"/>
+              <y:Fill color="#3366FF" transparent="false"/>
+              <y:BorderStyle color="#000000" type="line" width="1.0"/>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="8" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="13.80078125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="88.953125" x="6.315989149544976" xml:space="preserve" y="-1.4377336311175668">update connection state<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
+            </y:GenericNode>
           </data>
         </node>
       </graph>
@@ -5009,9 +5063,9 @@ trigger<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:Mo
     <edge id="e13" source="n4::n33" target="n6::n73">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="0.0" tx="0.0" ty="-41.52324417969187">
+          <y:Path sx="0.0" sy="0.0" tx="0.0" ty="-57.009121032937315">
             <y:Point x="974.8112782076425" y="-151.86547611970167"/>
-            <y:Point x="974.8112782076425" y="-46.61509652564406"/>
+            <y:Point x="974.8112782076425" y="-40.2363133506542"/>
           </y:Path>
           <y:LineStyle color="#000000" type="dashed" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -5322,7 +5376,7 @@ trigger<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:Mo
         </y:ArcEdge>
       </data>
     </edge>
-    <edge id="n12::e2" source="n12::n1" target="n12::n9">
+    <edge id="n12::e2" source="n12::n1" target="n12::n8">
       <data key="d10">
         <y:ArcEdge>
           <y:Path sx="-56.99241102155156" sy="12.1994958077114" tx="4.476325276382568" ty="-5.468062150008336">
@@ -5412,18 +5466,18 @@ trigger<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:Mo
         </y:ArcEdge>
       </data>
     </edge>
-    <edge id="n12::e9" source="n12::n7" target="n12::n8">
+    <edge id="n12::e9" source="n12::n7" target="n12::n10">
       <data key="d10">
         <y:BezierEdge>
-          <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0">
-            <y:Point x="-1275.4971602325409" y="-294.19443102953755"/>
+          <y:Path sx="0.0" sy="0.0" tx="-12.29378543928533" ty="-1.0510746701504559">
+            <y:Point x="-1292.205160064029" y="-294.19443102953755"/>
           </y:Path>
           <y:LineStyle color="#808080" type="dashed" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
         </y:BezierEdge>
       </data>
     </edge>
-    <edge id="n12::e10" source="n12::n9" target="n12::n3">
+    <edge id="n12::e10" source="n12::n8" target="n12::n3">
       <data key="d10">
         <y:ArcEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0">
@@ -5435,11 +5489,11 @@ trigger<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:Mo
         </y:ArcEdge>
       </data>
     </edge>
-    <edge id="n12::e11" source="n12::n9" target="n12::n8">
+    <edge id="n12::e11" source="n12::n8" target="n12::n10">
       <data key="d10">
         <y:BezierEdge>
           <y:Path sx="0.0" sy="-3.2718713567837767" tx="0.0" ty="0.0">
-            <y:Point x="-1275.4971602325409" y="-227.89976570290446"/>
+            <y:Point x="-1279.9113746247438" y="-227.89976570290446"/>
           </y:Path>
           <y:LineStyle color="#808080" type="dashed" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -5455,7 +5509,7 @@ trigger<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:Mo
         </y:BezierEdge>
       </data>
     </edge>
-    <edge id="n12::e13" source="n12::n10" target="n12::n0">
+    <edge id="n12::e13" source="n12::n9" target="n12::n0">
       <data key="d10">
         <y:ArcEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0">
@@ -5467,18 +5521,18 @@ trigger<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:Mo
         </y:ArcEdge>
       </data>
     </edge>
-    <edge id="n12::e14" source="n12::n10" target="n12::n8">
+    <edge id="n12::e14" source="n12::n9" target="n12::n10">
       <data key="d10">
         <y:BezierEdge>
-          <y:Path sx="0.0" sy="0.0" tx="0.0" ty="2.2769797918299446">
-            <y:Point x="-1275.4971602325409" y="-382.9011340086909"/>
+          <y:Path sx="0.0" sy="0.0" tx="13.579395594126481" ty="-1.7798966710916488">
+            <y:Point x="-1266.3319790306173" y="-382.9011340086909"/>
           </y:Path>
           <y:LineStyle color="#808080" type="dashed" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
         </y:BezierEdge>
       </data>
     </edge>
-    <edge id="n12::e15" source="n12::n6" target="n12::n10">
+    <edge id="n12::e15" source="n12::n6" target="n12::n9">
       <data key="d10">
         <y:ArcEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0">

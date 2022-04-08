@@ -1,6 +1,3 @@
-//import sha256 from "crypto-js/sha256";
-//const hash = sha256("Text");
-
 var websocket;
 // get server ip
 var serverIP = $.get("../debug/getServerIP.php").done(function (data) {
@@ -35,7 +32,7 @@ function createTextbox(name, placeholder, visible) {
 
 var dropdown = document.getElementById("dropdown1");
 var outputField = document.getElementById("outputField");
-mainButton = document.getElementById("sendButton");
+var mainButton = document.getElementById("sendButton");
 
 $(document).ready(function () {
   onDropdownChange();
@@ -122,7 +119,8 @@ function onClick() {
       break;
     case "logout":
       message.t = "o";
-      pin = hash(document.getElementsByName("input1")[0].value);
+
+      pin = CryptoJS.SHA256(document.getElementsByName("input1")[0].value);
       message.p = pin;
       console.log("logout message send:");
       sendMessage(message);

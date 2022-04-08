@@ -12,6 +12,7 @@ class DBController
     private $connectionAttempts;
     private $nextAttemptDelay = 3;
     private $maxConnectionAttempts = 20;
+    private $timezone;
 
     // initiate database connection with given parameters
     function __construct($host, $user, $password, $dbname)
@@ -20,6 +21,7 @@ class DBController
         $this->user = $user;
         $this->password = $password;
         $this->dbname = $dbname;
+        $this->timezone = new DateTimeZone(getenv("TZ"));
     }
 
 
@@ -221,7 +223,7 @@ class DBController
         return $isConnected;
     }
 
-    public function writeTrackingData($tableName, $data)
+    public function insertTrackingData($tableName, $data)
     {
         $acceleration = $data->a;
         $rotation = $data->r;
@@ -260,12 +262,6 @@ class DBController
         $this->dbRequest("UPDATE devices SET lastConnection='{$time->format('Y-m-d H:i:s')}' WHERE id='$id';");
     }
 
-    public function getLastConnectionTime($id)
-    {
-        $timeString = $this->dbRequest("SELECT lastConnection FROM devices WHERE id='$id';");
-        return new DateTime($timeString, new DateTimeZone($this->settings->timezone));
-    }
-
     public function createDevice($initializationData)
     {
         $call = $this->mariadbClient->prepare('CALL addDevice(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @id, @apikey)');
@@ -302,5 +298,38 @@ class DBController
         $call = $this->mariadbClient->prepare('CALL removeDevice(?)');
         $call->bindParam(1, $id);
         $call->execute();
+    }
+
+    public function getEventList()
+    {
+        $result = $this->dbQuery("SELECT device, event, capture_id FROM event_log;");
+        if (isset($result)) {
+            $resultCount = $result->rowCount();
+            $deviceList = array();
+
+            for ($i = 0; $i < $resultCount; $i++) {
+                $row =  $result->fetch();
+                $deviceID = $row[0];
+                $device = $this->getDevice($deviceID);
+                array_push($deviceList, $device);
+            }
+            return $deviceList;
+        }
+        return NULL;
+    }
+
+    public function insertEvent($deviceId, $eventId)
+    {
+        $currentCaptureId = $this->dbRequest("SELECT id FROM device_{$deviceId}_log ORDER BY id DESC LIMIT 1");
+        $this->dbRequest("INSERT event_log (device, event, capture_id) VALUES ({$deviceId}, {$eventId}, {$currentCaptureId});");
+        return $currentCaptureId;
+    }
+
+    public function insertEvents($eventList)
+    {
+        foreach ($eventList as $event) {
+            $currentCaptureId = $this->insertEvent($event->deviceId, $event->id);
+        }
+        return $currentCaptureId;
     }
 }

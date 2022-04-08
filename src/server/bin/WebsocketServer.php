@@ -17,7 +17,7 @@ $server->loop->addPeriodicTimer(1, function () use ($SecurityMotionTrackerWsServ
 });
 
 // used for removing obsolete data in database
-$server->loop->addPeriodicTimer(10, function () use ($SecurityMotionTrackerWsServer) {
+$server->loop->addPeriodicTimer(600, function () use ($SecurityMotionTrackerWsServer) {
     $SecurityMotionTrackerWsServer->watchDogB();
 });
 

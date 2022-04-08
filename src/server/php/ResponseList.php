@@ -6,7 +6,6 @@ define("R_GLOBAL_UPDATE", 4);
 
 define("R_DEVICE_LOGOUT_FAILED", 8);
 define("R_DEVICE_LOGGED_OUT", 9);
-
 define("R_DEVICE_REGISTERED", 10);
 define("R_SUBSCRIBER_REGISTERED", 11);
 define("R_SUBSCRIBER_UNREGISTERED", 12);
@@ -34,7 +33,59 @@ define("R_SERVER_OFFLINE", 40);
 define("R_UNKNOWN_ERROR", 42);
 
 
-function createMeasurementOutResponseMessage($id, $measurement)
+//#region [AppClientMessages]
+function createUpdateDeviceSettingsForAppClientResponseMessage($device)
+{
+    $settingsMessage = (object)[
+        't' => "s",
+        'it' => "{$device->settings->idleTimeout}",
+        'b' => "{$device->settings->batteryWarning}",
+        'c' => "{$device->settings->connectionTimeout}",
+        'm' => "{$device->settings->measurementInterval}",
+        'ai' => "{$device->settings->accelerationMax}",
+        'a' => "{$device->settings->accelerationMin}",
+        'ri' => "{$device->settings->rotationMin}",
+        'r' => "{$device->settings->rotationMax}"
+    ];
+    return json_encode($settingsMessage);
+}
+//#endregion
+
+
+function createResponseMessage($responseId)
+{
+    $response = (object)[
+        't' => "r",
+        'i' => "{$responseId}"
+    ];
+    return json_encode($response);
+}
+
+
+//#region [WebClientMessages]
+function createDeviceCreatedResponseMessage($newApikey)
+{
+    $response = (object)[
+        't' => "k",
+        'a' => "{$newApikey}"
+    ];
+    return json_encode($response);
+}
+//#endregion
+
+
+//#region [GlobalMessages]
+function createUpdateConnectionResponseMessage($id, $state)
+{
+    $response = (object)[
+        't' => "uc",
+        'i' => "{$id}",
+        'c' => "{$state}"
+    ];
+    return json_encode($response);
+}
+
+function createMeasurementRedirectMessage($id, $measurement)
 {
     $response = (object)[
         't' => "M",
@@ -43,6 +94,43 @@ function createMeasurementOutResponseMessage($id, $measurement)
         'r' => "{$measurement->r}",
         'tp' => "{$measurement->tp}",
         'b' => "{$measurement->b}",
+    ];
+    return json_encode($response);
+}
+
+function createEventResponseMessage($deviceId, $eventIdList)
+{
+    $events = array();
+
+    foreach ($eventIdList as $eventId) {
+        $event = (object)[
+            'i' => $deviceId,
+            'e' => $eventId
+        ];
+        array_push($events, $event);
+    }
+    consoleLog("messagebuilder");
+    consoleLog(var_dump($events));
+    $response = (object)[
+        't' => "e",
+        'd' => $events
+    ];
+    return json_encode($response);
+}
+
+function createUpdateDeviceSettingsForWebClientResponseMessage($device)
+{
+    $response = (object)[
+        't' => "su",
+        'i' => "{$device->id}",
+        'it' => "{$device->settings->idleTimeout}",
+        'b' => "{$device->settings->batteryWarning}",
+        'c' => "{$device->settings->connectionTimeout}",
+        'm' => "{$device->settings->measurementInterval}",
+        'ai' => "{$device->settings->accelerationMin}",
+        'a' => "{$device->settings->accelerationMax}",
+        'ri' => "{$device->settings->rotationMin}",
+        'r' => "{$device->settings->rotationMax}"
     ];
     return json_encode($response);
 }
@@ -62,7 +150,7 @@ function createAddDeviceResponseMessage($deviceList)
             'ai' => "{$device->settings->accelerationMin}",
             'a' => "{$device->settings->accelerationMax}",
             'ri' => "{$device->settings->rotationMin}",
-            'r' => "{$device->settings->rotationMax}",
+            'r' => "{$device->settings->rotationMax}"
         ];
         array_push($convertedDEviceList, $convertedDevice);
     }
@@ -70,44 +158,6 @@ function createAddDeviceResponseMessage($deviceList)
     $response = (object)[
         't' => "ad",
         'd' => $convertedDEviceList
-    ];
-    return json_encode($response);
-}
-
-function createUpdateConnectionResponseMessage($id, $state)
-{
-    $response = (object)[
-        't' => "uc",
-        'i' => "{$id}",
-        'c' => "{$state}"
-    ];
-    return json_encode($response);
-}
-
-function createResponseMessage($responseId)
-{
-    $response = (object)[
-        't' => "r",
-        'i' => "{$responseId}"
-    ];
-    return json_encode($response);
-}
-
-function createEventResponseMessage($deviceId, $eventId)
-{
-    $response = (object)[
-        't' => "e",
-        'e' => "{$eventId}",
-        'i' => "{$deviceId}"
-    ];
-    return json_encode($response);
-}
-
-function createDeviceCreatedResponseMessage($newApikey)
-{
-    $response = (object)[
-        't' => "k",
-        'a' => "{$newApikey}"
     ];
     return json_encode($response);
 }
@@ -120,3 +170,5 @@ function createRemoveDeviceResponseMessage($id)
     ];
     return json_encode($response);
 }
+
+//#endregion
