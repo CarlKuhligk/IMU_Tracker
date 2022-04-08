@@ -99,11 +99,11 @@ class _MyMainPageState extends State<MainPage> {
       timer = Timer.periodic(const Duration(milliseconds: 200), (_) {
         if (websocket.successfullyRegistered) {
           websocket.buildValueMessage(
-              internalSensors.accelerationValues,
-              internalSensors.gyroscopeValues,
+              internalSensors.magnitudeAccelerometer,
+              internalSensors.magnitudeGyroscope,
               5,
               internalSensors
-                  .batteryState); //TODO implement all necessary values
+                  .batteryLevel); //TODO implement all necessary values
         }
       });
     }
