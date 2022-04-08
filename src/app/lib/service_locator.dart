@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:imu_tracker/services/localstorage_service.dart';
 import 'package:imu_tracker/services/websocket_handler.dart';
 import 'package:imu_tracker/services/internal_sensor_service.dart';
+import 'package:imu_tracker/services/device_settings_handler.dart';
 
 final getIt = GetIt.instance;
 
@@ -16,4 +17,7 @@ Future setupLocator() async {
 
   getIt.registerLazySingleton<InternalSensorService>(
       () => InternalSensorService());
+
+  getIt.registerLazySingleton<DeviceSettingsHandler>(
+      () => DeviceSettingsHandler());
 }
