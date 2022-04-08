@@ -5,12 +5,12 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
 //project specific types
-import 'package:flutter/services.dart';
 import 'package:imu_tracker/data_structures/function_return_types.dart';
 import 'package:imu_tracker/data_structures/response_numbers.dart';
 
 //project internal services / dependency injection
-import 'package:imu_tracker/services/localstorage_service.dart';
+import 'package:imu_tracker/service_locator.dart';
+import 'package:imu_tracker/services/device_settings_handler.dart';
 
 class WebSocketHandler {
 //Websocket Variables
@@ -20,6 +20,8 @@ class WebSocketHandler {
   final streamController = StreamController.broadcast();
   bool isWebsocketRunning = false; //status of a websocket
   int retryLimit = 3;
+
+  var deviceSettings = getIt<DeviceSettingsHandler>();
 
   Future<int> connectWebSocket(socketData) async {
     int _webSocketResponseNumber = 0;
@@ -110,8 +112,12 @@ class WebSocketHandler {
       "tp": temperatureValue,
       "b": batteryState
     };
-
-    sendMessage(buildMessage);
+    if (accelerationValue != null &&
+        gyroscopeValue != null &&
+        temperatureValue != null &&
+        batteryState != null) {
+      sendMessage(buildMessage);
+    }
   }
 
   buildRegistrationMessage(socketData) {
@@ -180,7 +186,8 @@ class WebSocketHandler {
           _handleResponseMessages(decodedMessage);
           break;
         case 'su':
-          //TODO: Handle new settings via settingshandler package
+          deviceSettings
+              .writeNewDeviceSettingsToInternalStorage(decodedMessage);
           break;
         default:
         //TODO: Handle unknown response via errorhandler package
