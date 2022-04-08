@@ -34,16 +34,16 @@ class WebSocketHandler {
         },
         onDone: () {
           isWebsocketRunning = false;
-          //TODO: Errorhandling via errorhandlingpackige
+          //TODO: Errorhandling via errorhandlingpackage
         },
         onError: (err) {
           isWebsocketRunning = false;
-          //TODO: Errorhandling via errorhandlingpackige
+          //TODO: Errorhandling via errorhandlingpackage
         },
       );
     } catch (e) {
       isWebsocketRunning = false;
-      //TODO: Errorhandling via errorhandlingpackige
+      //TODO: Errorhandling via errorhandlingpackage
       return _webSocketResponseNumber;
     }
 
@@ -73,7 +73,7 @@ class WebSocketHandler {
         (message) {
           var decodedMessage = messageDecoder(message);
 
-          if (_isWebSocketMessageLogInMessage(message)) {
+          if (_isWebSocketMessageValidApiKeyMessage(decodedMessage)) {
             _isApiKeyValid = true;
           }
           _webSocketResponseNumber = decodedMessage.webSocketResponseNumber;
@@ -122,7 +122,7 @@ class WebSocketHandler {
   }
 
   buildApiKeyTestMessage(socketData) {
-    var _apiKeyTestMessage = {"t": "i", "a": "", "c": true};
+    var _apiKeyTestMessage = {"t": "i", "a": "", "c": 1};
     _apiKeyTestMessage['a'] = socketData['apikey'];
 
     return _apiKeyTestMessage;
@@ -161,8 +161,8 @@ class WebSocketHandler {
         case "r":
           return messageDecoderReturnType(
               true, 'r', int.parse(decodedJSON['i']));
-        case "s":
-          return messageDecoderReturnType(true, 's', int.parse(message));
+        case "su":
+          return messageDecoderReturnType(true, 'su', int.parse(message));
         default:
           return messageDecoderReturnType(true, 'u', 0);
       }
@@ -177,9 +177,9 @@ class WebSocketHandler {
     if (decodedMessage.hasMessageRightFormat) {
       switch (decodedMessage.webSocketResponseType) {
         case 'r':
-          _handleResponseMessages(message);
+          _handleResponseMessages(decodedMessage);
           break;
-        case 's':
+        case 'su':
           //TODO: Handle new settings via settingshandler package
           break;
         default:
@@ -216,7 +216,7 @@ class WebSocketHandler {
     }
   }
 
-  _isWebSocketMessageLogInMessage(message) {
+  _isWebSocketMessageValidApiKeyMessage(message) {
     if (message.hasMessageRightFormat &&
         message.webSocketResponseNumber ==
             responseList['validApiKey']!.responseNumber) {
