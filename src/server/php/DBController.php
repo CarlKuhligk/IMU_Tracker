@@ -165,7 +165,7 @@ class DBController
 
     public function validateKey($apikey)
     {
-        $result = $this->dbQuery("SELECT id FROM devices WHERE apikey = '$apikey';");
+        $result = $this->dbQuery("SELECT id FROM devices WHERE apikey = '{$apikey}';");
         $row = $result->fetch();
         if (isset($row)) {
             $deviceID = $row[0];
@@ -176,7 +176,7 @@ class DBController
 
     public function validatePin($pin, $requestingDevice)
     {
-        $result = $this->dbQuery("SELECT isLoggedIn FROM devices WHERE id = '$requestingDevice->id' AND pin = '$pin';");
+        $result = $this->dbQuery("SELECT isLoggedIn FROM devices WHERE id = '{$requestingDevice->id}' AND pin = '{$pin}';");
         if (isset($result)) {
             $row = $result->fetch();
             if (isset($row)) {
@@ -188,7 +188,7 @@ class DBController
 
     public function validateDeviceId($id)
     {
-        $result = $this->dbQuery("SELECT id FROM devices WHERE id = '$id';");
+        $result = $this->dbQuery("SELECT id FROM devices WHERE id = '{$id}';");
         $row = $result->fetch();
         if (isset($row)) {
             $deviceID = $row[0];
@@ -200,37 +200,27 @@ class DBController
     public function setDeviceIsConnected($id, $isConnected)
     {
         if ($isConnected) {
-            $this->dbRequest("UPDATE devices SET connected=1 WHERE id='$id';");
+            $this->dbRequest("UPDATE devices SET connected=1 WHERE id='{$id}';");
         } else {
-            $this->dbRequest("UPDATE devices SET connected=0 WHERE id='$id';");
+            $this->dbRequest("UPDATE devices SET connected=0 WHERE id='{$id}';");
         }
     }
 
     public function setLoginState($id, $successfullyLoggedOut)
     {
         if ($successfullyLoggedOut) {
-            $this->dbRequest("UPDATE devices SET isLoggedIn=0 WHERE id='$id';");
+            $this->dbRequest("UPDATE devices SET isLoggedIn=0 WHERE id='{$id}';");
         } else {
-            $this->dbRequest("UPDATE devices SET isLoggedIn=1 WHERE id='$id';");
+            $this->dbRequest("UPDATE devices SET isLoggedIn=1 WHERE id='{$id}';");
         }
     }
 
     public function getDeviceIsConnected($id)
     {
-        $result = $this->dbQuery("SELECT connected FROM devices WHERE id='$id';");
+        $result = $this->dbQuery("SELECT connected FROM devices WHERE id='{$id}';");
         $row = $result->fetch();
         $isConnected = filter_var($row['connected'], FILTER_VALIDATE_BOOLEAN);
         return $isConnected;
-    }
-
-    public function insertTrackingData($tableName, $data)
-    {
-        $acceleration = $data->a;
-        $rotation = $data->r;
-        $temperature = $data->tp;
-        $battery = $data->b;
-
-        return $this->dbRequest("INSERT $tableName (acceleration, rotation, temperature, battery) VALUES ($acceleration, $rotation, $temperature, $battery);");
     }
 
     public function getDevices()
@@ -318,18 +308,39 @@ class DBController
         return NULL;
     }
 
-    public function insertEvent($deviceId, $eventId)
+    public function insertTrackingData($device, $data)
     {
-        $currentCaptureId = $this->dbRequest("SELECT id FROM device_{$deviceId}_log ORDER BY id DESC LIMIT 1");
-        $this->dbRequest("INSERT event_log (device, event, capture_id) VALUES ({$deviceId}, {$eventId}, {$currentCaptureId});");
-        return $currentCaptureId;
+        $acceleration = $data->a;
+        $rotation = $data->r;
+        $temperature = $data->tp;
+        $battery = $data->b;
+        $timestamp = $this->getTimeNow()->format('Y-m-d H:i:s');
+        $this->dbRequest("INSERT {$device->databaseTableName} (acceleration, rotation, temperature, battery, timestamp) VALUES ('{$acceleration}', '{$rotation}', '{$temperature}', '{$battery}', '{$timestamp}');");
+
+        return $timestamp;
     }
 
-    public function insertEvents($eventList)
+
+    public function insertEvent($deviceId, $eventId)
     {
-        foreach ($eventList as $event) {
-            $currentCaptureId = $this->insertEvent($event->deviceId, $event->id);
+        $timestamp = $this->getTimeNow()->format('Y-m-d H:i:s');
+        $this->dbRequest("INSERT event_log (device, event, timestamp) VALUES ('{$deviceId}', '{$eventId}', '{$timestamp}');");
+        return $timestamp;
+    }
+
+    public function insertEvents($deviceId, $eventIdList)
+    {
+        $timestamp = "";
+        foreach ($eventIdList as $eventId) {
+            $timestamp = $this->insertEvent($deviceId, $eventId);
         }
-        return $currentCaptureId;
+        return $timestamp;
+    }
+
+    private function getTimeNow()
+    {
+        $now = new DateTime();
+        $now->setTimezone($this->timezone);
+        return $now;
     }
 }
