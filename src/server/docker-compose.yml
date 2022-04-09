@@ -70,12 +70,17 @@ services:
 #########################
 networks:
     securitytracker_internal:
-        external:
-          name: securitytracker_internal
+        driver: bridge
         
     securitytracker_public:
-        external:
-          name: securitytracker_public
+        driver: ipvlan
+        driver_opts:
+            parent: ${ETHERNET_ADAPTER}
+            ipvlan_mode: l2
+        ipam:
+            config:
+                - subnet: ${SUBNET}
+                  gateway: ${GATEWAY}
 
 #########################
 # STORAGE CONFIGURATION #
