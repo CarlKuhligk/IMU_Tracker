@@ -1,0 +1,18 @@
+version: '3.3'
+
+#########################
+# NETWORK CONFIGURATION #
+#########################
+networks:
+    securitytracker_internal:
+        driver: bridge
+        
+    securitytracker_public:
+        driver: ipvlan
+        driver_opts:
+            parent: ${ETHERNET_ADAPTER}
+            ipvlan_mode: l2
+        ipam:
+            config:
+                - subnet: ${SUBNET}
+                - gateway: ${GATEWAY}
