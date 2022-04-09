@@ -54,8 +54,8 @@ RUN chmod a+rwx -R /var/www/html
 ##########################################
 # E N V I R O M E N T  V A R I A B L E S #
 ##########################################
-# VERION #
-ARG VERSION 0.2
+# VERSION #
+ENV VERSION 0.4
 # DATABASE #
 ENV MYSQL_HOST "localhost"
 ENV MYSQL_DATABASE "security_motion_tracker"
