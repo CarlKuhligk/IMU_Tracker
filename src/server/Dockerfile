@@ -1,13 +1,17 @@
-FROM php:7.4.28-apache
+FROM php:apache
 
+# CREAETE NEW USER 'www' #
 RUN groupadd -g 1000 www
 RUN useradd -u 1000 -ms /bin/bash -g www www
 
-# INSTALL RATCHET + COMPOSER #
-RUN apt-get update && apt-get install -y \
+###############################################
+# INSTALL RATCHET + COMPOSER + MARIADB CLIENT #
+###############################################
+RUN apt-get update && apt-get dist-upgrade && apt-get install -y \
     zlib1g-dev \
     libzip-dev \
-    unzip
+    unzip \
+    mariadb-client
 RUN docker-php-ext-install zip
 RUN docker-php-ext-install mysqli
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
@@ -16,22 +20,39 @@ RUN php composer-setup.php
 RUN php -r "unlink('composer-setup.php');"
 RUN mv composer.phar /usr/local/bin/composer
 
+
 ####################################
 # C O P Y  P R O J E C T F I L E S #
 ####################################
 RUN mkdir /usr/app
-RUN mkdir /usr/app/src
-COPY ./ /usr/app/src/
-RUN chmod a+rwx -R /usr/app
-RUN mv -f /usr/app/src/www/html/* /var/www/html/
+RUN mkdir /usr/app/bin
+RUN mkdir /usr/app/php
+RUN mkdir /usr/app/sql
 
-###################
-# D A T A B A S E #
-###################
-ENV MYSQL_HOST = "localhost"
-ENV MYSQL_DATABASE = "helloworld"
-ENV MYSQL_USER = "mrdatabase"
-ENV MYSQL_PASSWORD = "mydatabase"
+# COMPOSER FILE #
+COPY ./composer.json /usr/app/
+# WEBSOCKETSERVER #
+COPY ./bin/ /usr/app/bin/
+COPY ./php/ /usr/app/php/
+# DATABASE TEMPLATE #
+COPY ./sql/ /usr/app/sql/
+RUN chmod a+rwx -R /usr/app
+# WEBCONTENT #
+COPY ./www/html/ /var/www/html/
+RUN chmod a+rwx -R /var/www/html
+
+##########################################
+# E N V I R O M E N T  V A R I A B L E S #
+##########################################
+# DATABASE #
+ENV MYSQL_HOST "localhost"
+ENV MYSQL_DATABASE "security_motion_tracker"
+ENV MYSQL_USER "mrdatabase"
+ENV MYSQL_PASSWORD "mydatabase"
+# DATABASE INITIALISATION FILE#
+ENV MYSQL_PATH "/usr/app/sql/tables.sql"
+# CONSOLE LOGGING #
+ENV CONSOLE_OUTPUT 1
 
 #######################
 # W E B C O N T E N T #
@@ -42,7 +63,7 @@ EXPOSE 80
 # W E B S O C K E T S E R V E R #
 #################################
 EXPOSE 8080
-WORKDIR /usr/app/src
+WORKDIR /usr/app
 USER www
 RUN composer update
-CMD [ "php", "./bin/IMUSocketServer.php" ]
+CMD service apache2 start && php ./bin/WebsocketServer.php -F

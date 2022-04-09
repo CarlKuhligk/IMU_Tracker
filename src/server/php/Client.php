@@ -1,14 +1,9 @@
 <?php
-class Client {
+class Client
+{
   public $id;
-
-  public $ip =  "";
-
-  public function __construct($rescourdeId)
+  public function __construct($resourceId)
   {
-
-        $this->id = $rescourdeId;
+    $this->id = $resourceId;
   }
-
 }
-
