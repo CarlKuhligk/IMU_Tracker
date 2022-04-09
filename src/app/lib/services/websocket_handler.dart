@@ -20,15 +20,19 @@ class WebSocketHandler {
   final streamController = StreamController.broadcast();
   bool isWebsocketRunning = false; //status of a websocket
   int retryLimit = 3;
+  Timer? timer;
+  var _socketData;
 
   var deviceSettings = getIt<DeviceSettingsHandler>();
 
   Future<int> connectWebSocket(socketData) async {
     int _webSocketResponseNumber = 0;
+    _socketData = socketData;
 
     try {
       _channel = await WebSocket.connect('ws://${socketData['host']}');
       isWebsocketRunning = true;
+      _channel.done.then((dynamic _) => print("Disconnected"));
       registerAsSender(socketData);
       _channel.listen(
         (message) {
@@ -121,7 +125,7 @@ class WebSocketHandler {
   }
 
   buildRegistrationMessage(socketData) {
-    var _registrationMessage = {"t": "i", "a": ""};
+    var _registrationMessage = {"t": "i", "a": "", "c": 0};
     _registrationMessage['a'] = socketData['apikey'];
 
     return _registrationMessage;
@@ -208,6 +212,8 @@ class WebSocketHandler {
         break;
       case 10:
         successfullyRegistered = true;
+
+        _startPingInterval("lalala");
         break;
       case 24:
         successfullyRegistered = false;
@@ -235,5 +241,28 @@ class WebSocketHandler {
 
   void dispose() {
     _channel.close();
+  }
+
+  _checkServerAvailable(socketData) {
+    //TODO: Implement the argument socketData into ping
+    Socket.connect("192.168.178.69", 8080, timeout: Duration(seconds: 5))
+        .then((socket) {
+      isWebsocketRunning = true;
+      socket.destroy();
+    }).catchError((error) {
+      successfullyRegistered = false;
+      isWebsocketRunning = false;
+      _channel.close;
+      connectWebSocket(_socketData);
+    });
+  }
+
+  _startPingInterval(socketData) {
+    // Intervall for websocketconnection available test
+    if (timer == null || !timer!.isActive) {
+      timer = Timer.periodic(const Duration(seconds: 10), (_) {
+        _checkServerAvailable(socketData);
+      });
+    }
   }
 }
