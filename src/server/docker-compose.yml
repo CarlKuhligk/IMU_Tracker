@@ -1,31 +1,4 @@
 version: '3.3'
-
-#########################
-# NETWORK CONFIGURATION #
-#########################
-networks:
-    securitytracker_internal:
-        driver: bridge
-        
-    securitytracker_public:
-        driver: ipvlan
-        driver_opts:
-            parent: ${ETHERNET_ADAPTER}
-            ipvlan_mode: l2
-        ipam:
-            config:
-                - subnet: ${SUBNET}
-                - gateway: ${GATEWAY}
-
-#########################
-# STORAGE CONFIGURATION #
-#########################
-
-volumes:
-  securitytracker-sql-data:
-
-
-
 #########################
 # SERVICE CONFIGURATION #
 #########################
@@ -91,3 +64,22 @@ services:
       - MYSQL_USER=${DB_USER}
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - TZ=Europe/Berlin
+
+#########################
+# NETWORK CONFIGURATION #
+#########################
+networks:
+    securitytracker_internal:
+        external:
+          name: securitytracker_internal
+        
+    securitytracker_public:
+        external:
+          name: securitytracker_public
+
+#########################
+# STORAGE CONFIGURATION #
+#########################
+
+volumes:
+  securitytracker-sql-data:
