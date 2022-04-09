@@ -44,7 +44,8 @@ services:
       - 8888:80
       
     networks:
-      securitytracker_internal:
+      securitytracker_public:
+        ipv4_address: ${SERVER_IP}
 
     environment:
       - PMA_HOST=mariadb
@@ -64,7 +65,7 @@ services:
       - 8080:8080
 
     networks:
-      securitytracker_net:
+      securitytracker_public:
           ipv4_address: ${SERVER_IP}
       securitytracker_internal:
 
@@ -76,13 +77,10 @@ services:
       - TZ=Europe/Berlin
 
 networks:
-    securitytracker_host:
-      external:
-        name: host
     securitytracker_internal:
         driver: bridge
         
-    securitytracker_net:
+    securitytracker_public:
         driver: ipvlan
         driver_opts:
             parent: ${ETHERNET_ADAPTER}
