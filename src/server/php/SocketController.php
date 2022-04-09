@@ -39,6 +39,7 @@ class SocketController implements MessageComponentInterface
             die("Check your database server!\n");
         }
         consoleLog("Setting: Data is obsolete after {$this->dataIsObsoleteAfterNDays} days.");
+        consoleLog("Version: " .  getenv("VERSION"));
         consoleLog("Start system:");
         // set static references
         Device::$Database = &$this->Database;
@@ -83,7 +84,8 @@ class SocketController implements MessageComponentInterface
             if ($connectionIsLost = $device->connectionClosed()) {
                 // event connection lost
                 //#region [events]
-                $this->sendGlobalMessage(createEventResponseMessage($device->id, [E_CONNECTION_LOST]), MF_SUBSCRIBER);
+                $eventList = buildEventList($device->id, [E_CONNECTION_LOST]);
+                $this->sendGlobalMessage(createAddEventResponseMessage($eventList), MF_SUBSCRIBER);
                 //#endregion
                 consoleLog("Device {$requestingDeviceId} lost connection.");
             }
@@ -159,7 +161,9 @@ class SocketController implements MessageComponentInterface
                             $client->send(createResponseMessage(R_DEVICE_REGISTERED));
                             $client->send(createUpdateDeviceSettingsForAppClientResponseMessage($device));
                             $this->sendGlobalMessage(createUpdateConnectionResponseMessage($device->id, true), MF_SUBSCRIBER);
-                            $this->sendGlobalMessage(createEventResponseMessage($device->id, [E_CONNECTED]), MF_SUBSCRIBER);
+
+                            $eventList = buildEventList($device->id, [E_CONNECTED]);
+                            $this->sendGlobalMessage(createAddEventResponseMessage($eventList), MF_SUBSCRIBER);
                             consoleLog("Device {$device->id} logged in.");
                         }
                     }
@@ -218,6 +222,9 @@ class SocketController implements MessageComponentInterface
                     $client->send(createResponseMessage(R_SUBSCRIBER_REGISTERED));
                     if (count($this->deviceList) > 0) {
                         $client->send(createAddDeviceResponseMessage($this->deviceList));
+                        //#region [events]
+                        #$client->send(createAddEventResponseMessage($this->deviceList));
+                        //#endregion
                     }
                     consoleLog("Client {$client->resourceId} subscribed.");
                 }
@@ -247,9 +254,12 @@ class SocketController implements MessageComponentInterface
         // validate that the client is registered as streamer
         if ($requestingDeviceId = $this->getDeviceIdByResourceId($client->resourceId)) {
             $device = $this->deviceList[$requestingDeviceId];
-            $idListOfDetectedEvents = $device->processTrackingData($data);
-            $this->sendGlobalMessage(createMeasurementRedirectMessage($device->id, $data), MF_SUBSCRIBER);
-            $this->sendEvents($device->id, $idListOfDetectedEvents);
+            $timestampAndIdListOfDetectedEvents = $device->processTrackingData($data);
+
+            $measurementMessage = buildMeasurement($device->id, $data, $timestampAndIdListOfDetectedEvents->timestamp);
+            $this->sendGlobalMessage(createAddMeasurementResponseMessage([$measurementMessage]), MF_SUBSCRIBER);
+
+            $this->sendEvents($device->id, $timestampAndIdListOfDetectedEvents->idListOfDetectedEvents);
         } else {
             $client->send(createResponseMessage(R_DEVICE_NOT_REGISTERED));
         }
@@ -265,7 +275,7 @@ class SocketController implements MessageComponentInterface
                 if (array_key_exists($data->i, $this->deviceList)) {
                     $device = $this->deviceList[$data->i];
                     $device->updateSettings($data);
-                    $client->send(createUpdateDeviceSettingsForAppClientResponseMessage($device));
+                    $device->sendToStreamingDevice(createUpdateDeviceSettingsForAppClientResponseMessage($device));
                     $this->sendGlobalMessage(createUpdateDeviceSettingsForWebClientResponseMessage($device), MF_SUBSCRIBER);
                 } else
                     $client->send(createResponseMessage(R_INVALID_DEVICE_ID));
@@ -406,7 +416,8 @@ class SocketController implements MessageComponentInterface
     private function sendEvents($deviceId, $eventIdList)
     {
         if (count($eventIdList) > 0) {
-            $this->sendGlobalMessage(createEventResponseMessage($deviceId, $eventIdList), MF_SUBSCRIBER);
+            $eventList = buildEventList($deviceId, $eventIdList);
+            $this->sendGlobalMessage(createAddEventResponseMessage($eventList), MF_SUBSCRIBER);
         }
     }
 }
