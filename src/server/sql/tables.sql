@@ -21,16 +21,17 @@ CREATE TABLE `devices` (
 
 CREATE TABLE `event_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `timestamp` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `device` int(11) NOT NULL,
   `event` int(11) NOT NULL,
-  `capture_id` int(11) NOT NULL,
+  `isActive` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `events` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) NOT NULL,
-  `weight` tinyint(3) unsigned NOT NULL,
+  `priority` tinyint(3) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -67,10 +68,6 @@ BEGIN
 	
 	SET @new_api_key = (SELECT SHA2(CONCAT(CURRENT_TIMESTAMP(),@new_table_name),256));
 	SET out_apikey =  @new_api_key;
-
-	
-	SET @sha256_pin = (SELECT SHA2(in_pin ,256));
-
 	
 	INSERT INTO devices(id,
 						apikey,
@@ -91,7 +88,7 @@ BEGIN
 			0,
 			0,
 			in_employee,
-			@sha256_pin,
+			in_pin,
 			in_idleTimeout,
 			in_batteryWarning,
 			in_connectionTimeout,
