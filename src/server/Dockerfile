@@ -13,6 +13,8 @@ RUN apt-get update && apt-get dist-upgrade && apt-get install -y \
     unzip \
     mariadb-client
 
+RUN apt-get install -y iputils-ping
+
 RUN docker-php-ext-install zip
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 RUN docker-php-ext-enable mysqli
@@ -52,6 +54,8 @@ RUN chmod a+rwx -R /var/www/html
 ##########################################
 # E N V I R O M E N T  V A R I A B L E S #
 ##########################################
+# VERION #
+ARG VERSION 0.2
 # DATABASE #
 ENV MYSQL_HOST "localhost"
 ENV MYSQL_DATABASE "security_motion_tracker"
