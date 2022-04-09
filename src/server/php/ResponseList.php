@@ -77,43 +77,31 @@ function createDeviceCreatedResponseMessage($newApikey)
 //#region [GlobalMessages]
 function createUpdateConnectionResponseMessage($id, $state)
 {
+    $isConnected = 0;
+    if ($state) $isConnected = 1;
+
     $response = (object)[
         't' => "uc",
         'i' => "{$id}",
-        'c' => "{$state}"
+        'c' => "{$isConnected}"
     ];
     return json_encode($response);
 }
 
-function createMeasurementRedirectMessage($id, $measurement)
+function createAddMeasurementResponseMessage($measurements)
 {
     $response = (object)[
         't' => "M",
-        'i' => "{$id}",
-        'a' => "{$measurement->a}",
-        'r' => "{$measurement->r}",
-        'tp' => "{$measurement->tp}",
-        'b' => "{$measurement->b}",
+        'd' => $measurements
     ];
     return json_encode($response);
 }
 
-function createEventResponseMessage($deviceId, $eventIdList)
+function createAddEventResponseMessage($eventList)
 {
-    $events = array();
-
-    foreach ($eventIdList as $eventId) {
-        $event = (object)[
-            'i' => $deviceId,
-            'e' => $eventId
-        ];
-        array_push($events, $event);
-    }
-    consoleLog("messagebuilder");
-    consoleLog(var_dump($events));
     $response = (object)[
         't' => "e",
-        'd' => $events
+        'd' => $eventList
     ];
     return json_encode($response);
 }
@@ -172,3 +160,32 @@ function createRemoveDeviceResponseMessage($id)
 }
 
 //#endregion
+
+function buildMeasurement($id, $data, $timestamp)
+{
+    $measurements = (object)[
+        'i' => "{$id}",
+        't' => "{$timestamp}",
+        'a' => "{$data->a}",
+        'r' => "{$data->r}",
+        'tp' => "{$data->tp}",
+        'b' => "{$data->b}"
+
+    ];
+    return $measurements;
+}
+
+
+function buildEventList($deviceId, $eventIdList)
+{
+    $events = array();
+
+    foreach ($eventIdList as $eventId) {
+        $event = (object)[
+            'i' => $deviceId,
+            'e' => $eventId
+        ];
+        array_push($events, $event);
+    }
+    return $events;
+}
