@@ -85,10 +85,10 @@ class QrCodeFoundPage extends StatelessWidget {
             if (webSocketTestResult.isApiKeyValid)
               RaisedButton(
                 onPressed: () => {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const MainPage(),
-                    ),
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => MainPage()),
+                    (Route<dynamic> route) => false,
                   )
                 },
                 child: const Text("App starten"),
@@ -96,10 +96,11 @@ class QrCodeFoundPage extends StatelessWidget {
             else
               RaisedButton(
                 onPressed: () => {
-                  Navigator.of(context).push(
+                  Navigator.pushAndRemoveUntil(
+                    context,
                     MaterialPageRoute(
-                      builder: (context) => const RegistrationScreen(),
-                    ),
+                        builder: (context) => RegistrationScreen()),
+                    (Route<dynamic> route) => false,
                   )
                 },
                 child: const Text("QR - Code erneut scannen"),
