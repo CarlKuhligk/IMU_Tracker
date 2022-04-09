@@ -26,6 +26,9 @@ class _MyMainPageState extends State<MainPage> {
   var internalSensors = getIt<InternalSensorService>();
 
   Timer? timer;
+  TextEditingController _textFieldController = TextEditingController();
+  late String codeDialog;
+  late String valueText;
   String _connectionStateText = 'Not Connected';
   @override
   void initState() {
@@ -71,6 +74,14 @@ class _MyMainPageState extends State<MainPage> {
             children: <Widget>[
               _getConnectionStateIcon(websocket.isWebsocketRunning &&
                   websocket.successfullyRegistered),
+              FlatButton(
+                color: Colors.teal,
+                textColor: Colors.white,
+                onPressed: () {
+                  _displayTextInputDialog(context);
+                },
+                child: const Text('Logout'),
+              ),
             ],
           ),
         ));
@@ -107,5 +118,47 @@ class _MyMainPageState extends State<MainPage> {
         }
       });
     }
+  }
+
+  Future<void> _displayTextInputDialog(BuildContext context) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('LogOut'),
+            content: TextField(
+              onChanged: (value) {
+                setState(() {
+                  valueText = value;
+                });
+              },
+              controller: _textFieldController,
+              decoration: const InputDecoration(hintText: "LogOut Pin"),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                color: Colors.red,
+                textColor: Colors.white,
+                child: const Text('Cancel'),
+                onPressed: () {
+                  setState(() {
+                    Navigator.pop(context);
+                  });
+                },
+              ),
+              FlatButton(
+                color: Colors.green,
+                textColor: Colors.white,
+                child: const Text('Logout'),
+                onPressed: () {
+                  setState(() {
+                    codeDialog = valueText;
+                    Navigator.pop(context);
+                  });
+                },
+              ),
+            ],
+          );
+        });
   }
 }
