@@ -1,5 +1,9 @@
 version: '3.3'
 services:
+
+##################
+# M A R I A  D B #
+##################
   mariadb:
     image: mariadb:10.7
     restart: unless-stopped
@@ -13,6 +17,11 @@ services:
     ports:
     - 3306:3306
     
+    networks:
+      securitytracker_internal:
+          aliases:
+                  - mariadb
+    
     volumes:
       - securitytracker-sql-data:/var/lib/mysql
     healthcheck:
@@ -20,6 +29,9 @@ services:
       timeout: 20s
       retries: 10
   
+#########################
+# P H P  M Y  A D M I N #
+#########################
   phpmyadmin:
     image: phpmyadmin:5.1.3-apache
     restart: unless-stopped
@@ -30,15 +42,18 @@ services:
     
     ports:
       - 8888:80
-
-    links:
-      - mariadb
+      
+    networks:
+      securitytracker_internal:
 
     environment:
       - PMA_HOST=mariadb
 
+#################################
+# S E C U R I T Y T R A C K E R #
+#################################
   app:
-    image: carlkuhligk/securitymotiontracker:debug
+    image: carlkuhligk/securitymotiontracker:latest
     container_name: securitytracker
     restart: unless-stopped
 
@@ -48,14 +63,35 @@ services:
     # websocket
       - 8080:8080
 
-    links:
-      - mariadb
+    networks:
+      securitytracker_net:
+          ipv4_address: ${SERVER_IP}
+      securitytracker_internal:
+
 
     environment:
       - MYSQL_HOST=mariadb
       - MYSQL_USER=${DB_USER}
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - TZ=Europe/Berlin
+
+networks:
+    securitytracker_host:
+      external:
+        name: host
+    securitytracker_internal:
+        driver: bridge
+        
+    securitytracker_net:
+        driver: ipvlan
+        driver_opts:
+            parent: ${ETHERNET_ADAPTER}
+            ipvlan_mode: l2
+        ipam:
+            config:
+                - subnet: ${SUBNET}
+                - gateway: ${GATEWAY}
+
 
 volumes:
   securitytracker-sql-data:
