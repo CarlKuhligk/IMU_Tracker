@@ -1,8 +1,10 @@
 //dart packages
+// ignore_for_file: prefer_typing_uninitialized_variables
+
 import 'dart:convert';
 
 //QRCode String:
-//{"ServerIp":"192.168.0.20:8080","apiKey":"23b651a79c9a5136d4751e6df9659ea15ed9df4768c211ede558d1ebd3b0c5bd"}
+//{"host":"192.168.0.20:8080","apikey":"23b651a79c9a5136d4751e6df9659ea15ed9df4768c211ede558d1ebd3b0c5bd"}
 
 checkQrCode(qrCodeType, qrCodeData) {
   var decodedJSON;
@@ -12,15 +14,13 @@ checkQrCode(qrCodeType, qrCodeData) {
     try {
       decodedJSON = json.decode(qrCodeData) as Map<String, dynamic>;
       decodeSucceeded = true;
-    } on FormatException catch (e) {
-      print('The provided string is not valid JSON');
+    } on FormatException {
       return false;
     }
 
     if (decodeSucceeded &&
-        decodedJSON["ServerIp"] != null &&
-        decodedJSON["apiKey"] != null) {
-      print("No Null values");
+        decodedJSON["host"] != null &&
+        decodedJSON["apikey"] != null) {
       return true;
     } else {
       return false;

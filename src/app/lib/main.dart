@@ -1,4 +1,6 @@
 //flutter packages
+// ignore_for_file: use_key_in_widget_constructors
+
 import 'package:flutter/material.dart';
 
 //project internal services / dependency injection
@@ -60,6 +62,7 @@ class LoadPageState extends State {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: deviceIsRegistered ? MainPage() : RegistrationScreen());
+        body:
+            deviceIsRegistered ? const MainPage() : const RegistrationScreen());
   }
 }
