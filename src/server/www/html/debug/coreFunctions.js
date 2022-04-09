@@ -6,8 +6,8 @@ var serverIP = $.get("../debug/getServerIP.php").done(function (data) {
 
   // socket message callback
   websocket.onmessage = function (e) {
-    outputField.append(e.data);
-    console.log(e.data + "\n");
+    outputField.append(e.data + "\r\n");
+    console.log(e.data + "\n\r");
 
     input = JSON.parse(e.data);
     if (input.t === "k") {
@@ -17,8 +17,8 @@ var serverIP = $.get("../debug/getServerIP.php").done(function (data) {
 
   // socket message callback
   websocket.onclose = function (e) {
-    outputField.append(e.data);
-    console.log(e.data + "\n");
+    outputField.append(e.data + "\r\n");
+    console.log(e.data + "\r\n");
   };
 });
 
@@ -120,7 +120,8 @@ function onClick() {
     case "logout":
       message.t = "o";
 
-      pin = CryptoJS.SHA256(document.getElementsByName("input1")[0].value);
+      var pin = CryptoJS.SHA256(document.getElementsByName("input1")[0].value);
+      pin = pin.toString(CryptoJS.enc.Hex);
       message.p = pin;
       console.log("logout message send:");
       sendMessage(message);
