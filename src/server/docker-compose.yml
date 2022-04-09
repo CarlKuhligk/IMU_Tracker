@@ -39,8 +39,7 @@ services:
       - 8888:80
       
     networks:
-      securitytracker_public:
-        ipv4_address: ${SERVER_IP}
+      securitytracker_internal:
 
     environment:
       - PMA_HOST=mariadb
