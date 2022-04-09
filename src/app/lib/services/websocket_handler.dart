@@ -213,7 +213,7 @@ class WebSocketHandler {
       case 10:
         successfullyRegistered = true;
 
-        _startPingInterval("lalala");
+        _startPingInterval();
         break;
       case 24:
         successfullyRegistered = false;
@@ -243,7 +243,7 @@ class WebSocketHandler {
     _channel.close();
   }
 
-  _checkServerAvailable(socketData) {
+  _checkServerAvailable() {
     //TODO: Implement the argument socketData into ping
     Socket.connect("192.168.178.69", 8080, timeout: Duration(seconds: 5))
         .then((socket) {
@@ -257,11 +257,11 @@ class WebSocketHandler {
     });
   }
 
-  _startPingInterval(socketData) {
+  _startPingInterval() {
     // Intervall for websocketconnection available test
     if (timer == null || !timer!.isActive) {
       timer = Timer.periodic(const Duration(seconds: 10), (_) {
-        _checkServerAvailable(socketData);
+        _checkServerAvailable();
       });
     }
   }
