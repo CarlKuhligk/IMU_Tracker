@@ -6,16 +6,20 @@
     <div class="content">
       <div class="inputContainer">
         <p class="label">select type and enter data</p>
-        <select class="dropdown" id="dropdown" onchange="onChange()">
+        <select class="dropdown" id="dropdown1" onchange="onDropdownChange()">
           <option value="login">login</option>
           <option value="logout">logout</option>
           <option value="subscribe">subscribe</option>
-          <option value="data">data</option>
-          <option value="event">event</option>
+          <option value="unsubscribe">unsubscribe</option>
+          <option value="transmitData">data</option>
+          <option value="settingsUpdate">settings update</option>
+          <option value="newDevice">add device</option>
+          <option value="removeDevice">remove device</option>
         </select>
+        <div class="textboxes"></div>
         <!--<input class="textbox" type="text" id="textbox" placeholder="enter api key"/>-->
       </div>
-      <button class="button" onclick="onClick()">Send</button>
+      <button class="button" id="sendButton" onclick="onClick()">Send</button>
       <div class="outputContainer">
         <p class="label">result</p>
         <textarea
@@ -24,7 +28,6 @@
           id="outputField"
         ></textarea>
       </div>
-      <button class="button" onclick="generateQRCode()">New Device</button>
     </div>
 
     <div class="modal" id="qrCodeWindow">
@@ -35,11 +38,9 @@
         <p>Scan this code with your phone!</p>
       </div>
     </div>
-
-    <script type="text/javascript" src="../source/jquery.js"></script>
-    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
-    <script type="text/javascript" src="coreFunctions.js"></script>
-
-    <script></script>
   </body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+  <script type="text/javascript" src="../source/jquery.js"></script>
+  <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+  <script type="text/javascript" src="coreFunctions.js"></script>
 </html>

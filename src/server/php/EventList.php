@@ -2,7 +2,8 @@
 # events
 define("E_BATTERY_LOW", 10);
 define("E_BATTERY_EMPTY", 11);
-define("E_IDLE", 11);
+define("E_IDLING_STARTED", 12);
+define("E_IDLING_STOPPED", 13);
 define("E_CONNECTED", 20);
 define("E_CONNECTION_LOST", 21);
 define("E_CONNECTION_TIMEOUT", 22);

@@ -12,6 +12,7 @@ class DBController
     private $connectionAttempts;
     private $nextAttemptDelay = 3;
     private $maxConnectionAttempts = 20;
+    private $timezone;
 
     // initiate database connection with given parameters
     function __construct($host, $user, $password, $dbname)
@@ -20,13 +21,14 @@ class DBController
         $this->user = $user;
         $this->password = $password;
         $this->dbname = $dbname;
+        $this->timezone = new DateTimeZone(getenv("TZ"));
     }
 
 
     private function checkIfRequiredDatabaseTableIsMissing()
     {
         $result = $this->dbQuery("SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{$this->dbname}' AND TABLE_NAME = 'devices';");
-        $row = $result->fetch_row();
+        $row = $result->fetch();
         if (empty($row)) {
             return true;
         }
@@ -55,7 +57,7 @@ class DBController
     private function tryToConnect()
     {
         try {
-            $this->mariadbClient = new mysqli($this->host, $this->user, $this->password, $this->dbname);
+            $this->mariadbClient = new PDO("mysql:host=$this->host;dbname=$this->dbname", $this->user, $this->password);
         } catch (Exception $e) {
             consoleLog(" -> {$e->getMessage()} ");
             return false;
@@ -124,7 +126,7 @@ class DBController
                                         rotationMin,
                                         rotationMax 
                                         FROM devices WHERE id = '$id';");
-        $row = $result->fetch_row();
+        $row = $result->fetch();
         if (isset($row)) {
             $device = (object)[
                 'id' => $row[0],
@@ -148,10 +150,23 @@ class DBController
         return false;
     }
 
+    public function updateDeviceSettings($id, $newSettings)
+    {
+        $it = $newSettings->it;
+        $b = $newSettings->b;
+        $c = $newSettings->c;
+        $m = $newSettings->m;
+        $ai = $newSettings->ai;
+        $a = $newSettings->a;
+        $ri = $newSettings->ri;
+        $r = $newSettings->r;
+        $this->dbRequest("UPDATE devices SET idleTimeout = $it, batteryWarning = $b, connectionTimeout = $c, measurementInterval = $m, accelerationMin = $ai, accelerationMax = $a, rotationMin = $ri, rotationMax = $r WHERE id='$id';");
+    }
+
     public function validateKey($apikey)
     {
-        $result = $this->dbQuery("SELECT id FROM devices WHERE apikey = '$apikey';");
-        $row = $result->fetch_row();
+        $result = $this->dbQuery("SELECT id FROM devices WHERE apikey = '{$apikey}';");
+        $row = $result->fetch();
         if (isset($row)) {
             $deviceID = $row[0];
             return $deviceID;
@@ -161,9 +176,9 @@ class DBController
 
     public function validatePin($pin, $requestingDevice)
     {
-        $result = $this->dbQuery("SELECT isLoggedIn FROM devices WHERE id = '$requestingDevice->id' AND pin = '$pin';");
+        $result = $this->dbQuery("SELECT isLoggedIn FROM devices WHERE id = '{$requestingDevice->id}' AND pin = '{$pin}';");
         if (isset($result)) {
-            $row = $result->fetch_row();
+            $row = $result->fetch();
             if (isset($row)) {
                 return true;
             }
@@ -173,8 +188,8 @@ class DBController
 
     public function validateDeviceId($id)
     {
-        $result = $this->dbQuery("SELECT id FROM devices WHERE id = '$id';");
-        $row = $result->fetch_row();
+        $result = $this->dbQuery("SELECT id FROM devices WHERE id = '{$id}';");
+        $row = $result->fetch();
         if (isset($row)) {
             $deviceID = $row[0];
             return $deviceID;
@@ -185,48 +200,38 @@ class DBController
     public function setDeviceIsConnected($id, $isConnected)
     {
         if ($isConnected) {
-            $this->dbRequest("UPDATE devices SET connected=1 WHERE id='$id';");
+            $this->dbRequest("UPDATE devices SET connected=1 WHERE id='{$id}';");
         } else {
-            $this->dbRequest("UPDATE devices SET connected=0 WHERE id='$id';");
+            $this->dbRequest("UPDATE devices SET connected=0 WHERE id='{$id}';");
         }
     }
 
     public function setLoginState($id, $successfullyLoggedOut)
     {
         if ($successfullyLoggedOut) {
-            $this->dbRequest("UPDATE devices SET isLoggedIn=0 WHERE id='$id';");
+            $this->dbRequest("UPDATE devices SET isLoggedIn=0 WHERE id='{$id}';");
         } else {
-            $this->dbRequest("UPDATE devices SET isLoggedIn=1 WHERE id='$id';");
+            $this->dbRequest("UPDATE devices SET isLoggedIn=1 WHERE id='{$id}';");
         }
     }
 
     public function getDeviceIsConnected($id)
     {
-        $result = $this->dbQuery("SELECT connected FROM devices WHERE id='$id';");
-        $row = $result->fetch_row();
+        $result = $this->dbQuery("SELECT connected FROM devices WHERE id='{$id}';");
+        $row = $result->fetch();
         $isConnected = filter_var($row['connected'], FILTER_VALIDATE_BOOLEAN);
         return $isConnected;
-    }
-
-    public function writeTrackingData($tableName, $data)
-    {
-        $acceleration = $data->a;
-        $rotation = $data->r;
-        $temperature = $data->tp;
-        $battery = $data->b;
-
-        return $this->dbRequest("INSERT $tableName (acceleration, rotation, temperature, battery) VALUES ($acceleration, $rotation, $temperature, $battery);");
     }
 
     public function getDevices()
     {
         $result = $this->dbQuery("SELECT id FROM devices;");
         if (isset($result)) {
-            $resultCount = $result->num_rows;
+            $resultCount = $result->rowCount();
             $deviceList = array();
 
             for ($i = 0; $i < $resultCount; $i++) {
-                $row =  $result->fetch_row();
+                $row =  $result->fetch();
                 $deviceID = $row[0];
                 $device = $this->getDevice($deviceID);
                 array_push($deviceList, $device);
@@ -244,12 +249,98 @@ class DBController
 
     public function setLastConnectionTime($id, $time)
     {
-        $this->dbRequest("UPDATE devices SET lastConnection='$time->format('Y-m-d H:i:s')' WHERE id='$id';");
+        $this->dbRequest("UPDATE devices SET lastConnection='{$time->format('Y-m-d H:i:s')}' WHERE id='$id';");
     }
 
-    public function getLastConnectionTime($id, $time)
+    public function createDevice($initializationData)
     {
-        $timeString = $this->dbRequest("SELECT lastConnection FROM devices WHERE id='$id';");
-        return new DateTime($timeString, new DateTimeZone($this->settings->timezone));
+        $call = $this->mariadbClient->prepare('CALL addDevice(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @id, @apikey)');
+        $call->bindParam(1, $initializationData->e, PDO::PARAM_STR);
+        $call->bindParam(2, $initializationData->p, PDO::PARAM_STR);
+        $call->bindParam(3, $initializationData->it);
+        $call->bindParam(4, $initializationData->b);
+        $call->bindParam(5, $initializationData->c);
+        $call->bindParam(6, $initializationData->m);
+        $call->bindParam(7, $initializationData->ai);
+        $call->bindParam(8, $initializationData->a);
+        $call->bindParam(9, $initializationData->ri);
+        $call->bindParam(10, $initializationData->r);
+
+        $call->execute();
+        $select = $this->mariadbClient->query('SELECT @id, @apikey');
+        $sqlResult = $select->fetch(PDO::FETCH_ASSOC);
+        $result     = (object)[
+            "id" => $sqlResult['@id'],
+            "apikey" => $sqlResult['@apikey']
+        ];
+        return $result;
+    }
+
+    public function removeObsoleteData($timeInDays)
+    {
+        $call = $this->mariadbClient->prepare('CALL removeObsoleteData(?)');
+        $call->bindParam(1, $timeInDays);
+        $call->execute();
+    }
+
+    public function removeDevice($id)
+    {
+        $call = $this->mariadbClient->prepare('CALL removeDevice(?)');
+        $call->bindParam(1, $id);
+        $call->execute();
+    }
+
+    public function getEventList()
+    {
+        $result = $this->dbQuery("SELECT device, event, capture_id FROM event_log;");
+        if (isset($result)) {
+            $resultCount = $result->rowCount();
+            $deviceList = array();
+
+            for ($i = 0; $i < $resultCount; $i++) {
+                $row =  $result->fetch();
+                $deviceID = $row[0];
+                $device = $this->getDevice($deviceID);
+                array_push($deviceList, $device);
+            }
+            return $deviceList;
+        }
+        return NULL;
+    }
+
+    public function insertTrackingData($device, $data)
+    {
+        $acceleration = $data->a;
+        $rotation = $data->r;
+        $temperature = $data->tp;
+        $battery = $data->b;
+        $timestamp = $this->getTimeNow()->format('Y-m-d H:i:s');
+        $this->dbRequest("INSERT {$device->databaseTableName} (acceleration, rotation, temperature, battery, timestamp) VALUES ('{$acceleration}', '{$rotation}', '{$temperature}', '{$battery}', '{$timestamp}');");
+
+        return $timestamp;
+    }
+
+
+    public function insertEvent($deviceId, $eventId)
+    {
+        $timestamp = $this->getTimeNow()->format('Y-m-d H:i:s');
+        $this->dbRequest("INSERT event_log (device, event, timestamp) VALUES ('{$deviceId}', '{$eventId}', '{$timestamp}');");
+        return $timestamp;
+    }
+
+    public function insertEvents($deviceId, $eventIdList)
+    {
+        $timestamp = "";
+        foreach ($eventIdList as $eventId) {
+            $timestamp = $this->insertEvent($deviceId, $eventId);
+        }
+        return $timestamp;
+    }
+
+    private function getTimeNow()
+    {
+        $now = new DateTime();
+        $now->setTimezone($this->timezone);
+        return $now;
     }
 }

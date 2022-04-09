@@ -11,9 +11,14 @@ $SecurityMotionTrackerWsServer = new SocketController();
 
 $server = IoServer::factory(new HttpServer(new WsServer($SecurityMotionTrackerWsServer)), 8080);
 
-// starting watchdog
+// used for monitoring idle and connection lost time
 $server->loop->addPeriodicTimer(1, function () use ($SecurityMotionTrackerWsServer) {
-    $SecurityMotionTrackerWsServer->watchDog();
+    $SecurityMotionTrackerWsServer->watchDogA();
+});
+
+// used for removing obsolete data in database
+$server->loop->addPeriodicTimer(600, function () use ($SecurityMotionTrackerWsServer) {
+    $SecurityMotionTrackerWsServer->watchDogB();
 });
 
 $server->run();

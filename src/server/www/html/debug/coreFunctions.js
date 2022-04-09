@@ -1,8 +1,4 @@
-const dataTnputNames = ["acceleration", "rotation", "temperature", "battery"];
-var textboxes = [];
-
 var websocket;
-
 // get server ip
 var serverIP = $.get("../debug/getServerIP.php").done(function (data) {
   // create a new WebSocket.
@@ -10,122 +6,193 @@ var serverIP = $.get("../debug/getServerIP.php").done(function (data) {
 
   // socket message callback
   websocket.onmessage = function (e) {
-    outputField.append(e.data);
-    console.log(e.data);
+    outputField.append(e.data + "\r\n");
+    console.log(e.data + "\n\r");
+
+    input = JSON.parse(e.data);
+    if (input.t === "k") {
+      generateQRCode(input.a);
+    }
+  };
+
+  // socket message callback
+  websocket.onclose = function (e) {
+    outputField.append(e.data + "\r\n");
+    console.log(e.data + "\r\n");
   };
 });
 
-// generate textboxes
-for (var i = 0; i < dataTnputNames.length; i++) {
+function createTextbox(name, placeholder, visible) {
   newTextbox = document.createElement("input");
-  newTextbox.setAttribute("name", dataTnputNames[i]);
-  newTextbox.setAttribute("placeholder", dataTnputNames[i] + " value");
-  if (i > 0) {
-    newTextbox.style.display = "none";
-  }
-  $(".inputContainer").append(newTextbox);
+  newTextbox.setAttribute("name", name);
+  newTextbox.setAttribute("placeholder", placeholder);
+  if (!visible) newTextbox.style.display = "none";
+  $(".textboxes").append(newTextbox);
 }
 
-// reference objects
-var textboxes = [];
-for (var i = 0; i < dataTnputNames.length; i++) {
-  textboxes.push(document.getElementsByName(dataTnputNames[i])[0]);
-}
-
-var dropdown = document.getElementById("dropdown");
+var dropdown = document.getElementById("dropdown1");
 var outputField = document.getElementById("outputField");
+var mainButton = document.getElementById("sendButton");
 
 $(document).ready(function () {
-  textboxes[0].placeholder = "enter api key";
+  onDropdownChange();
 });
 
 // dropdown change
-function onChange() {
-  textboxes[0].value = "";
+function onDropdownChange() {
+  $(".textboxes").empty();
+
   switch (dropdown.value) {
     case "login":
-      textboxes[0].placeholder = "enter api key";
-      showAccGyrTextbox(false);
+      mainButton.firstChild.data = "send";
+      createTextbox("input1", "enter apikey", true);
+      createTextbox("input2", "validate key", true);
       break;
+
     case "logout":
-      textboxes[0].placeholder = "enter pin";
-      showAccGyrTextbox(false);
+      mainButton.firstChild.data = "send";
+      createTextbox("input1", "enter pin", true);
       break;
+
     case "subscribe":
-      textboxes[0].placeholder = "enter device id";
-      textboxes[1].placeholder = "ture or false";
-      showAccGyrTextbox(false);
-      textboxes[1].style.display = "block";
+    case "unsubscribe":
+      mainButton.firstChild.data = "send";
       break;
-    case "data":
-      textboxes[0].placeholder = dataTnputNames[0] + " value";
-      showAccGyrTextbox(true);
+
+    case "transmitData":
+      mainButton.firstChild.data = "send";
+      createTextbox("input1", "acceleration", true);
+      createTextbox("input2", "rotation", true);
+      createTextbox("input3", "battery", true);
+      createTextbox("input4", "temperature", true);
       break;
-    case "event":
-      textboxes[0].placeholder = "enter event data";
-      showAccGyrTextbox(false);
+    case "settingsUpdate":
+      mainButton.firstChild.data = "send";
+      createTextbox("input0", "device id", true);
+      createTextbox("input1", "idleTimeout", true);
+      createTextbox("input2", "batteryWarning", true);
+      createTextbox("input3", "connectionTimeout", true);
+      createTextbox("input4", "measurementInterval", true);
+      createTextbox("input5", "accelerationMin", true);
+      createTextbox("input6", "accelerationMax", true);
+      createTextbox("input7", "rotationMin", true);
+      createTextbox("input8", "rotationMax", true);
+      break;
+
+    case "newDevice":
+      mainButton.firstChild.data = "send";
+      createTextbox("input0", "employee", true);
+      createTextbox("input1", "pin", true);
+      createTextbox("input2", "idleTimeout", true);
+      createTextbox("input3", "batteryWarning", true);
+      createTextbox("input4", "connectionTimeout", true);
+      createTextbox("input5", "measurementInterval", true);
+      createTextbox("input6", "accelerationMin", true);
+      createTextbox("input7", "accelerationMax", true);
+      createTextbox("input8", "rotationMin", true);
+      createTextbox("input9", "rotationMax", true);
+      break;
+
+    case "removeDevice":
+      mainButton.firstChild.data = "send";
+      createTextbox("input0", "device id", true);
       break;
   }
 }
 
-function showAccGyrTextbox(state) {
-  for (var i = 0; i < dataTnputNames.length - 1; i++) {
-    textboxes[i + 1].style.display = state ? "block" : "none";
-  }
+function sendMessage(messageOBJ) {
+  message = JSON.stringify(messageOBJ);
+  console.log(message);
+  websocket.send(message);
 }
-
-var message = {};
 
 function onClick() {
-  if (textboxes[0].value != "") {
-    //set value
-    switch (dropdown.value) {
-      case "login":
-        message.t = "i"; // login
-        message.a = textboxes[0].value;
-        console.log("login");
-        break;
-      case "logout":
-        message.t = "o"; // logout
-        message.p = textboxes[0].value;
-        console.log("logout");
-        break;
-      case "subscribe":
-        message.t = "s"; // subscribe
-        message.i = textboxes[0].value;
-        message.s = textboxes[1].value;
-        console.log("subscribe");
-        break;
-      case "data":
-        message.t = "d"; // tracking data
-        message.a = [];
-        message.r = [];
-        message.tp = [];
-        message.b = [];
+  var message = {};
+  //set value
+  switch (dropdown.value) {
+    case "login":
+      message.t = "i";
+      message.a = document.getElementsByName("input1")[0].value;
+      message.c = document.getElementsByName("input2")[0].value;
+      console.log("login message send:");
+      sendMessage(message);
+      break;
+    case "logout":
+      message.t = "o";
 
-        console.log("data");
-        break;
-      case "event":
-        message.t = "e"; // event
-        message.value = textboxes[0].value;
-        console.log("event");
-        break;
-    }
-    websocket.send(JSON.stringify(message));
-  } else {
-    alert("no value");
+      var pin = CryptoJS.SHA256(document.getElementsByName("input1")[0].value);
+      pin = pin.toString(CryptoJS.enc.Hex);
+      message.p = pin;
+      console.log("logout message send:");
+      sendMessage(message);
+      break;
+    case "transmitData":
+      message.t = "m";
+      message.a = document.getElementsByName("input1")[0].value;
+      message.r = document.getElementsByName("input2")[0].value;
+      message.b = document.getElementsByName("input3")[0].value;
+      message.tp = document.getElementsByName("input4")[0].value;
+      console.log("measurement message send:");
+      sendMessage(message);
+      break;
+    case "settingsUpdate":
+      message.t = "S";
+      message.i = document.getElementsByName("input0")[0].value;
+      message.it = document.getElementsByName("input1")[0].value;
+      message.b = document.getElementsByName("input2")[0].value;
+      message.c = document.getElementsByName("input3")[0].value;
+      message.m = document.getElementsByName("input4")[0].value;
+      message.ai = document.getElementsByName("input5")[0].value;
+      message.a = document.getElementsByName("input6")[0].value;
+      message.ri = document.getElementsByName("input7")[0].value;
+      message.r = document.getElementsByName("input8")[0].value;
+      console.log("settings update message send:");
+      sendMessage(message);
+      break;
+    case "subscribe":
+      message.t = "s";
+      message.s = 1;
+      console.log("subscribe message send:");
+      sendMessage(message);
+      break;
+    case "unsubscribe":
+      message.t = "s";
+      message.s = 0;
+      console.log("unsubscribe message send:");
+      sendMessage(message);
+      break;
+    case "newDevice":
+      message.t = "A";
+      message.e = document.getElementsByName("input0")[0].value;
+      message.p = document.getElementsByName("input1")[0].value;
+      message.it = document.getElementsByName("input2")[0].value;
+      message.b = document.getElementsByName("input3")[0].value;
+      message.c = document.getElementsByName("input4")[0].value;
+      message.m = document.getElementsByName("input5")[0].value;
+      message.ai = document.getElementsByName("input6")[0].value;
+      message.a = document.getElementsByName("input7")[0].value;
+      message.ri = document.getElementsByName("input8")[0].value;
+      message.r = document.getElementsByName("input9")[0].value;
+      console.log("create device message send:");
+      sendMessage(message);
+      break;
+
+    case "removeDevice":
+      message.t = "R";
+      message.i = document.getElementsByName("input0")[0].value;
+      console.log("remove device message send:");
+      sendMessage(message);
+      break;
   }
 }
 
 // Get the modal
 var modal = document.getElementById("qrCodeWindow");
 
-function generateQRCode() {
+function generateQRCode(apikey) {
   var message = {};
-  message.apikey =
-    "cceb996336b98f2c9cb6136d96f47457b3dc8b301012d468a4634c8fefafe002";
+  message.apikey = apikey;
   message.host = serverIP.responseText;
-
   messageText = JSON.stringify(message);
 
   $("#qrcode").empty();
