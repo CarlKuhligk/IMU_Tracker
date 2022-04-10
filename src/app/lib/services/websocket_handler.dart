@@ -7,6 +7,7 @@ import 'dart:io';
 //project specific types
 import 'package:imu_tracker/data_structures/function_return_types.dart';
 import 'package:imu_tracker/data_structures/response_numbers.dart';
+import 'package:crypto/crypto.dart';
 
 //project internal services / dependency injection
 import 'package:imu_tracker/service_locator.dart';
@@ -140,9 +141,10 @@ class WebSocketHandler {
 
   buildLogOutMessage(personalPin) {
     var _logOutMessage = {"t": "o"};
-    _logOutMessage['p'] = personalPin;
-
-    return _logOutMessage;
+    var bytes = utf8.encode(personalPin);
+    var hashedPin = sha256.convert(bytes);
+    _logOutMessage['p'] = hashedPin.toString();
+    sendMessage(_logOutMessage);
   }
 
   void sendMessage(messageString) {
@@ -209,6 +211,8 @@ class WebSocketHandler {
       case 9:
         successfullyRegistered = false;
         successfullyLoggedOut = true;
+        _channel.close();
+        isWebsocketRunning = false;
         break;
       case 10:
         successfullyRegistered = true;
