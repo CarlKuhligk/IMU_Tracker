@@ -41,6 +41,9 @@ class _MyMainPageState extends State<MainPage> {
       }
     });
 
+    websocket.successfullyRegistered.addListener(() {
+      setState(() {});
+    });
     super.initState();
   }
 
@@ -55,20 +58,16 @@ class _MyMainPageState extends State<MainPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              ValueListenableBuilder(
-                  valueListenable: websocket.successfullyRegistered,
-                  builder: (context, value, child) {
-                    return _getConnectionStateIcon(
-                        websocket.successfullyRegistered.value);
-                  }),
-              FlatButton(
-                color: Colors.teal,
-                textColor: Colors.white,
-                onPressed: () {
-                  _displayTextInputDialog(context);
-                },
-                child: const Text('Logout'),
-              ),
+              _getConnectionStateIcon(websocket.successfullyRegistered.value),
+              if (websocket.successfullyRegistered.value)
+                FlatButton(
+                  color: Colors.teal,
+                  textColor: Colors.white,
+                  onPressed: () {
+                    _displayTextInputDialog(context);
+                  },
+                  child: const Text('Logout'),
+                ),
             ],
           ),
         ));
