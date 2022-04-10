@@ -15,12 +15,10 @@ import 'package:imu_tracker/services/device_settings_handler.dart';
 
 class WebSocketHandler {
 //Websocket Variables
+  bool isWebsocketRunning = false; //status of a websocket
   ValueNotifier<bool> successfullyRegistered = ValueNotifier<bool>(false);
   var successfullyLoggedOut = false;
   late WebSocket _channel; //initialize a websocket channel
-  final streamController = StreamController.broadcast();
-  bool isWebsocketRunning = false; //status of a websocket
-  int retryLimit = 3;
   Timer? timer;
   var _socketData;
 
@@ -33,7 +31,6 @@ class WebSocketHandler {
     try {
       _channel = await WebSocket.connect('ws://${socketData['host']}');
       isWebsocketRunning = true;
-      _channel.done.then((dynamic _) => print("Disconnected"));
       registerAsSender(socketData);
       _channel.listen(
         (message) {
