@@ -35,26 +35,9 @@ class _MyMainPageState extends State<MainPage> {
     var authenticationData = LocalStorageService.getAuthenticationFromMemory();
 
     Future.delayed(Duration.zero, () async {
-      int receivedMessage =
-          await websocket.connectWebSocket(authenticationData);
-      if (websocket.successfullyRegistered) {
+      await websocket.connectWebSocket(authenticationData);
+      if (websocket.successfullyRegistered.value) {
         startTransmissionInterval();
-        setState(() {});
-        websocket.streamController.stream.listen(
-          (event) {
-            var response = websocket.messageDecoder(event);
-          },
-          onDone: () {
-            websocket.isWebsocketRunning = false;
-            print("Websocket Done");
-            setState(() {});
-          },
-          onError: (err) {
-            websocket.isWebsocketRunning = false;
-            print("Websocket Error");
-            setState(() {});
-          },
-        );
       }
     });
 
@@ -72,8 +55,12 @@ class _MyMainPageState extends State<MainPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              _getConnectionStateIcon(websocket.isWebsocketRunning &&
-                  websocket.successfullyRegistered),
+              ValueListenableBuilder(
+                  valueListenable: websocket.successfullyRegistered,
+                  builder: (context, value, child) {
+                    return _getConnectionStateIcon(
+                        websocket.successfullyRegistered.value);
+                  }),
               FlatButton(
                 color: Colors.teal,
                 textColor: Colors.white,
@@ -108,7 +95,7 @@ class _MyMainPageState extends State<MainPage> {
     internalSensors.startInternalSensors();
     if (timer == null || !timer!.isActive) {
       timer = Timer.periodic(const Duration(milliseconds: 200), (_) {
-        if (websocket.successfullyRegistered) {
+        if (websocket.successfullyRegistered.value) {
           websocket.buildValueMessage(
               internalSensors.magnitudeAccelerometer,
               internalSensors.magnitudeGyroscope,
@@ -151,6 +138,7 @@ class _MyMainPageState extends State<MainPage> {
                 textColor: Colors.white,
                 child: const Text('Logout'),
                 onPressed: () {
+                  websocket.buildLogOutMessage(valueText);
                   setState(() {
                     codeDialog = valueText;
                     Navigator.pop(context);

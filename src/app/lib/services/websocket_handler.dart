@@ -1,6 +1,6 @@
 //dart packages
 // ignore_for_file: prefer_typing_uninitialized_variables
-
+import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
@@ -15,7 +15,7 @@ import 'package:imu_tracker/services/device_settings_handler.dart';
 
 class WebSocketHandler {
 //Websocket Variables
-  var successfullyRegistered = false;
+  ValueNotifier<bool> successfullyRegistered = ValueNotifier<bool>(false);
   var successfullyLoggedOut = false;
   late WebSocket _channel; //initialize a websocket channel
   final streamController = StreamController.broadcast();
@@ -26,7 +26,7 @@ class WebSocketHandler {
 
   var deviceSettings = getIt<DeviceSettingsHandler>();
 
-  Future<int> connectWebSocket(socketData) async {
+  connectWebSocket(socketData) async {
     int _webSocketResponseNumber = 0;
     _socketData = socketData;
 
@@ -54,9 +54,7 @@ class WebSocketHandler {
       return _webSocketResponseNumber;
     }
 
-    return await Future.delayed(const Duration(seconds: 1), () {
-      return _webSocketResponseNumber;
-    });
+    return await Future.delayed(const Duration(seconds: 1), () {});
   }
 
   Future<WebSocketTestResultReturnType> testWebSocketConnection(
@@ -209,18 +207,18 @@ class WebSocketHandler {
         successfullyLoggedOut = false;
         break;
       case 9:
-        successfullyRegistered = false;
+        successfullyRegistered.value = false;
         successfullyLoggedOut = true;
         _channel.close();
         isWebsocketRunning = false;
         break;
       case 10:
-        successfullyRegistered = true;
+        successfullyRegistered.value = true;
 
         _startPingInterval();
         break;
       case 24:
-        successfullyRegistered = false;
+        successfullyRegistered.value = false;
         break;
       default:
         try {
@@ -254,7 +252,7 @@ class WebSocketHandler {
       isWebsocketRunning = true;
       socket.destroy();
     }).catchError((error) {
-      successfullyRegistered = false;
+      successfullyRegistered.value = false;
       isWebsocketRunning = false;
       _channel.close;
       connectWebSocket(_socketData);
