@@ -42,6 +42,8 @@ dependencies:
   qr_flutter: ^4.0.0
   get_it: ^7.2.0
   battery_plus: ^2.1.0
+  environment_sensors: ^0.1.1
+  crypto: ^3.0.1
   
 dev_dependencies:
   flutter_test:
