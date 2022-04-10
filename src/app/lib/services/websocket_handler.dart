@@ -17,15 +17,14 @@ class WebSocketHandler {
 //Websocket Variables
   bool isWebsocketRunning = false; //status of a websocket
   ValueNotifier<bool> successfullyRegistered = ValueNotifier<bool>(false);
-  var successfullyLoggedOut = false;
+  var successfullyLoggedOut;
   late WebSocket _channel; //initialize a websocket channel
-  Timer? timer;
+  Timer? _pingIntervalTimer;
   var _socketData;
 
   var deviceSettings = getIt<DeviceSettingsHandler>();
 
   connectWebSocket(socketData) async {
-    int _webSocketResponseNumber = 0;
     _socketData = socketData;
 
     try {
@@ -48,7 +47,6 @@ class WebSocketHandler {
     } catch (e) {
       isWebsocketRunning = false;
       //TODO: Errorhandling via errorhandlingpackage
-      return _webSocketResponseNumber;
     }
 
     return await Future.delayed(const Duration(seconds: 1), () {});
@@ -204,14 +202,10 @@ class WebSocketHandler {
         successfullyLoggedOut = false;
         break;
       case 9:
-        successfullyRegistered.value = false;
-        successfullyLoggedOut = true;
-        _channel.close();
-        isWebsocketRunning = false;
+        _closeWebsocketConnection();
         break;
       case 10:
         successfullyRegistered.value = true;
-
         _startPingInterval();
         break;
       case 24:
@@ -238,8 +232,12 @@ class WebSocketHandler {
     }
   }
 
-  void dispose() {
+  void _closeWebsocketConnection() {
+    successfullyRegistered.value = false;
+    successfullyLoggedOut = true;
     _channel.close();
+    _pingIntervalTimer?.cancel();
+    isWebsocketRunning = false;
   }
 
   _checkServerAvailable() {
@@ -258,8 +256,8 @@ class WebSocketHandler {
 
   _startPingInterval() {
     // Intervall for websocketconnection available test
-    if (timer == null || !timer!.isActive) {
-      timer = Timer.periodic(const Duration(seconds: 10), (_) {
+    if (_pingIntervalTimer == null || !_pingIntervalTimer!.isActive) {
+      _pingIntervalTimer = Timer.periodic(const Duration(seconds: 10), (_) {
         _checkServerAvailable();
       });
     }
