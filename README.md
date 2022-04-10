@@ -5,11 +5,9 @@ This repository contains the final project for obtaining the state-certified tec
 ## Overview
 ![image1](https://github.com/CarlKuhligk/Security-Motion-Tracker/blob/master/doc/Blockschaltbild%20%C3%9Cbersicht%20V2.png?raw=true)
 
-# Connectionstates
-soon
 
 ## Getting started
 ### Docker <img  align="right" height="50"  src="https://miro.medium.com/max/1400/1*JUOITpaBdlrMP9D__-K5Fw.png"  >
 
-An installation example with docker-compose can be found [here](https://github.com/CarlKuhligk/Security-Motion-Tracker/wiki/Getting-started).
+An installation example with docker-compose and portainer.io can be found [here](https://github.com/CarlKuhligk/Security-Motion-Tracker/wiki/Getting-started).
 
