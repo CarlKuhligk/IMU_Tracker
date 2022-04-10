@@ -9,9 +9,9 @@ services:
     restart: unless-stopped
     container_name: mariadb
     environment:
-      - MARIADB_ROOT_PASSWORD=${DB_ROOT}
+      - MARIADB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
       - MARIADB_USER=${DB_USER}
-      - MARIADB_PASSWORD=${DB_PASSWORD}
+      - MARIADB_PASSWORD=${DB_USER_PASSWORD}
       - MARIADB_DATABASE=security_motion_tracker
       - TZ=Europe/Berlin
     ports:
@@ -45,7 +45,7 @@ services:
       - PMA_HOST=mariadb
 # S E C U R I T Y T R A C K E R #
   app:
-    image: carlkuhligk/securitymotiontracker:0.4
+    image: carlkuhligk/securitymotiontracker:latest
     container_name: securitytracker
     restart: unless-stopped
 
@@ -61,7 +61,7 @@ services:
     environment:
       - MYSQL_HOST=mariadb
       - MYSQL_USER=${DB_USER}
-      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_PASSWORD=${DB_USER_PASSWORD}
       - TZ=Europe/Berlin
 
 #########################
