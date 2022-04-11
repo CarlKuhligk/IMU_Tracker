@@ -2,6 +2,7 @@
 // ignore_for_file: prefer_typing_uninitialized_variables, deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
 
 //additional packages
@@ -59,7 +60,8 @@ class _MyMainPageState extends State<MainPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              _getConnectionStateIcon(websocket.successfullyRegistered.value),
+              if (!websocket.successfullyLoggedOut.value)
+                _getConnectionStateIcon(websocket.successfullyRegistered.value),
               if (websocket.successfullyRegistered.value)
                 FlatButton(
                   color: Colors.teal,
@@ -68,6 +70,15 @@ class _MyMainPageState extends State<MainPage> {
                     _displayTextInputDialog(context);
                   },
                   child: const Text('Logout'),
+                ),
+              if (websocket.successfullyLoggedOut.value)
+                FlatButton(
+                  color: Colors.teal,
+                  textColor: Colors.white,
+                  onPressed: () {
+                    SystemNavigator.pop();
+                  },
+                  child: const Text('Close App'),
                 ),
             ],
           ),
@@ -95,9 +106,7 @@ class _MyMainPageState extends State<MainPage> {
     internalSensors.startInternalSensors();
     if (timer == null || !timer!.isActive) {
       timer = Timer.periodic(
-          Duration(
-              milliseconds: (int.parse(deviceSettings.deviceSettings["m"]))),
-          (_) {
+          Duration(milliseconds: (deviceSettings.deviceSettings["m"])), (_) {
         if (websocket.successfullyRegistered.value) {
           websocket.buildValueMessage();
           internalSensors.getCurrentValues();
