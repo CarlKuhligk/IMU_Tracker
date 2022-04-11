@@ -153,28 +153,28 @@ class WebSocketHandler {
     _channel.add(jsonEncode(_registrationMessage));
   }
 
-  messageDecoderReturnType messageDecoder(message) {
+  MessageDecoderReturnType messageDecoder(message) {
     var decodedJSON;
     bool decodeSucceeded = false;
     try {
       decodedJSON = json.decode(message) as Map<String, dynamic>;
       decodeSucceeded = true;
     } on FormatException {
-      return messageDecoderReturnType(false, 'w', 0);
+      return MessageDecoderReturnType(false, 'w', 0);
     }
 
     if (decodeSucceeded && decodedJSON["t"] != null) {
       switch (decodedJSON["t"]) {
         case "r":
-          return messageDecoderReturnType(
+          return MessageDecoderReturnType(
               true, 'r', int.parse(decodedJSON['i']));
         case "s":
-          return messageDecoderReturnType(true, 's', decodedJSON);
+          return MessageDecoderReturnType(true, 's', decodedJSON);
         default:
-          return messageDecoderReturnType(true, 'u', 0);
+          return MessageDecoderReturnType(true, 'u', 0);
       }
     } else {
-      return messageDecoderReturnType(false, 'w', 0);
+      return MessageDecoderReturnType(false, 'w', 0);
     }
   }
 
