@@ -98,7 +98,7 @@ class _MyMainPageState extends State<MainPage> {
           websocket.buildValueMessage(
               internalSensors.magnitudeAccelerometer,
               internalSensors.magnitudeGyroscope,
-              5,
+              internalSensors.deviceTemperature,
               internalSensors
                   .batteryLevel); //TODO implement all necessary values
         }

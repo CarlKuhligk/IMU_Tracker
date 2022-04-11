@@ -1,18 +1,14 @@
 // ignore_for_file: prefer_typing_uninitialized_variables
 //dart packages
-
 import 'dart:async';
 import 'dart:math';
 
 import 'package:sensors/sensors.dart';
-import 'package:battery_plus/battery_plus.dart';
-import 'package:environment_sensors/environment_sensors.dart';
+
+import 'package:battery_info/battery_info_plugin.dart';
 
 class InternalSensorService {
-  final Battery _battery = Battery();
-
-  BatteryState? batteryState;
-  StreamSubscription<BatteryState>? _batteryStateSubscription;
+  final _battery = BatteryInfoPlugin();
 
   StreamSubscription? accelerationSubscription;
   StreamSubscription? gyroscopeSubscription;
@@ -23,6 +19,7 @@ class InternalSensorService {
   var _accelerationValues;
   var _gyroscopeValues;
   var batteryLevel;
+  var deviceTemperature;
 
   startInternalSensors() {
     _startGyroscopeSensor();
@@ -57,16 +54,10 @@ class InternalSensorService {
   }
 
   _startBatterySensor() {
-    // if the battery subscription hasn't been created, go ahead and create it
-    if (_batteryStateSubscription == null) {
-      _batteryStateSubscription =
-          _battery.onBatteryStateChanged.listen((BatteryState state) {
-        batteryState = state;
-      });
-    } else {
-      // it has already ben created so just resume it
-      _batteryStateSubscription?.resume();
-    }
+    _battery.androidBatteryInfoStream.listen((event) {
+      deviceTemperature = event!.temperature;
+      batteryLevel = event.batteryLevel;
+    });
   }
 
   _startMeasurementInterval() {
@@ -74,16 +65,10 @@ class InternalSensorService {
         !measurementIntervalTimer!.isActive) {
       measurementIntervalTimer =
           Timer.periodic(const Duration(milliseconds: 200), (_) {
-        //TODO: get measurement interval from settings
-        _getBatteryPercentage();
         _calculateGyroscopeMagnitude();
         _calculateAccelerometerMagnitude();
       });
     }
-  }
-
-  _getBatteryPercentage() async {
-    batteryLevel = await _battery.batteryLevel;
   }
 
   _calculateGyroscopeMagnitude() {
