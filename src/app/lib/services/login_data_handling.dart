@@ -20,7 +20,8 @@ checkQrCode(qrCodeType, qrCodeData) {
 
     if (decodeSucceeded &&
         decodedJSON["host"] != null &&
-        decodedJSON["apikey"] != null) {
+        decodedJSON["apikey"] != null &&
+        decodedJSON["port"] != null) {
       return true;
     } else {
       return false;

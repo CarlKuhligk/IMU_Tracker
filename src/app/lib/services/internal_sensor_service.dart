@@ -93,11 +93,10 @@ class InternalSensorService {
 
   _checkMovementTimeout() {
     Timer? _movementTimer;
-    if (magnitudeAccelerometer <
-        double.parse(deviceSettings.deviceSettings["ai"])) {
+    if (magnitudeAccelerometer < deviceSettings.deviceSettings["ai"]) {
       if (_movementTimer == null || !_movementTimer.isActive) {
         _movementTimer = Timer(
-          Duration(seconds: (int.parse(deviceSettings.deviceSettings["it"]))),
+          Duration(seconds: (deviceSettings.deviceSettings["it"])),
           () {
             movementAlarmstate.value = true;
           },

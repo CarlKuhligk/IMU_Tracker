@@ -31,7 +31,8 @@ class WebSocketHandler {
     _socketData = socketData;
 
     try {
-      _channel = await WebSocket.connect('ws://${socketData['host']}');
+      _channel = await WebSocket.connect(
+          'ws://${socketData['host']}:${socketData['port']}');
       isWebsocketRunning = true;
       registerAsSender(socketData);
       _channel.listen(
@@ -68,7 +69,8 @@ class WebSocketHandler {
     var _webSocket;
 
     try {
-      _webSocket = await WebSocket.connect('ws://${socketData['host']}');
+      _webSocket = await WebSocket.connect(
+          'ws://${socketData['host']}:${socketData['port']}');
       _isWebsocketRunning = true;
       _webSocket.add(jsonEncode(_apiKeyTestMessage));
 
@@ -166,8 +168,7 @@ class WebSocketHandler {
     if (decodeSucceeded && decodedJSON["t"] != null) {
       switch (decodedJSON["t"]) {
         case "r":
-          return MessageDecoderReturnType(
-              true, 'r', int.parse(decodedJSON['i']));
+          return MessageDecoderReturnType(true, 'r', decodedJSON['i']);
         case "s":
           return MessageDecoderReturnType(true, 's', decodedJSON);
         default:
@@ -244,7 +245,8 @@ class WebSocketHandler {
 
   _checkServerAvailable() {
     //TODO: Implement the argument socketData into ping
-    Socket.connect("192.168.178.69", 8080, timeout: Duration(seconds: 5))
+    Socket.connect(_socketData['host'], _socketData['port'],
+            timeout: const Duration(seconds: 5))
         .then((socket) {
       isWebsocketRunning = true;
       socket.destroy();
