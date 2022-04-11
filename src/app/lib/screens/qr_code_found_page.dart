@@ -87,7 +87,7 @@ class QrCodeFoundPage extends StatelessWidget {
                 onPressed: () => {
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (context) => MainPage()),
+                    MaterialPageRoute(builder: (context) => const MainPage()),
                     (Route<dynamic> route) => false,
                   )
                 },
@@ -99,7 +99,7 @@ class QrCodeFoundPage extends StatelessWidget {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => RegistrationScreen()),
+                        builder: (context) => const RegistrationScreen()),
                     (Route<dynamic> route) => false,
                   )
                 },
