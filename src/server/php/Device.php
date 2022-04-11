@@ -1,7 +1,7 @@
 <?php
 include_once 'DBController.php';
 include_once 'EventList.php';
-include_once 'ResponseList.php';
+
 
 class EventStates
 {
@@ -54,8 +54,8 @@ class Device
     private string $ipAddress = "";
 
 
-    private $lastConnection;    // used to measure the elapsed time after a connection is closed without logout
-    private $idleDetected;      // used to enable idle time monitoring if movement is lower as min limit
+    private $timeOfLastConnection;    // used to measure the elapsed time after a connection is closed without logout
+    private $hasIdleDetected;      // used to enable idle time monitoring if movement is lower as min limit
     private $idlingStarted;     // used to measure the elapsed time till idling is detected
 
 
@@ -72,7 +72,7 @@ class Device
         $this->employee = $deviceData->employee;
         $this->databaseTableName = "device_{$this->id}_log";
         $this->isLoggedIn = $deviceData->isLoggedIn;
-        $this->lastConnection = new DateTime($deviceData->lastConnection, $this->timezone);
+        $this->timeOfLastConnection = new DateTime($deviceData->timeOfLastConnection, $this->timezone);
         $this->settings = new Settings($deviceData->settings);
     }
 
@@ -138,9 +138,9 @@ class Device
             // connection closed without logout
             $this->streamerResourceId = null;
             $this->isConnected = false;
-            $this->lastConnection = $this->getTimeNow();
+            $this->timeOfLastConnection = $this->getTimeNow();
             Device::$Database->setDeviceIsConnected($this->id, false);
-            Device::$Database->setLastConnectionTime($this->id, $this->lastConnection);
+            Device::$Database->setLastConnectionTime($this->id, $this->timeOfLastConnection);
             Device::$Database->insertEvent($this->id, E_CONNECTION_LOST);
             return true;
         } else {
@@ -158,33 +158,31 @@ class Device
             'timestamp' => ""
         ];
 
-        // triggers
+        // event triggers
         // battery
         if ($data->b <= $this->settings->batteryEmpty) {
             array_push($timestampAndIdListOfDetectedEvents->idListOfDetectedEvents, E_BATTERY_EMPTY);
         } elseif ($data->b <= $this->settings->batteryWarning) {
-            array_push($timestampAndIdListOfDetectedEvents->idListOfDetectedEvents, E_BATTERY_LOW);
+            array_push($timestampAndIdListOfDetectedEvents->idListOfDetectedEvents, E_BATTERY_WARNING);
         }
 
         // acceleration exceeds limits
-        if ($data->a >= $this->settings->accelerationMax) {
+        if ($data->a >= $this->settings->accelerationMax)
             array_push($timestampAndIdListOfDetectedEvents->idListOfDetectedEvents, E_ACCELERATION_LIMIT_EXCEEDED);
-        }
+
 
         // rotation exceeds limits
-        if ($data->r >= $this->settings->rotationMax) {
+        if ($data->r >= $this->settings->rotationMax)
             array_push($timestampAndIdListOfDetectedEvents->idListOfDetectedEvents, E_ROTATION_LIMIT_EXCEEDED);
-        }
 
-
-        // monitor idling
-        if ($data->a <= $this->settings->accelerationMin && $data->r <= $this->settings->rotationMin) {
-            $this->idleDetected = true;
+        // detect idling
+        if ($this->hasIdleDetected($data->a, $data->r)) {
+            $this->hasIdleDetected = true;
             $this->idlingStarted = $this->getTimeNow();
-        } else {
+        } elseif ($this->hasIdleDetected) {
             $this->eventState->idlingTimeoutIsTriggered = false;
             array_push($timestampAndIdListOfDetectedEvents->idListOfDetectedEvents, E_IDLING_STOPPED);
-            $this->idleDetected = false;
+            $this->hasIdleDetected = false;
         }
 
         Device::$Database->insertEvents($this->id, $timestampAndIdListOfDetectedEvents->idListOfDetectedEvents);
@@ -203,29 +201,51 @@ class Device
         }
 
         if ($this->isConnected) {
-            // check if idle time is exceeded
-            if ($this->idleDetected) {
-                $idleTime = $this->getElapsedTimeInSeconds($this->idlingStarted);
-                if (!$this->eventState->idlingTimeoutIsTriggered  && $idleTime >= $this->settings->idleTimeout) {
-                    $this->eventState->idlingTimeoutIsTriggered = true;
-                    array_push($idListOfDetectedEvents, E_IDLING_STARTED);
-                }
-            }
+            if ($this->hasIdleTimeoutDetected())
+                array_push($idListOfDetectedEvents, E_IDLING_STARTED);
         } else {
-            // connection timeout
-            if ((!$this->eventState->connectionTimeoutIsTriggered) && $this->isLoggedIn) {
-                $timeSinceConnectionLost = $this->getElapsedTimeInSeconds($this->lastConnection);
-                if ($timeSinceConnectionLost >= $this->settings->connectionTimeout) {
-                    $this->eventState->connectionTimeoutIsTriggered = true;
-                    array_push($idListOfDetectedEvents, E_CONNECTION_TIMEOUT);
-                }
-            }
+            if ($this->hasConnectionTimeoutDetected())
+                array_push($idListOfDetectedEvents, E_CONNECTION_TIMEOUT);
         }
         Device::$Database->insertEvents($this->id, $idListOfDetectedEvents);
 
         return $idListOfDetectedEvents;
     }
 
+    private function hasIdleDetected($acceleration, $rotation)
+    {
+        if ($acceleration <= $this->settings->accelerationMin && $rotation <= $this->settings->rotationMin) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private function hasIdleTimeoutDetected()
+    {
+        if ($this->eventState->idlingTimeoutIsTriggered) return false;
+        if ($this->hasIdleDetected) {
+            $idleTime = $this->getElapsedTimeInSeconds($this->idlingStarted);
+            if ($idleTime >= $this->settings->idleTimeout) {
+                $this->eventState->idlingTimeoutIsTriggered = true;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function hasConnectionTimeoutDetected()
+    {
+        if ($this->eventState->connectionTimeoutIsTriggered) return false;
+        if ($this->isLoggedIn) {
+            $timeSinceConnectionLost = $this->getElapsedTimeInSeconds($this->timeOfLastConnection);
+            if ($timeSinceConnectionLost >= $this->settings->connectionTimeout) {
+                $this->eventState->connectionTimeoutIsTriggered = true;
+                return true;
+            }
+        }
+        return false;
+    }
     //#endregion
 
     public function isSubscriber($resourceId)

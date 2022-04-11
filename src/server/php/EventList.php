@@ -1,6 +1,6 @@
 <?php
 # events
-define("E_BATTERY_LOW", 10);
+define("E_BATTERY_WARNING", 10);
 define("E_BATTERY_EMPTY", 11);
 define("E_IDLING_STARTED", 12);
 define("E_IDLING_STOPPED", 13);

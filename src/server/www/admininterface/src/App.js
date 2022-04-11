@@ -4,7 +4,7 @@ import Button from "@mui/material/Button";
 
 function App() {
   return (
-    <div className="App">
+    <div className="Security Motion Tracker Control Panel">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
@@ -18,7 +18,6 @@ function App() {
         >
           Learn React
         </a>
-        <Button variant="outlined">Ja Moin</Button>
       </header>
     </div>
   );
