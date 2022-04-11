@@ -7,6 +7,7 @@ use Ratchet\ConnectionInterface;
 
 include_once 'Console.php';
 include_once 'DBController.php';
+include_once 'Device.php';
 include_once 'ResponseMessageBuilder.php';
 include_once 'EventList.php';
 
@@ -52,6 +53,16 @@ class SocketController implements MessageComponentInterface
         $this->watchdogBIsActive = true;
         consoleLog("System has started");
     }
+
+    function serverStop()
+    {
+        consoleLog("Stop system:");
+        consoleLog("-> Close all " . count($this->clientList) . " active connections.");
+        foreach ($this->clientList as $client) {
+            $client->close();
+        }
+    }
+
 
     public function onOpen(ConnectionInterface $client)
     {
