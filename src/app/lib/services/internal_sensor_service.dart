@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:sensors/sensors.dart';
-
 import 'package:battery_info/battery_info_plugin.dart';
 
 class InternalSensorService {
@@ -73,15 +72,19 @@ class InternalSensorService {
 
   _calculateGyroscopeMagnitude() {
     var rawData = _gyroscopeValues;
-    magnitudeGyroscope = sqrt((rawData.x * rawData.x) +
-        (rawData.y * rawData.y) +
-        (rawData.z * rawData.z));
+    magnitudeGyroscope = sqrt(_sqrVariable(rawData.x) +
+        _sqrVariable(rawData.y) +
+        _sqrVariable(rawData.z));
   }
 
   _calculateAccelerometerMagnitude() {
     var rawData = _accelerationValues;
-    magnitudeAccelerometer = sqrt((rawData.x * rawData.x) +
-        (rawData.y * rawData.y) +
-        (rawData.z * rawData.z));
+    magnitudeAccelerometer = sqrt(_sqrVariable(rawData.x) +
+        _sqrVariable(rawData.y) +
+        _sqrVariable(rawData.z));
+  }
+
+  _sqrVariable(value) {
+    return value * value;
   }
 }
