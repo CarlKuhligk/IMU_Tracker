@@ -1,12 +1,21 @@
 // ignore_for_file: prefer_typing_uninitialized_variables
+//flutter packages
+import 'package:flutter/material.dart';
 //dart packages
 import 'dart:async';
 import 'dart:math';
 
+//additional packages
 import 'package:sensors/sensors.dart';
 import 'package:battery_info/battery_info_plugin.dart';
 
+//project internal services / dependency injection
+import 'package:imu_tracker/service_locator.dart';
+import 'package:imu_tracker/services/device_settings_handler.dart';
+
 class InternalSensorService {
+  var deviceSettings = getIt<DeviceSettingsHandler>();
+
   final _battery = BatteryInfoPlugin();
 
   StreamSubscription? accelerationSubscription;
@@ -20,11 +29,13 @@ class InternalSensorService {
   var batteryLevel;
   var deviceTemperature;
 
+  ValueNotifier<bool> movementAlarmstate = ValueNotifier<bool>(false);
+  ValueNotifier<bool> batteryAlarmstate = ValueNotifier<bool>(false);
+
   startInternalSensors() {
     _startGyroscopeSensor();
     _startAccelerationSensor();
     _startBatterySensor();
-    _startMeasurementInterval();
   }
 
   _startGyroscopeSensor() {
@@ -59,15 +70,11 @@ class InternalSensorService {
     });
   }
 
-  _startMeasurementInterval() {
-    if (measurementIntervalTimer == null ||
-        !measurementIntervalTimer!.isActive) {
-      measurementIntervalTimer =
-          Timer.periodic(const Duration(milliseconds: 200), (_) {
-        _calculateGyroscopeMagnitude();
-        _calculateAccelerometerMagnitude();
-      });
-    }
+  getCurrentValues() {
+    _calculateGyroscopeMagnitude();
+    _calculateAccelerometerMagnitude();
+    _checkMovementTimeout();
+    _checkBatteryAlarmstate();
   }
 
   _calculateGyroscopeMagnitude() {
@@ -82,6 +89,32 @@ class InternalSensorService {
     magnitudeAccelerometer = sqrt(_sqrVariable(rawData.x) +
         _sqrVariable(rawData.y) +
         _sqrVariable(rawData.z));
+  }
+
+  _checkMovementTimeout() {
+    Timer? _movementTimer;
+    if (magnitudeAccelerometer <
+        double.parse(deviceSettings.deviceSettings["ai"])) {
+      if (_movementTimer == null || !_movementTimer.isActive) {
+        _movementTimer = Timer(
+          Duration(seconds: (int.parse(deviceSettings.deviceSettings["it"]))),
+          () {
+            movementAlarmstate.value = true;
+          },
+        );
+      }
+    } else {
+      movementAlarmstate.value = false;
+      _movementTimer!.cancel();
+    }
+  }
+
+  _checkBatteryAlarmstate() {
+    if (batteryLevel < deviceSettings.deviceSettings["b"]) {
+      batteryAlarmstate.value = true;
+    } else {
+      batteryAlarmstate.value = false;
+    }
   }
 
   _sqrVariable(value) {

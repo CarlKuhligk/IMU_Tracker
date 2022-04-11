@@ -12,17 +12,20 @@ import 'package:crypto/crypto.dart';
 //project internal services / dependency injection
 import 'package:imu_tracker/service_locator.dart';
 import 'package:imu_tracker/services/device_settings_handler.dart';
+import 'package:imu_tracker/services/internal_sensor_service.dart';
 
 class WebSocketHandler {
 //Websocket Variables
   bool isWebsocketRunning = false; //status of a websocket
   ValueNotifier<bool> successfullyRegistered = ValueNotifier<bool>(false);
-  var successfullyLoggedOut;
+  ValueNotifier<bool> successfullyLoggedOut = ValueNotifier<bool>(false);
   late WebSocket _channel; //initialize a websocket channel
   Timer? _pingIntervalTimer;
   var _socketData;
 
   var deviceSettings = getIt<DeviceSettingsHandler>();
+
+  var internalSensors = getIt<InternalSensorService>();
 
   connectWebSocket(socketData) async {
     _socketData = socketData;
@@ -101,19 +104,18 @@ class WebSocketHandler {
     });
   }
 
-  void buildValueMessage(
-      accelerationValue, gyroscopeValue, temperatureValue, batteryState) {
+  void buildValueMessage() {
     var buildMessage = {
       "t": "m",
-      "a": accelerationValue,
-      "r": gyroscopeValue,
-      "tp": temperatureValue,
-      "b": batteryState
+      "a": internalSensors.magnitudeAccelerometer,
+      "r": internalSensors.magnitudeGyroscope,
+      "tp": internalSensors.deviceTemperature,
+      "b": internalSensors.batteryLevel
     };
-    if (accelerationValue != null &&
-        gyroscopeValue != null &&
-        temperatureValue != null &&
-        batteryState != null) {
+    if (internalSensors.magnitudeAccelerometer != null &&
+        internalSensors.magnitudeGyroscope != null &&
+        internalSensors.deviceTemperature != null &&
+        internalSensors.batteryLevel != null) {
       sendMessage(buildMessage);
     }
   }
@@ -167,7 +169,7 @@ class WebSocketHandler {
           return messageDecoderReturnType(
               true, 'r', int.parse(decodedJSON['i']));
         case "s":
-          return messageDecoderReturnType(true, 's', int.parse(message));
+          return messageDecoderReturnType(true, 's', decodedJSON);
         default:
           return messageDecoderReturnType(true, 'u', 0);
       }
@@ -185,8 +187,8 @@ class WebSocketHandler {
           _handleResponseMessages(decodedMessage);
           break;
         case 's':
-          deviceSettings
-              .writeNewDeviceSettingsToInternalStorage(decodedMessage);
+          deviceSettings.writeNewDeviceSettingsToInternalStorage(
+              decodedMessage.webSocketResponseNumber);
           break;
         default:
         //TODO: Handle unknown response via errorhandler package
@@ -199,7 +201,7 @@ class WebSocketHandler {
   _handleResponseMessages(message) {
     switch (message.webSocketResponseNumber) {
       case 8:
-        successfullyLoggedOut = false;
+        successfullyLoggedOut.value = false;
         break;
       case 9:
         _closeWebsocketConnection();
@@ -234,7 +236,7 @@ class WebSocketHandler {
 
   void _closeWebsocketConnection() {
     successfullyRegistered.value = false;
-    successfullyLoggedOut = true;
+    successfullyLoggedOut.value = true;
     _channel.close();
     _pingIntervalTimer?.cancel();
     isWebsocketRunning = false;

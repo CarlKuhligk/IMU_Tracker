@@ -12,6 +12,7 @@ import 'package:imu_tracker/service_locator.dart';
 import 'package:imu_tracker/services/websocket_handler.dart';
 import 'package:imu_tracker/services/localstorage_service.dart';
 import 'package:imu_tracker/services/internal_sensor_service.dart';
+import 'package:imu_tracker/services/device_settings_handler.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({
@@ -24,6 +25,7 @@ class MainPage extends StatefulWidget {
 class _MyMainPageState extends State<MainPage> {
   var websocket = getIt<WebSocketHandler>();
   var internalSensors = getIt<InternalSensorService>();
+  var deviceSettings = getIt<DeviceSettingsHandler>();
 
   Timer? timer;
   TextEditingController _textFieldController = TextEditingController();
@@ -93,14 +95,13 @@ class _MyMainPageState extends State<MainPage> {
     // Intervall for websocketconnection
     internalSensors.startInternalSensors();
     if (timer == null || !timer!.isActive) {
-      timer = Timer.periodic(const Duration(milliseconds: 200), (_) {
+      timer = Timer.periodic(
+          Duration(
+              milliseconds: (int.parse(deviceSettings.deviceSettings["m"]))),
+          (_) {
         if (websocket.successfullyRegistered.value) {
-          websocket.buildValueMessage(
-              internalSensors.magnitudeAccelerometer,
-              internalSensors.magnitudeGyroscope,
-              internalSensors.deviceTemperature,
-              internalSensors
-                  .batteryLevel); //TODO implement all necessary values
+          websocket.buildValueMessage();
+          internalSensors.getCurrentValues();
         }
       });
     }
