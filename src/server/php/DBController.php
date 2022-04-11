@@ -167,6 +167,8 @@ class DBController
     {
         $result = $this->dbQuery("SELECT id FROM devices WHERE apikey = '{$apikey}';");
         $row = $result->fetch();
+        if (is_bool($row))
+            return false;
         if (isset($row)) {
             $deviceID = $row[0];
             return $deviceID;
@@ -252,7 +254,7 @@ class DBController
         $this->dbRequest("UPDATE devices SET lastConnection='{$time->format('Y-m-d H:i:s')}' WHERE id='$id';");
     }
 
-    public function createDevice($initializationData)
+    public function buildDevice($initializationData)
     {
         $call = $this->mariadbClient->prepare('CALL addDevice(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @id, @apikey)');
         $call->bindParam(1, $initializationData->e, PDO::PARAM_STR);
