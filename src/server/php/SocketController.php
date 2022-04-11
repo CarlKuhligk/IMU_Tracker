@@ -7,8 +7,7 @@ use Ratchet\ConnectionInterface;
 
 include_once 'Console.php';
 include_once 'DBController.php';
-include_once 'Device.php';
-include_once 'ResponseList.php';
+include_once 'ResponseMessageBuilder.php';
 include_once 'EventList.php';
 
 use DBController;
@@ -69,7 +68,7 @@ class SocketController implements MessageComponentInterface
         if (isset($data->t)) {
             $this->handleMessage($client, $data);
         } else {
-            $client->send(createResponseMessage(R_MISSING_TYPE));
+            $client->send(buildResponseMessage(R_MISSING_TYPE));
             return;
         }
     }
@@ -79,13 +78,13 @@ class SocketController implements MessageComponentInterface
         // handle special case if the client is a streamer
         if ($requestingDeviceId = $this->getDeviceIdByResourceId($client->resourceId)) {
             $device = $this->deviceList[$requestingDeviceId];
-            $this->sendGlobalMessage(createUpdateConnectionResponseMessage($device->id, false), MF_SUBSCRIBER);
+            $this->sendGlobalMessage(buildUpdateConnectionResponseMessage($device->id, false), MF_SUBSCRIBER);
             // validate correct logout otherwise generate connection lost event
             if ($connectionIsLost = $device->connectionClosed()) {
                 // event connection lost
                 //#region [events]
                 $eventList = buildEventList($device->id, [E_CONNECTION_LOST]);
-                $this->sendGlobalMessage(createAddEventResponseMessage($eventList), MF_SUBSCRIBER);
+                $this->sendGlobalMessage(buildAddEventResponseMessage($eventList), MF_SUBSCRIBER);
                 //#endregion
                 consoleLog("Device {$requestingDeviceId} lost connection.");
             }
@@ -131,7 +130,7 @@ class SocketController implements MessageComponentInterface
                 $this->handleRemoveDevice($client, $data);
                 break;
             default:
-                $client->send(createResponseMessage(R_UNKNOWN_DATA_TYPE));
+                $client->send(buildResponseMessage(R_UNKNOWN_DATA_TYPE));
         }
     }
 
@@ -146,33 +145,33 @@ class SocketController implements MessageComponentInterface
                 $device = $this->deviceList[$requestingDeviceId];
                 // check if device is already registered
                 if ($device->isConnected) {
-                    $client->send(createResponseMessage(R_DEVICE_ALREADY_REGISTERED));
+                    $client->send(buildResponseMessage(R_DEVICE_ALREADY_REGISTERED));
                 } elseif ($device->isObsolete) {
-                    $client->send(createResponseMessage(R_KEY_IS_NOT_LONGER_VALID));
+                    $client->send(buildResponseMessage(R_KEY_IS_NOT_LONGER_VALID));
                 } else {
                     // check if device has subscribed
                     if (in_array($client->resourceId, $this->subscriberList)) {
-                        $client->send(createResponseMessage(R_SUBSCRIBER_CANT_REGISTER_AS_STREAMER));
+                        $client->send(buildResponseMessage(R_SUBSCRIBER_CANT_REGISTER_AS_STREAMER));
                     } else {
                         if ($data->c) {
-                            $client->send(createResponseMessage(R_KEY_IS_VALID));
+                            $client->send(buildResponseMessage(R_KEY_IS_VALID));
                         } else {
                             $device->login($client->resourceId);
-                            $client->send(createResponseMessage(R_DEVICE_REGISTERED));
-                            $client->send(createUpdateDeviceSettingsForAppClientResponseMessage($device));
-                            $this->sendGlobalMessage(createUpdateConnectionResponseMessage($device->id, true), MF_SUBSCRIBER);
+                            $client->send(buildResponseMessage(R_DEVICE_REGISTERED));
+                            $client->send(buildUpdateDeviceSettingsForAppClientResponseMessage($device));
+                            $this->sendGlobalMessage(buildUpdateConnectionResponseMessage($device->id, true), MF_SUBSCRIBER);
 
                             $eventList = buildEventList($device->id, [E_CONNECTED]);
-                            $this->sendGlobalMessage(createAddEventResponseMessage($eventList), MF_SUBSCRIBER);
+                            $this->sendGlobalMessage(buildAddEventResponseMessage($eventList), MF_SUBSCRIBER);
                             consoleLog("Device {$device->id} logged in.");
                         }
                     }
                 }
             } else {
-                $client->send(createResponseMessage(R_INVALID_API_KEY));
+                $client->send(buildResponseMessage(R_INVALID_API_KEY));
             }
         } else {
-            $client->send(createResponseMessage(R_MISSING_API_KEY));
+            $client->send(buildResponseMessage(R_MISSING_API_KEY));
         }
     }
 
@@ -185,20 +184,20 @@ class SocketController implements MessageComponentInterface
                 $pinIsCorrect = $this->Database->validatePin($data->p, $device); // check pin
                 if ($pinIsCorrect) {
                     $device->logout();
-                    $client->send(createResponseMessage(R_DEVICE_LOGGED_OUT));
-                    $this->sendGlobalMessage(createUpdateConnectionResponseMessage($device->id, false), MF_SUBSCRIBER);
+                    $client->send(buildResponseMessage(R_DEVICE_LOGGED_OUT));
+                    $this->sendGlobalMessage(buildUpdateConnectionResponseMessage($device->id, false), MF_SUBSCRIBER);
                     consoleLog("Device {$device->id} logged out.");
                 } else {
                     // wrong pin
-                    $client->send(createResponseMessage(R_DEVICE_LOGOUT_FAILED));
+                    $client->send(buildResponseMessage(R_DEVICE_LOGOUT_FAILED));
                 }
             } else {
                 // cant logout
-                $client->send(createResponseMessage(R_DEVICE_NOT_REGISTERED));
+                $client->send(buildResponseMessage(R_DEVICE_NOT_REGISTERED));
             }
         } else
             // pin is missing
-            $client->send(createResponseMessage(R_MISSING_PIN));
+            $client->send(buildResponseMessage(R_MISSING_PIN));
     }
 
     private function handleSubscription(ConnectionInterface $client, $data)
@@ -208,22 +207,22 @@ class SocketController implements MessageComponentInterface
             if ($data->s) {
                 // check if the resource id is registered
                 if (in_array($client->resourceId, $this->subscriberList)) {
-                    $client->send(createResponseMessage(R_SUBSCRIBER_ALREADY_REGISTERED));
+                    $client->send(buildResponseMessage(R_SUBSCRIBER_ALREADY_REGISTERED));
                 }
 
                 // check if the resource id is registered as streamer device
                 elseif ($this->getDeviceIdByResourceId($client->resourceId)) {
-                    $client->send(createResponseMessage(R_STREAMER_CANT_REGISTER_AS_SUBSCRIBER));
+                    $client->send(buildResponseMessage(R_STREAMER_CANT_REGISTER_AS_SUBSCRIBER));
                 }
 
                 // register client as subscriber
                 else {
                     array_push($this->subscriberList, $client->resourceId);
-                    $client->send(createResponseMessage(R_SUBSCRIBER_REGISTERED));
+                    $client->send(buildResponseMessage(R_SUBSCRIBER_REGISTERED));
                     if (count($this->deviceList) > 0) {
-                        $client->send(createAddDeviceResponseMessage($this->deviceList));
+                        $client->send(buildAddDeviceResponseMessage($this->deviceList));
                         //#region [events]
-                        #$client->send(createAddEventResponseMessage($this->deviceList));
+                        #$client->send(buildAddEventResponseMessage($this->deviceList));
                         //#endregion
                     }
                     consoleLog("Client {$client->resourceId} subscribed.");
@@ -233,18 +232,18 @@ class SocketController implements MessageComponentInterface
             else {
                 // check if the client is registered as subscriber
                 if (!in_array($client->resourceId, $this->subscriberList)) {
-                    $client->send(createResponseMessage(R_SUBSCRIBER_NOT_REGISTERED));
+                    $client->send(buildResponseMessage(R_SUBSCRIBER_NOT_REGISTERED));
                 }
 
                 // unregister client as subscriber
                 else {
                     $this->removeSubscriber($client->resourceId);
-                    $client->send(createResponseMessage(R_SUBSCRIBER_UNREGISTERED));
+                    $client->send(buildResponseMessage(R_SUBSCRIBER_UNREGISTERED));
                     consoleLog("Client {$client->resourceId} unsubscribed");
                 }
             }
         } else {
-            $client->send(createResponseMessage(R_SUBSCRIBER_MISSING_REGISTRATION_STATE));
+            $client->send(buildResponseMessage(R_SUBSCRIBER_MISSING_REGISTRATION_STATE));
         }
     }
 
@@ -257,11 +256,11 @@ class SocketController implements MessageComponentInterface
             $timestampAndIdListOfDetectedEvents = $device->processTrackingData($data);
 
             $measurementMessage = buildMeasurement($device->id, $data, $timestampAndIdListOfDetectedEvents->timestamp);
-            $this->sendGlobalMessage(createAddMeasurementResponseMessage([$measurementMessage]), MF_SUBSCRIBER);
+            $this->sendGlobalMessage(buildAddMeasurementResponseMessage([$measurementMessage]), MF_SUBSCRIBER);
 
             $this->sendEvents($device->id, $timestampAndIdListOfDetectedEvents->idListOfDetectedEvents);
         } else {
-            $client->send(createResponseMessage(R_DEVICE_NOT_REGISTERED));
+            $client->send(buildResponseMessage(R_DEVICE_NOT_REGISTERED));
         }
     }
     //#endregion
@@ -275,27 +274,27 @@ class SocketController implements MessageComponentInterface
                 if (array_key_exists($data->i, $this->deviceList)) {
                     $device = $this->deviceList[$data->i];
                     $device->updateSettings($data);
-                    $device->sendToStreamingDevice(createUpdateDeviceSettingsForAppClientResponseMessage($device));
-                    $this->sendGlobalMessage(createUpdateDeviceSettingsForWebClientResponseMessage($device), MF_SUBSCRIBER);
+                    $device->sendToStreamingDevice(buildUpdateDeviceSettingsForAppClientResponseMessage($device));
+                    $this->sendGlobalMessage(buildUpdateDeviceSettingsForWebClientResponseMessage($device), MF_SUBSCRIBER);
                 } else
-                    $client->send(createResponseMessage(R_INVALID_DEVICE_ID));
+                    $client->send(buildResponseMessage(R_INVALID_DEVICE_ID));
             } else
-                $client->send(createResponseMessage(R_MISSING_DEVICE_ID));
+                $client->send(buildResponseMessage(R_MISSING_DEVICE_ID));
         } else
-            $client->send(createResponseMessage(R_NOT_AUTHORIZED));
+            $client->send(buildResponseMessage(R_NOT_AUTHORIZED));
     }
 
     private function handleCreateNewDevice(ConnectionInterface $client, $data)
     {
         // check if the resource id is registered
         if (in_array($client->resourceId, $this->subscriberList)) {
-            $result = $this->Database->createDevice($data);
-            $client->send(createDeviceCreatedResponseMessage($result->apikey));
+            $result = $this->Database->buildDevice($data);
+            $client->send(buildDeviceCreatedResponseMessage($result->apikey));
             $this->updateDeviceList();
             $newDevice = [$this->deviceList[$result->id]];
-            $this->sendGlobalMessage(createAddDeviceResponseMessage($newDevice), MF_SUBSCRIBER);
+            $this->sendGlobalMessage(buildAddDeviceResponseMessage($newDevice), MF_SUBSCRIBER);
         } else
-            $client->send(createResponseMessage(R_NOT_AUTHORIZED));
+            $client->send(buildResponseMessage(R_NOT_AUTHORIZED));
     }
     private function handleRemoveDevice(ConnectionInterface $client, $data)
     {
@@ -311,15 +310,15 @@ class SocketController implements MessageComponentInterface
                         $this->clientList[$device->streamerResourceId]->close();
                     }
                     $this->Database->removeDevice($device->id);
-                    $this->sendGlobalMessage(createRemoveDeviceResponseMessage($device->id), MF_SUBSCRIBER);
+                    $this->sendGlobalMessage(buildRemoveDeviceResponseMessage($device->id), MF_SUBSCRIBER);
                     // finally remove the device from the server internal device list
                     $this->updateDeviceList();
                 } else
-                    $client->send(createResponseMessage(R_INVALID_DEVICE_ID));
+                    $client->send(buildResponseMessage(R_INVALID_DEVICE_ID));
             } else
-                $client->send(createResponseMessage(R_MISSING_DEVICE_ID));
+                $client->send(buildResponseMessage(R_MISSING_DEVICE_ID));
         } else
-            $client->send(createResponseMessage(R_NOT_AUTHORIZED));
+            $client->send(buildResponseMessage(R_NOT_AUTHORIZED));
     }
 
     private function updateDeviceList()
@@ -417,7 +416,7 @@ class SocketController implements MessageComponentInterface
     {
         if (count($eventIdList) > 0) {
             $eventList = buildEventList($deviceId, $eventIdList);
-            $this->sendGlobalMessage(createAddEventResponseMessage($eventList), MF_SUBSCRIBER);
+            $this->sendGlobalMessage(buildAddEventResponseMessage($eventList), MF_SUBSCRIBER);
         }
     }
 }
