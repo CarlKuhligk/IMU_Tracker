@@ -56,8 +56,7 @@ class Device
 
     private $timeOfLastConnection;    // used to measure the elapsed time after a connection is closed without logout
     private $hasIdleDetected;      // used to enable idle time monitoring if movement is lower as min limit
-    private $idlingStarted;     // used to measure the elapsed time till idling is detected
-
+    private $idlingStartedTime;     // used to measure the elapsed time till idling is detected
 
     public string $databaseTableName = "";   // used for database operations
     public $streamerResourceId = null; // equals the ratchat resource id of the websocket client connection if the client registers as streamerResourceId otherwise its empty
@@ -72,7 +71,7 @@ class Device
         $this->employee = $deviceData->employee;
         $this->databaseTableName = "device_{$this->id}_log";
         $this->isLoggedIn = $deviceData->isLoggedIn;
-        $this->timeOfLastConnection = new DateTime($deviceData->timeOfLastConnection, $this->timezone);
+        $this->timeOfLastConnection = new DateTime($deviceData->lastConnection, $this->timezone);
         $this->settings = new Settings($deviceData->settings);
     }
 
@@ -178,8 +177,8 @@ class Device
         // detect idling
         if ($this->hasIdleDetected($data->a, $data->r)) {
             $this->hasIdleDetected = true;
-            $this->idlingStarted = $this->getTimeNow();
-        } elseif ($this->hasIdleDetected) {
+            $this->idlingStartedTime = $this->getTimeNow();
+        } elseif ($this->eventState->idlingTimeoutIsTriggered) {
             $this->eventState->idlingTimeoutIsTriggered = false;
             array_push($timestampAndIdListOfDetectedEvents->idListOfDetectedEvents, E_IDLING_STOPPED);
             $this->hasIdleDetected = false;
@@ -225,7 +224,7 @@ class Device
     {
         if ($this->eventState->idlingTimeoutIsTriggered) return false;
         if ($this->hasIdleDetected) {
-            $idleTime = $this->getElapsedTimeInSeconds($this->idlingStarted);
+            $idleTime = $this->getElapsedTimeInSeconds($this->idlingStartedTime);
             if ($idleTime >= $this->settings->idleTimeout) {
                 $this->eventState->idlingTimeoutIsTriggered = true;
                 return true;

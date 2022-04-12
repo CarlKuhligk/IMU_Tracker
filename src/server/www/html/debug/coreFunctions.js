@@ -1,4 +1,10 @@
 var websocket;
+
+var autosScrollCheckbox = document.getElementById("checkbox1");
+var dropdown = document.getElementById("dropdown1");
+var outputField = document.getElementById("outputField");
+var mainButton = document.getElementById("sendButton");
+
 // get server ip
 var serverIP = $.get("../debug/getServerIP.php").done(function (data) {
   // create a new WebSocket.
@@ -12,6 +18,10 @@ var serverIP = $.get("../debug/getServerIP.php").done(function (data) {
     input = JSON.parse(e.data);
     if (input.t === "k") {
       generateQRCode(input.a);
+    }
+
+    if ($(".messageCheckbox:checked").val()) {
+      outputField.scrollTop = outputField.scrollHeight;
     }
   };
 
@@ -29,10 +39,6 @@ function createTextbox(name, placeholder, visible) {
   if (!visible) newTextbox.style.display = "none";
   $(".textboxes").append(newTextbox);
 }
-
-var dropdown = document.getElementById("dropdown1");
-var outputField = document.getElementById("outputField");
-var mainButton = document.getElementById("sendButton");
 
 $(document).ready(function () {
   onDropdownChange();
@@ -61,36 +67,36 @@ function onDropdownChange() {
 
     case "transmitData":
       mainButton.firstChild.data = "send";
-      createTextbox("input1", "acceleration", true);
-      createTextbox("input2", "rotation", true);
-      createTextbox("input3", "battery", true);
-      createTextbox("input4", "temperature", true);
+      createTextbox("input1", "acceleration in m/s²", true);
+      createTextbox("input2", "rotation rad/s", true);
+      createTextbox("input3", "battery in %", true);
+      createTextbox("input4", "temperature in °C", true);
       break;
     case "settingsUpdate":
       mainButton.firstChild.data = "send";
       createTextbox("input0", "device id", true);
-      createTextbox("input1", "idleTimeout", true);
-      createTextbox("input2", "batteryWarning", true);
-      createTextbox("input3", "connectionTimeout", true);
-      createTextbox("input4", "measurementInterval", true);
-      createTextbox("input5", "accelerationMin", true);
-      createTextbox("input6", "accelerationMax", true);
-      createTextbox("input7", "rotationMin", true);
-      createTextbox("input8", "rotationMax", true);
+      createTextbox("input1", "idleTimeout in seconds", true);
+      createTextbox("input2", "batteryWarning in %", true);
+      createTextbox("input3", "connectionTimeout in seconds", true);
+      createTextbox("input4", "measurementInterval in milliseconds", true);
+      createTextbox("input5", "accelerationMin in  m/s²", true);
+      createTextbox("input6", "accelerationMax in  m/s²", true);
+      createTextbox("input7", "rotationMin in rad/s", true);
+      createTextbox("input8", "rotationMax in rad/s", true);
       break;
 
     case "newDevice":
       mainButton.firstChild.data = "send";
       createTextbox("input0", "employee", true);
       createTextbox("input1", "pin", true);
-      createTextbox("input2", "idleTimeout", true);
-      createTextbox("input3", "batteryWarning", true);
-      createTextbox("input4", "connectionTimeout", true);
-      createTextbox("input5", "measurementInterval", true);
-      createTextbox("input6", "accelerationMin", true);
-      createTextbox("input7", "accelerationMax", true);
-      createTextbox("input8", "rotationMin", true);
-      createTextbox("input9", "rotationMax", true);
+      createTextbox("input2", "idleTimeout in seconds", true);
+      createTextbox("input3", "batteryWarning in %", true);
+      createTextbox("input4", "connectionTimeout in seconds", true);
+      createTextbox("input5", "measurementInterval in milliseconds", true);
+      createTextbox("input6", "accelerationMin in m/s²", true);
+      createTextbox("input7", "accelerationMax in m/s²", true);
+      createTextbox("input8", "rotationMin in rad/s", true);
+      createTextbox("input9", "rotationMax in rad/s", true);
       break;
 
     case "removeDevice":
@@ -193,6 +199,7 @@ function generateQRCode(apikey) {
   var message = {};
   message.apikey = apikey;
   message.host = serverIP.responseText;
+  message.port = "8080";
   messageText = JSON.stringify(message);
 
   $("#qrcode").empty();
