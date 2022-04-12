@@ -276,9 +276,7 @@ class WebSocketHandler {
     internalSensors.startInternalSensors();
     if (_transmitIntervalTimer == null || !_transmitIntervalTimer!.isActive) {
       _transmitIntervalTimer = Timer.periodic(
-          Duration(
-              milliseconds: (int.parse(deviceSettings.deviceSettings["m"]))),
-          (_) {
+          Duration(milliseconds: (deviceSettings.deviceSettings["m"])), (_) {
         if (successfullyRegistered.value) {
           buildValueMessage();
           internalSensors.getCurrentValues();
