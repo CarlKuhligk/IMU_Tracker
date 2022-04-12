@@ -12,10 +12,10 @@ CREATE TABLE `devices` (
   `batteryWarning` tinyint(4) unsigned NOT NULL COMMENT 'in %',
   `connectionTimeout` int(10) unsigned NOT NULL COMMENT 'in seconds',
   `measurementInterval` int(10) unsigned NOT NULL COMMENT 'in milliseconds',
-  `accelerationMin` float unsigned NOT NULL COMMENT 'in ?',
-  `accelerationMax` float unsigned NOT NULL COMMENT 'in ?',
-  `rotationMin` float unsigned NOT NULL COMMENT 'in ?',
-  `rotationMax` float unsigned NOT NULL COMMENT 'in ?',
+  `accelerationMin` float unsigned NOT NULL COMMENT 'in m/s²',
+  `accelerationMax` float unsigned NOT NULL COMMENT 'in m/s²',
+  `rotationMin` float unsigned NOT NULL COMMENT 'in rad/s',
+  `rotationMax` float unsigned NOT NULL COMMENT 'in rad/s',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 
