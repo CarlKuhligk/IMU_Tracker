@@ -1,7 +1,5 @@
-from cmath import log
 import re
 import os.path
-
 
 phpResponseList = open(os.path.dirname(__file__) +
                        '/../php/ResponseList.php', "r").read()
@@ -39,7 +37,7 @@ for matchNum, match in enumerate(matches, start=1):
     print(f"-> ID: {id} Name: {name}")
 
 sharedFile = open((os.path.dirname(__file__) +
-                  "/../../SourceResponseEventList.csv"), "w")
+                  "/../../ExportedResponseEventList.csv"), "w")
 sharedFile.write(resultCSVContent)
 sharedFile.close()
 

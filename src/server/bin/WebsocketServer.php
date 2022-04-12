@@ -21,6 +21,7 @@ $server->loop->addPeriodicTimer(600, function () use ($SecurityMotionTrackerWsSe
     $SecurityMotionTrackerWsServer->watchDogB();
 });
 
+
 $server->run();
 
 // server closed

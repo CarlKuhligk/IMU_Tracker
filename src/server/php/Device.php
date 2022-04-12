@@ -11,15 +11,15 @@ class EventStates
 
 class Settings
 {
-    public $idleTimeout = 0;
-    public $batteryWarning = 0;
-    public $connectionTimeout = 0;
-    public $measurementInterval = 0;
-    public $accelerationMin = 0;
-    public $accelerationMax = 0;
-    public $rotationMin = 0;
-    public $rotationMax = 0;
-    public $batteryEmpty = 5;
+    public int $idleTimeout = 0;
+    public int $batteryWarning = 0;
+    public int $connectionTimeout = 0;
+    public int $measurementInterval = 0;
+    public float $accelerationMin = 0;
+    public float $accelerationMax = 0;
+    public float $rotationMin = 0;
+    public float $rotationMax = 0;
+    public int $batteryEmpty = 5;
 
     public function __construct($settings)
     {
@@ -44,7 +44,7 @@ class Device
 
     public int $id;                     // device id
     public string $employee;            // contains the name of the operating employee
-    public bool $isLoggedIn;            // indicates the login state
+    public bool $isLoggedIn = false;            // indicates the login state
     public Settings $settings;          // contains all editable device settings
     private $timezone;
     public $isObsolete = false;
@@ -55,7 +55,7 @@ class Device
 
 
     private $timeOfLastConnection;    // used to measure the elapsed time after a connection is closed without logout
-    private $hasIdleDetected;      // used to enable idle time monitoring if movement is lower as min limit
+    private bool $hasIdleDetected = false;      // used to enable idle time monitoring if movement is lower as min limit
     private $idlingStartedTime;     // used to measure the elapsed time till idling is detected
 
     public string $databaseTableName = "";   // used for database operations
