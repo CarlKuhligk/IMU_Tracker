@@ -21,6 +21,7 @@ class WebSocketHandler {
   ValueNotifier<bool> successfullyLoggedOut = ValueNotifier<bool>(false);
   late WebSocket _channel; //initialize a websocket channel
   Timer? _pingIntervalTimer;
+  Timer? _transmitIntervalTimer;
   var _socketData;
 
   var deviceSettings = getIt<DeviceSettingsHandler>();
@@ -190,9 +191,12 @@ class WebSocketHandler {
         case 's':
           deviceSettings.writeNewDeviceSettingsToInternalStorage(
               decodedMessage.webSocketResponseNumber);
+          _transmitIntervalTimer?.cancel();
+
+          startTransmissionInterval();
           break;
         default:
-        //TODO: Handle unknown response via errorhandler package
+          break; //TODO: Handle unknown response via errorhandler package
       }
     } else {
       //channel.close();
@@ -254,7 +258,7 @@ class WebSocketHandler {
       successfullyRegistered.value = false;
       isWebsocketRunning = false;
       _channel.close;
-      connectWebSocket(_socketData);
+      if (!successfullyLoggedOut.value) connectWebSocket(_socketData);
     });
   }
 
@@ -263,6 +267,22 @@ class WebSocketHandler {
     if (_pingIntervalTimer == null || !_pingIntervalTimer!.isActive) {
       _pingIntervalTimer = Timer.periodic(const Duration(seconds: 10), (_) {
         _checkServerAvailable();
+      });
+    }
+  }
+
+  startTransmissionInterval() {
+    // Intervall for websocketconnection
+    internalSensors.startInternalSensors();
+    if (_transmitIntervalTimer == null || !_transmitIntervalTimer!.isActive) {
+      _transmitIntervalTimer = Timer.periodic(
+          Duration(
+              milliseconds: (int.parse(deviceSettings.deviceSettings["m"]))),
+          (_) {
+        if (successfullyRegistered.value) {
+          buildValueMessage();
+          internalSensors.getCurrentValues();
+        }
       });
     }
   }

@@ -39,7 +39,7 @@ class _MyMainPageState extends State<MainPage> {
     Future.delayed(Duration.zero, () async {
       await websocket.connectWebSocket(authenticationData);
       if (websocket.successfullyRegistered.value) {
-        startTransmissionInterval();
+        websocket.startTransmissionInterval();
       }
     });
 
@@ -98,20 +98,6 @@ class _MyMainPageState extends State<MainPage> {
         color: Colors.red,
         size: 80.0,
       );
-    }
-  }
-
-  startTransmissionInterval() {
-    // Intervall for websocketconnection
-    internalSensors.startInternalSensors();
-    if (timer == null || !timer!.isActive) {
-      timer = Timer.periodic(
-          Duration(milliseconds: (deviceSettings.deviceSettings["m"])), (_) {
-        if (websocket.successfullyRegistered.value) {
-          websocket.buildValueMessage();
-          internalSensors.getCurrentValues();
-        }
-      });
     }
   }
 
