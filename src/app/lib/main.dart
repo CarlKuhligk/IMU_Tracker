@@ -24,8 +24,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await setupLocator();
-    bool success =
-        await FlutterBackground.initialize(androidConfig: androidConfig);
+
+    await FlutterBackground.initialize(androidConfig: androidConfig);
+    await FlutterBackground.enableBackgroundExecution();
     runApp(MyApp());
   } catch (error) {
     print('Locator setup has failed');
