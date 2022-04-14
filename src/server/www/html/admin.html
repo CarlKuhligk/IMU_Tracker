@@ -5,42 +5,80 @@
     <meta name="viewport" content="width=device-width" />
     <meta name="keywords" content="IMU, MPU, Recorder, Tracker" />
 
-    <link href="styles/imutracker.css" rel="stylesheet" type="text/css" />
+    <link href="styles/main.css" rel="stylesheet" type="text/css" />
     <link
       href="https://fonts.googleapis.com/css?family=Palette+Mosaic"
       rel="stylesheet"
     />
+    <link rel="icon" href="./img/icon.png" />
 
     <script src="source/jquery.js"></script>
-    <script src="scripts/channelController.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script type="module" src="./scripts/MessageManager.js"></script>
+    <script type="module" src="./scripts/NavigationManager.js"></script>
+    <script type="module" src="./scripts/main.js"></script>
 
     <title></title>
   </head>
-  <body onload="debug()">
-    <div class="navigation">
-      <div class="channelOverview">
-        <label>Übersicht</label>
-        <img src="img/user.png" alt="Usercount" />
-        <label>0</label>
-      </div>
-      <div class="cannelContainer"></div>
-      <div class="systemOverview"></div>
-      <div class="additional"></div>
-    </div>
-    <div class="content">
-      <div class="3DView"></div>
-      <div class="accelerationChart"></div>
-      <div class="gyroscopChart"></div>
-      <div class="gyroscopView"></div>
-    </div>
-    <div class="foot"></div>
+  <body>
+    <div class="root">
+      <div class="rootNavigation"></div>
+      <div class="rootContent">
+        <div class="content">
+          <label>NAME XYZ</label>
 
-    <script>
-      function debug() {
-        appendNewChannel(createChannel(65, "Hello World", 1, 12));
-        appendNewChannel(createChannel(45, "TestChannel2", 0, 72));
-        updateChannelOverview(2);
-      }
-    </script>
+          <div class="accelerationHistory">
+            <label>Bewegungsverlauf</label>
+            <div class="diagramCollection">
+              <div class="diagram">
+                <label>Diagram</label>
+              </div>
+              <div class="legend">
+                <label>Legende?</label>
+              </div>
+              <div class="window">
+                <label>Zeitfenster?</label>
+              </div>
+              <div class="current">
+                <label>Aktuelle Werte?</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="eventHistory">
+            <label>Eventverlauf</label>
+            <div class="diagramCollection">
+              <div class="diagram">
+                <label>Diagram</label>
+              </div>
+              <div class="legend">
+                <label>Legende?</label>
+              </div>
+              <div class="window">
+                <label>Zeitfenster?</label>
+              </div>
+              <div class="current">
+                <label>Aktuelle Werte?</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="control">
+            <label>Einstellungen</label>
+            <label>Idle Timeout</label>
+            <label>Battery Warning</label>
+            <label>Connection Timeout</label>
+            <label>Measurement Interval</label>
+            <label>Acceleration min</label>
+            <label>Acceleration max</label>
+            <label>Rotation min</label>
+            <label>Rotation max</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot"></div>
   </body>
 </html>

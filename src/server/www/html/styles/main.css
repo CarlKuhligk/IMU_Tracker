@@ -1,0 +1,185 @@
+:root{
+--default-font-family: "Courier New";
+--default-background-color: #1e1e1e;
+--navigation-bg-color:#444444;
+--navigation-font-color:white;
+}
+
+body {
+  background-color:var(--default-background-color);
+  display: grid;
+  font-family: var(--default-font-family);
+}
+
+.root{
+  display: grid;
+  grid-template-columns: [line1] 400px [line2]  auto  [end];
+  grid-template-rows: [row1-start]  auto [last-line];
+}
+
+.rootNavigation{
+  margin-left: 5px;
+}
+
+.navigation {
+  grid-column: 1 / span 1;
+  grid-row: 1 / 1;
+  height: 100%;
+  width: 100%;
+  background-color: var(--navigation-bg-color);
+}
+
+.navigationHead {
+  display: flex;
+  flex-direction: row;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.navigationHead img {
+  height: 25px;
+}
+
+.navigationHead label {
+  padding-left: 15px;
+  padding-right: 15px;
+  white-space: nowrap;
+  margin: auto;
+  font-family: var(--default-font-family);
+  text-align: center;
+  font-size: x-large;
+  font-weight: 900;
+  color: var(--navigation-font-color);
+}
+
+.navigationSection label {
+  margin-top: 15px;
+  margin-bottom: 15px;
+  white-space: nowrap;
+  font-family: var(--default-font-family);
+  text-align: center;
+  font-size: large;
+  font-weight: 900;
+  color: var(--navigation-font-color);
+  width: 100%;
+  display: block;  
+}
+
+.navigationSection button {
+  margin-top: 15px;
+  margin-bottom: 15px;
+  white-space: nowrap;
+  margin: auto;
+  font-family: var(--default-font-family);
+  font-size: large;
+  font-weight: 900;
+  text-align: center;
+  color: var(--navigation-font-color);
+  background-color: var(--navigation-bg-color);
+  border: none;
+  width: 100%;
+  display: block;  
+}
+
+.navigationSection button:hover {
+  color: lightblue;
+}
+
+.device {
+  margin-left: 10px;
+  margin-right: 10px;
+  display: flex;
+  flex-direction: row;
+  border: 1px solid white;
+  padding: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.device:hover{
+  border: 1px solid lightblue;
+}
+
+.device img {
+  height: 20px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.device label {
+  font-size: medium;
+  white-space: nowrap;
+  margin: auto;
+  text-align: left;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+
+
+.rootContent{
+  padding: 10px;
+  margin-left: 5px;
+  grid-column: 2 / span 1;
+  grid-row: 0 / 1;
+  font-family: var(--default-font-family);
+  font-size: x-large;
+  font-weight: 900;
+  text-align: center;
+  color: var(--navigation-font-color);
+  background-color: var(--navigation-bg-color);
+}
+
+.accelerationHistory, .eventHistory, .control {
+  font-size: large;
+  border: 1px solid white;
+  padding: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-top: 20px;
+}
+
+.diagramCollection{
+  display: grid;
+  height: 250px;
+  grid-template-columns: [line1] 20% [line2]  50% [line3] auto  [end];
+  grid-template-rows: [row1] 200px [row2] auto [last-line];
+}
+
+.diagram{
+  grid-column: line1 / span 3;
+  grid-row: row1 / span 1;
+  height: 100%;
+  width: 100%;
+  border: 1px solid white;
+  display:block;
+}
+
+.legend, .window, .current{
+  padding-top: 20px;
+}
+
+.legend{
+  grid-column: line1 / span 1;
+  grid-row: row2 / span 1;
+  
+}
+
+.window{
+  grid-column: line2 / span 1;
+  grid-row: row2 / span 11;
+
+}
+
+.current{
+  grid-column: line3 / span 1;
+  grid-row: row2 / span 1;
+
+}
+
+
+
+@media only screen and (max-width: 600px) {
+  body {
+    background-color: white;
+  }
+}
