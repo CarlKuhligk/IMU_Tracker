@@ -1,4 +1,6 @@
 //dart packages
+// ignore_for_file: prefer_typing_uninitialized_variables
+
 import 'dart:developer';
 import 'dart:io';
 import 'dart:convert';
@@ -18,7 +20,6 @@ import 'package:imu_tracker/services/localstorage_service.dart';
 
 //project specific types
 import 'package:imu_tracker/data_structures/function_return_types.dart';
-import 'package:imu_tracker/data_structures/response_types.dart';
 
 //screens
 import 'package:imu_tracker/screens/qr_code_found_page.dart';
@@ -58,8 +59,8 @@ class _RegistrationScreen extends State<RegistrationScreen> {
               fit: BoxFit.contain,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  const Text('Bitte den QR-Code scannen'),
+                children: const <Widget>[
+                  Text('Bitte den QR-Code scannen'),
                 ],
               ),
             ),
@@ -71,8 +72,8 @@ class _RegistrationScreen extends State<RegistrationScreen> {
 
   Widget _buildQrView(BuildContext context) {
     // For this example we check how width or tall the device is and change the scanArea and overlay accordingly.
-    var scanArea = (MediaQuery.of(context).size.width < 400 ||
-            MediaQuery.of(context).size.height < 400)
+    var scanArea = (MediaQuery.of(context).size.width < 200 ||
+            MediaQuery.of(context).size.height < 200)
         ? 150.0
         : 300.0;
     // To ensure the Scanner view is properly sizes after rotation
@@ -104,12 +105,10 @@ class _RegistrationScreen extends State<RegistrationScreen> {
         socketData = scanData.code;
         var webSocketTestResult =
             await websocket.testWebSocketConnection(json.decode(socketData));
-        if (webSocketTestResult.isWebSocketConnected) {
-          if (webSocketTestResult.webSocketResponseType ==
-              responseList['deviceRegistered']!.responseNumber) {
-            LocalStorageService.writeAuthenticationToMemory(scanData.code);
-            LocalStorageService.setDeviceIsRegistered(true);
-          }
+        if (webSocketTestResult.isWebSocketConnected &
+            webSocketTestResult.isApiKeyValid) {
+          LocalStorageService.writeAuthenticationToMemory(scanData.code);
+          LocalStorageService.setDeviceIsRegistered(true);
         }
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -120,7 +119,8 @@ class _RegistrationScreen extends State<RegistrationScreen> {
         );
       } else {
         var qrCodeHasRightFormat = false;
-        var webSocketTestResult = WebSocketTestResultReturnType(false, 0);
+        var webSocketTestResult =
+            WebSocketTestResultReturnType(false, false, 0);
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => QrCodeFoundPage(
@@ -129,11 +129,6 @@ class _RegistrationScreen extends State<RegistrationScreen> {
           ),
         );
       }
-
-      controller.resumeCamera();
-      setState(() {
-        result = scanData;
-      });
     });
   }
 
