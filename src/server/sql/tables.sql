@@ -24,7 +24,7 @@ CREATE TABLE `event_log` (
   `timestamp` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `device` int(11) NOT NULL,
   `event` int(11) NOT NULL,
-  `isActive` tinyint(1) NOT NULL DEFAULT 0,
+  `isTriggered` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 

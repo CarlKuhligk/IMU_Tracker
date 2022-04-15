@@ -25,6 +25,7 @@ class SocketController implements MessageComponentInterface
     private $clientList = array();      // stores ConnectionInterface objects
     private $deviceList = array();      // stores Devices objects
     private DBController $Database;
+    private $eventList = array();
     private $dataIsObsoleteAfterNDays;
     private $watchdogAIsActive = false;
     private $watchdogBIsActive = false;
@@ -44,9 +45,28 @@ class SocketController implements MessageComponentInterface
         // set static references
         Device::$Database = &$this->Database;
         Device::$clientList = &$this->clientList;
+        Device::$eventList = &$this->eventList;
         consoleLog("-> Reset online state");
         $this->Database->resetDevicesIsConnected();
+        consoleLog("-> Update device list");
         $this->updateDeviceList();
+
+        consoleLog("-> Loading measurements");
+        $totalMeasurements = 0;
+        foreach ($this->deviceList as $device) {
+            $loadedMeasurements = $device->loadMeasurements();
+            consoleLog("--> id:{$device->id} measurements: {$loadedMeasurements}");
+            $totalMeasurements += $loadedMeasurements;
+        }
+        consoleLog("-> {$totalMeasurements} Measurements loaded");
+        unset($totalMeasurements);
+
+        consoleLog("-> Loading events");
+        $this->eventList = $this->Database->loadEvents();
+        $eventCount = count($this->eventList);
+        consoleLog("-> {$eventCount} Events loaded");
+        unset($eventCount);
+
         consoleLog("-> Enable watchdog a");
         $this->watchdogAIsActive = true;
         consoleLog("-> Enable watchdog b");
@@ -91,14 +111,11 @@ class SocketController implements MessageComponentInterface
             $device = $this->deviceList[$requestingDeviceId];
             $this->sendGlobalMessage(buildUpdateConnectionResponseMessage($device->id, false), MF_SUBSCRIBER);
             // validate correct logout otherwise generate connection lost event
-            if ($connectionIsLost = $device->connectionClosed()) {
-                // event connection lost
-                //#region [events]
-                $eventList = buildEventList($device->id, [E_CONNECTION_LOST]);
-                $this->sendGlobalMessage(buildAddEventResponseMessage($eventList), MF_SUBSCRIBER);
-                //#endregion
-                consoleLog("Device {$requestingDeviceId} lost connection.");
-            }
+            //#region [events]
+            $eventContainer = $device->connectionClosed();
+            $this->sendGlobalMessage(buildAddEventResponseMessage($device->id, $eventContainer), MF_SUBSCRIBER);
+            //#endregion
+            consoleLog("Device {$requestingDeviceId} lost connection.");
         }
         // remove if it is a subscriber (web client)
         elseif (in_array($client->resourceId, $this->subscriberList)) {
@@ -167,13 +184,11 @@ class SocketController implements MessageComponentInterface
                         if ($data->c) {
                             $client->send(buildResponseMessage(R_KEY_IS_VALID));
                         } else {
-                            $device->login($client->resourceId);
+                            $eventContainer = $device->login($client->resourceId);
                             $client->send(buildResponseMessage(R_DEVICE_REGISTERED));
                             $client->send(buildUpdateDeviceSettingsForAppClientResponseMessage($device));
                             $this->sendGlobalMessage(buildUpdateConnectionResponseMessage($device->id, true), MF_SUBSCRIBER);
-
-                            $eventList = buildEventList($device->id, [E_CONNECTED]);
-                            $this->sendGlobalMessage(buildAddEventResponseMessage($eventList), MF_SUBSCRIBER);
+                            $this->sendGlobalMessage(buildAddEventResponseMessage($device->id, $eventContainer), MF_SUBSCRIBER);
                             consoleLog("Device {$device->id} logged in.");
                         }
                     }
@@ -232,8 +247,14 @@ class SocketController implements MessageComponentInterface
                     $client->send(buildResponseMessage(R_SUBSCRIBER_REGISTERED));
                     if (count($this->deviceList) > 0) {
                         $client->send(buildAddDeviceResponseMessage($this->deviceList));
+<<<<<<< Updated upstream
+=======
+                        foreach ($this->deviceList as $device) {
+                            $client->send(buildUpdateConnectionResponseMessage($device->id, $device->isConnected));
+                        }
+>>>>>>> Stashed changes
                         //#region [events]
-                        #$client->send(buildAddEventResponseMessage($this->deviceList));
+                        $client->send(buildInitAddEventResponseMessage($this->eventList));
                         //#endregion
                     }
                     consoleLog("Client {$client->resourceId} subscribed.");
@@ -264,12 +285,11 @@ class SocketController implements MessageComponentInterface
         // validate that the client is registered as streamer
         if ($requestingDeviceId = $this->getDeviceIdByResourceId($client->resourceId)) {
             $device = $this->deviceList[$requestingDeviceId];
-            $timestampAndIdListOfDetectedEvents = $device->processTrackingData($data);
+            $eventContainer = $device->processTrackingData($data);
 
-            $measurementMessage = buildMeasurement($device->id, $data, $timestampAndIdListOfDetectedEvents->timestamp);
+            $measurementMessage = buildDeviceMeasurement($device->id, $data, $eventContainer->timestamp);
             $this->sendGlobalMessage(buildAddMeasurementResponseMessage([$measurementMessage]), MF_SUBSCRIBER);
-
-            $this->sendEvents($device->id, $timestampAndIdListOfDetectedEvents->idListOfDetectedEvents);
+            $this->sendGlobalMessage(buildAddEventResponseMessage($device->id, $eventContainer), MF_SUBSCRIBER);
         } else {
             $client->send(buildResponseMessage(R_DEVICE_NOT_REGISTERED));
         }
@@ -343,7 +363,8 @@ class SocketController implements MessageComponentInterface
                 continue;
             $this->deviceList[$deviceData->id] = new Device($deviceData);
             $device = $this->deviceList[$deviceData->id];
-            consoleLog("--> added id: {$device->id} employee: {$device->employee}");
+            $loadedMeasurements = $device->loadMeasurements();
+            consoleLog("--> added id: {$device->id} employee: {$device->employee} measurements: {$loadedMeasurements}");
         }
         // remove devices from list
         foreach ($this->deviceList as $device) {
@@ -381,9 +402,15 @@ class SocketController implements MessageComponentInterface
     public function watchDogA()
     {
         if ($this->watchdogAIsActive) {
-            foreach ($this->deviceList as $device) {
-                $idListOfDetectedEvents = $device->monitoringTimeouts();
-                $this->sendEvents($device->id, $idListOfDetectedEvents);
+            if (count($this->deviceList) > 0) {
+                foreach ($this->deviceList as $device) {
+                    $eventContainer = $device->monitoringTimeouts();
+                    if (isset($eventContainer)) {
+                        if (count($eventContainer->events) > 0) {
+                            $this->sendGlobalMessage(buildAddEventResponseMessage($device->id, $eventContainer), MF_SUBSCRIBER);
+                        }
+                    }
+                }
             }
         }
     }
@@ -401,33 +428,27 @@ class SocketController implements MessageComponentInterface
     // sends a message to the specified groupe (by default to all open connections)
     private function sendGlobalMessage($message, $target = 0)
     {
-        // send message to ALL streaming devices 
-        if ($target & MF_STREAMER) {
-            foreach ($this->deviceList as $device) {
-                $device->sendToStreamingDevice($message);
+        if (isset($message)) {
+            // send message to ALL streaming devices 
+            if ($target & MF_STREAMER) {
+                foreach ($this->deviceList as $device) {
+                    $device->sendToStreamingDevice($message);
+                }
             }
-        }
 
-        // send message to ALL subscriber
-        if ($target & MF_SUBSCRIBER) {
-            foreach ($this->subscriberList as $subscriberResourceId) {
-                $this->clientList[$subscriberResourceId]->send($message);
+            // send message to ALL subscriber
+            if ($target & MF_SUBSCRIBER) {
+                foreach ($this->subscriberList as $subscriberResourceId) {
+                    $this->clientList[$subscriberResourceId]->send($message);
+                }
             }
-        }
 
-        // send to all client by default
-        if (($target & MF_CONNECTION) || $target = 0) {
-            foreach ($this->clientList as $client) {
-                $client->send($message);
+            // send to all client by default
+            if (($target & MF_CONNECTION) || $target = 0) {
+                foreach ($this->clientList as $client) {
+                    $client->send($message);
+                }
             }
-        }
-    }
-
-    private function sendEvents($deviceId, $eventIdList)
-    {
-        if (count($eventIdList) > 0) {
-            $eventList = buildEventList($deviceId, $eventIdList);
-            $this->sendGlobalMessage(buildAddEventResponseMessage($eventList), MF_SUBSCRIBER);
         }
     }
 }

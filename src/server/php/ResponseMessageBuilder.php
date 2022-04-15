@@ -1,6 +1,7 @@
 <?php
 # responses
 include_once 'ResponseList.php';
+include_once 'EventBuilder.php';
 
 //#region [AppClientMessages]
 function buildUpdateDeviceSettingsForAppClientResponseMessage($device)
@@ -66,13 +67,28 @@ function buildAddMeasurementResponseMessage($measurements)
     return json_encode($response);
 }
 
-function buildAddEventResponseMessage($eventList)
+function buildAddEventResponseMessage($deviceId, SecurityEventContainer $eventContainer)
 {
-    $response = (object)[
+    if (isset($eventContainer)) {
+        if (count($eventContainer->events) > 0) {
+            $eventList = buildEventList($deviceId, $eventContainer);
+            $response = (object)[
+                't' => "e",
+                'd' => $eventList
+            ];
+            return json_encode($response);
+        }
+    }
+    return null;
+}
+
+function buildInitAddEventResponseMessage($eventList)
+{
+    $eventsInit = (object)[
         't' => "e",
         'd' => $eventList
     ];
-    return json_encode($response);
+    return json_encode($eventsInit);
 }
 
 function buildUpdateDeviceSettingsForWebClientResponseMessage($device)
@@ -94,7 +110,7 @@ function buildUpdateDeviceSettingsForWebClientResponseMessage($device)
 
 function buildAddDeviceResponseMessage($deviceList)
 {
-    $convertedDEviceList = array();
+    $convertedDeviceList = array();
 
     foreach ($deviceList as $device) {
         $convertedDevice = (object)[
@@ -107,14 +123,15 @@ function buildAddDeviceResponseMessage($deviceList)
             'ai' => $device->settings->accelerationMin,
             'a' => $device->settings->accelerationMax,
             'ri' => $device->settings->rotationMin,
-            'r' => $device->settings->rotationMax
+            'r' => $device->settings->rotationMax,
+            'd' => $device->measurements
         ];
-        array_push($convertedDEviceList, $convertedDevice);
+        array_push($convertedDeviceList, $convertedDevice);
     }
 
     $response = (object)[
         't' => "ad",
-        'd' => $convertedDEviceList
+        'd' => $convertedDeviceList
     ];
     return json_encode($response);
 }
@@ -130,7 +147,7 @@ function buildRemoveDeviceResponseMessage($id)
 
 //#endregion
 
-function buildMeasurement($id, $data, $timestamp)
+function buildDeviceMeasurement($id, $data, $timestamp)
 {
     $measurements = (object)[
         'i' => $id,
@@ -139,20 +156,21 @@ function buildMeasurement($id, $data, $timestamp)
         'r' => $data->r,
         'tp' => $data->tp,
         'b' => $data->b
-
     ];
     return $measurements;
 }
 
 
-function buildEventList($deviceId, $eventIdList)
+function buildEventList(int $deviceId, SecurityEventContainer $eventContainer)
 {
     $events = array();
 
-    foreach ($eventIdList as $eventId) {
+    foreach ($eventContainer->events as $event) {
         $event = (object)[
             'i' => $deviceId,
-            'e' => $eventId
+            'e' => $event->id,
+            'a' => $event->isTriggered,
+            't' => $eventContainer->timestamp
         ];
         array_push($events, $event);
     }
