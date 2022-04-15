@@ -1,12 +1,18 @@
 <?php
 include_once 'DBController.php';
 include_once 'EventList.php';
+include_once 'EventBuilder.php';
+include_once 'ResponseMessageBuilder.php';
 
 
 class EventStates
 {
     public bool $connectionTimeoutIsTriggered = false;
     public bool $idlingTimeoutIsTriggered = false;
+    public bool $accelerationExceededIsTriggered = false;
+    public bool $rotationExceededIsTriggered = false;
+    public bool $batteryEmptyIsTriggered = false;
+    public bool $batteryWarningIsTriggered = false;
 }
 
 class Settings
@@ -37,10 +43,12 @@ class Settings
 
 class Device
 {
+    public static $eventList;
     public static $clientList;              // refers to all connected ConnectionInterface objects
     public static DBController $Database;   // refers to DBController
 
     private EventStates $eventState;
+    public $measurements = [];
 
     public int $id;                     // device id
     public string $employee;            // contains the name of the operating employee
@@ -75,6 +83,14 @@ class Device
         $this->settings = new Settings($deviceData->settings);
     }
 
+    public function loadMeasurements()
+    {
+        // load measurements
+        $this->measurements = Device::$Database->loadMeasurements($this);
+        return count($this->measurements);
+    }
+
+
     private function getTimeNow()
     {
         $now = new DateTime();
@@ -97,13 +113,20 @@ class Device
 
 
         //#region [events]
-        Device::$Database->insertEvent($this->id, E_CONNECTED);
+        $eventContainer = new SecurityEventContainer();
+        array_push($eventContainer->events, new SecurityEvent(E_CONNECTION_LOST, false));
+        array_push($eventContainer->events, new SecurityEvent(E_CONNECTION_TIMEOUT, false));
+
+        $eventContainer->timestamp = Device::$Database->insertEvents($this->id, $eventContainer->events);
+        $this->addToEventList($eventContainer);
         $this->eventState->connectionTimeoutIsTriggered = false;
         //#endregion
 
         // update database
         Device::$Database->setDeviceIsConnected($this->id, true);
         Device::$Database->setLoginState($this->id, false);
+
+        return  $eventContainer;
     }
 
     public function logout()
@@ -140,10 +163,15 @@ class Device
             $this->timeOfLastConnection = $this->getTimeNow();
             Device::$Database->setDeviceIsConnected($this->id, false);
             Device::$Database->setLastConnectionTime($this->id, $this->timeOfLastConnection);
-            Device::$Database->insertEvent($this->id, E_CONNECTION_LOST);
-            return true;
+            $eventContainer = new SecurityEventContainer();
+            array_push($eventContainer->events, new SecurityEvent(E_CONNECTION_LOST, true));
+
+            $eventContainer->timestamp = Device::$Database->insertEvents($this->id, $eventContainer->events);
+            $this->addToEventList($eventContainer);
+
+            return $eventContainer;
         } else {
-            return false;
+            return null;
             // client successfully closed connection with logout
         }
     }
@@ -152,27 +180,41 @@ class Device
     public function processTrackingData($data)
     {
         // storage for detected events
-        $timestampAndIdListOfDetectedEvents = (object)[
-            'idListOfDetectedEvents' => array(),
-            'timestamp' => ""
-        ];
+        $eventContainer = new SecurityEventContainer();
 
         // event triggers
         // battery
-        if ($data->b <= $this->settings->batteryEmpty) {
-            array_push($timestampAndIdListOfDetectedEvents->idListOfDetectedEvents, E_BATTERY_EMPTY);
-        } elseif ($data->b <= $this->settings->batteryWarning) {
-            array_push($timestampAndIdListOfDetectedEvents->idListOfDetectedEvents, E_BATTERY_WARNING);
+        if (!$this->eventState->batteryEmptyIsTriggered && $data->b <= $this->settings->batteryEmpty) {
+            $this->eventState->batteryEmptyIsTriggered = true;
+            array_push($eventContainer->events, new SecurityEvent(E_BATTERY_EMPTY, true));
+        } elseif (!$this->eventState->batteryWarningIsTriggered && $data->b <= $this->settings->batteryWarning) {
+            $this->eventState->batteryWarningIsTriggered = true;
+            array_push($eventContainer->events, new SecurityEvent(E_BATTERY_WARNING, true));
+        } elseif ($this->eventState->batteryEmptyIsTriggered && $data->b > $this->settings->batteryEmpty) {
+            $this->eventState->batteryEmptyIsTriggered = false;
+            array_push($eventContainer->events, new SecurityEvent(E_BATTERY_EMPTY, false));
+        } elseif ($this->eventState->batteryWarningIsTriggered && $data->b > $this->settings->batteryWarning) {
+            $this->eventState->batteryWarningIsTriggered = false;
+            array_push($eventContainer->events, new SecurityEvent(E_BATTERY_WARNING, false));
         }
 
         // acceleration exceeds limits
-        if ($data->a >= $this->settings->accelerationMax)
-            array_push($timestampAndIdListOfDetectedEvents->idListOfDetectedEvents, E_ACCELERATION_LIMIT_EXCEEDED);
-
+        if (!$this->eventState->accelerationExceededIsTriggered && $data->a >= $this->settings->accelerationMax) {
+            $this->eventState->accelerationExceededIsTriggered = true;
+            array_push($eventContainer->events, new SecurityEvent(E_ACCELERATION_LIMIT_EXCEEDED, true));
+        } elseif ($this->eventState->accelerationExceededIsTriggered && $data->a < $this->settings->accelerationMax) {
+            $this->eventState->accelerationExceededIsTriggered = false;
+            array_push($eventContainer->events, new SecurityEvent(E_ACCELERATION_LIMIT_EXCEEDED, false));
+        }
 
         // rotation exceeds limits
-        if ($data->r >= $this->settings->rotationMax)
-            array_push($timestampAndIdListOfDetectedEvents->idListOfDetectedEvents, E_ROTATION_LIMIT_EXCEEDED);
+        if (!$this->eventState->rotationExceededIsTriggered && $data->r >= $this->settings->rotationMax) {
+            $this->eventState->rotationExceededIsTriggered = true;
+            array_push($eventContainer->events, new SecurityEvent(E_ROTATION_LIMIT_EXCEEDED, true));
+        } elseif ($this->eventState->rotationExceededIsTriggered && $data->r < $this->settings->rotationMax) {
+            $this->eventState->rotationExceededIsTriggered = false;
+            array_push($eventContainer->events, new SecurityEvent(E_ROTATION_LIMIT_EXCEEDED, false));
+        }
 
         // detect idling
         if ($this->hasIdleDetected($data->a, $data->r)) {
@@ -180,20 +222,29 @@ class Device
             $this->idlingStartedTime = $this->getTimeNow();
         } elseif ($this->eventState->idlingTimeoutIsTriggered) {
             $this->eventState->idlingTimeoutIsTriggered = false;
-            array_push($timestampAndIdListOfDetectedEvents->idListOfDetectedEvents, E_IDLING_STOPPED);
+            array_push($eventContainer->events, new SecurityEvent(E_IDLING, false));
             $this->hasIdleDetected = false;
         }
 
-        Device::$Database->insertEvents($this->id, $timestampAndIdListOfDetectedEvents->idListOfDetectedEvents);
-        $timestampAndIdListOfDetectedEvents->timestamp = Device::$Database->insertTrackingData($this, $data);
-        // send values to all "device" subscriber
+        Device::$Database->insertEvents($this->id, $eventContainer->events);
+        $eventContainer->timestamp = Device::$Database->insertTrackingData($this, $data);
+        $this->addToEventList($eventContainer);
 
-        return $timestampAndIdListOfDetectedEvents;
+
+        $newMeasurement = (object)[
+            't' => $eventContainer->timestamp,
+            'a' => $data->a,
+            'r' => $data->r,
+            'tp' => $data->tp,
+            'b' => $data->b
+        ];
+        array_push($this->measurements, $newMeasurement);
+        return $eventContainer;
     }
 
     public function monitoringTimeouts()
     {
-        $idListOfDetectedEvents = array();
+        $eventContainer = new SecurityEventContainer();
 
         if ($this->isConnected && !$this->isClientAlive()) {
             Device::$clientList[$this->streamerResourceId]->close();
@@ -201,14 +252,15 @@ class Device
 
         if ($this->isConnected) {
             if ($this->hasIdleTimeoutDetected())
-                array_push($idListOfDetectedEvents, E_IDLING_STARTED);
+                array_push($eventContainer->events,  new SecurityEvent(E_IDLING, true));
         } else {
             if ($this->hasConnectionTimeoutDetected())
-                array_push($idListOfDetectedEvents, E_CONNECTION_TIMEOUT);
+                array_push($eventContainer->events,  new SecurityEvent(E_CONNECTION_TIMEOUT, true));
         }
-        Device::$Database->insertEvents($this->id, $idListOfDetectedEvents);
 
-        return $idListOfDetectedEvents;
+        $eventContainer->timestamp = Device::$Database->insertEvents($this->id, $eventContainer->events);
+        $this->addToEventList($eventContainer);
+        return $eventContainer;
     }
 
     private function hasIdleDetected($acceleration, $rotation)
@@ -245,6 +297,18 @@ class Device
         }
         return false;
     }
+
+    private function addToEventList(SecurityEventContainer $eventContainer)
+    {
+        if (isset($eventContainer) && count($eventContainer->events) > 0) {
+            $eventsToAdd = buildEventList($this->id, $eventContainer);
+            foreach ($eventsToAdd as $newEvent) {
+                array_push(Device::$eventList, $newEvent);
+            }
+        }
+    }
+
+
     //#endregion
 
     public function isSubscriber($resourceId)

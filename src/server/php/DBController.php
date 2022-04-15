@@ -1,5 +1,8 @@
 <?php
 include_once 'Console.php';
+include_once 'EventBuilder.php';
+include_once 'ResponseMessageBuilder.php';
+include_once 'Device.php';
 
 class DBController
 {
@@ -292,22 +295,51 @@ class DBController
         $call->execute();
     }
 
-    public function getEventList()
+    public function loadEvents()
     {
-        $result = $this->dbQuery("SELECT device, event, capture_id FROM event_log;");
+        $result = $this->dbQuery("SELECT timestamp, device, event, isTriggered FROM event_log;");
         if (isset($result)) {
             $resultCount = $result->rowCount();
-            $deviceList = array();
+            $eventList = array();
 
             for ($i = 0; $i < $resultCount; $i++) {
                 $row =  $result->fetch();
-                $deviceID = $row[0];
-                $device = $this->getDevice($deviceID);
-                array_push($deviceList, $device);
+                $event = (object)[
+                    't' => $row[0],
+                    'i' => $row[1],
+                    'e' => $row[2],
+                    'a' => $row[3]
+                ];
+                array_push($eventList, $event);
             }
-            return $deviceList;
+            return $eventList;
         }
-        return NULL;
+        return array();
+    }
+
+    public function loadMeasurements($device)
+    {
+        $result = $this->dbQuery("SELECT timestamp, acceleration, rotation, temperature, battery FROM {$device->databaseTableName};");
+
+        if (isset($result)) {
+
+            $resultCount = $result->rowCount();
+            $measurements = array();
+
+            for ($i = 0; $i < $resultCount; $i++) {
+                $row =  $result->fetch();
+                $measurement = (object)[
+                    't' => $row[0],
+                    'a' => $row[1],
+                    'r' => $row[2],
+                    'tp' => $row[3],
+                    'b' => $row[4]
+                ];
+                array_push($measurements, $measurement);
+            }
+            return $measurements;
+        }
+        return array();
     }
 
     public function insertTrackingData($device, $data)
@@ -323,20 +355,24 @@ class DBController
     }
 
 
-    public function insertEvent($deviceId, $eventId)
+    public function insertEvent($deviceId, SecurityEvent $event)
     {
         $timestamp = $this->getTimeNow()->format('Y-m-d H:i:s');
-        $this->dbRequest("INSERT event_log (device, event, timestamp) VALUES ('{$deviceId}', '{$eventId}', '{$timestamp}');");
+        $isTriggered = ($event->isTriggered) ? 1 : 0;
+        $this->dbRequest("INSERT event_log (device, event, timestamp, isTriggered) VALUES ('{$deviceId}', '{$event->id}', '{$timestamp}', '{$isTriggered}');");
         return $timestamp;
     }
 
-    public function insertEvents($deviceId, $eventIdList)
+    public function insertEvents($deviceId, $eventList)
     {
-        $timestamp = "";
-        foreach ($eventIdList as $eventId) {
-            $timestamp = $this->insertEvent($deviceId, $eventId);
+        if (count($eventList) > 0) {
+            $timestamp = "";
+            foreach ($eventList as $event) {
+                $timestamp = $this->insertEvent($deviceId, $event);
+            }
+            return $timestamp;
         }
-        return $timestamp;
+        return "";
     }
 
     private function getTimeNow()
