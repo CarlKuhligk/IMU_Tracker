@@ -58,7 +58,7 @@ class _RegistrationScreen extends State<RegistrationScreen> {
             child: FittedBox(
               fit: BoxFit.contain,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: const <Widget>[
                   Text('Bitte den QR-Code scannen'),
                 ],
@@ -124,10 +124,14 @@ class _RegistrationScreen extends State<RegistrationScreen> {
         var qrCodeHasRightFormat = false;
         var webSocketTestResult =
             WebSocketTestResultReturnType(false, false, 0);
-        MaterialPageRoute(
-          builder: (context) => QrCodeFoundPage(
-              qrCheckResult: qrCodeHasRightFormat,
-              webSocketTestResult: webSocketTestResult),
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => QrCodeFoundPage(
+                qrCheckResult: qrCodeHasRightFormat,
+                webSocketTestResult: webSocketTestResult),
+          ),
+          (Route<dynamic> route) => false,
         );
       }
     });
