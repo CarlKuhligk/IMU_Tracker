@@ -232,6 +232,10 @@ class SocketController implements MessageComponentInterface
                     $client->send(buildResponseMessage(R_SUBSCRIBER_REGISTERED));
                     if (count($this->deviceList) > 0) {
                         $client->send(buildAddDeviceResponseMessage($this->deviceList));
+                        foreach ($this->deviceList as $device) {
+                            $client->send(buildUpdateConnectionResponseMessage($device->id, $device->isConnected));
+                        }
+
                         //#region [events]
                         #$client->send(buildAddEventResponseMessage($this->deviceList));
                         //#endregion
