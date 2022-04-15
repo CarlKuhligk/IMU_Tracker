@@ -3,6 +3,10 @@
 --default-background-color: #1e1e1e;
 --navigation-bg-color:#444444;
 --navigation-font-color:white;
+<<<<<<< Updated upstream
+=======
+--hover-color1: #38A7F1;
+>>>>>>> Stashed changes
 }
 
 body {
@@ -30,8 +34,12 @@ body {
 }
 
 .navigationHead {
+<<<<<<< Updated upstream
   display: flex;
   flex-direction: row;
+=======
+  text-align: center;
+>>>>>>> Stashed changes
   padding-top: 10px;
   padding-bottom: 10px;
 }
@@ -52,6 +60,7 @@ body {
   color: var(--navigation-font-color);
 }
 
+<<<<<<< Updated upstream
 .navigationSection label {
   margin-top: 15px;
   margin-bottom: 15px;
@@ -59,6 +68,14 @@ body {
   font-family: var(--default-font-family);
   text-align: center;
   font-size: large;
+=======
+.navigationSection label{
+  margin-top: 15px;
+  margin-bottom: 15px;
+  font-family: var(--default-font-family);
+  font-size: large;
+  text-align: center;
+>>>>>>> Stashed changes
   font-weight: 900;
   color: var(--navigation-font-color);
   width: 100%;
@@ -68,7 +85,12 @@ body {
 .navigationSection button {
   margin-top: 15px;
   margin-bottom: 15px;
+<<<<<<< Updated upstream
   white-space: nowrap;
+=======
+  padding-top: 15px;
+  padding-bottom: 15px;
+>>>>>>> Stashed changes
   margin: auto;
   font-family: var(--default-font-family);
   font-size: large;
@@ -82,6 +104,7 @@ body {
 }
 
 .navigationSection button:hover {
+<<<<<<< Updated upstream
   color: lightblue;
 }
 
@@ -114,6 +137,70 @@ body {
   padding-right: 5px;
 }
 
+=======
+  color: var(--hover-color1);
+}
+
+#deviceList{
+  margin: 3px;
+  padding-bottom: 10px;
+  border-radius: 10px;
+  border: 1px solid white;
+}
+
+.device {
+  display: grid;
+  grid-template-columns: [line1] 30px [line2] 30px [line3] 220px [line4] 40px [line5] 30px [end];
+  grid-template-rows: [row1] 50px;
+  margin-left: 10px;
+  margin-right: 10px;
+  border-radius: 10px;
+  border: 1px solid white;
+
+
+}
+.device:hover{
+  border: 1px solid var(--hover-color1)
+}
+
+.isConnectedImg, .deviceIdLabel, .employeeLabel, .batteryLabel, .eventInfoImg{
+  font-size: medium !important;
+}
+
+.isConnectedImg{
+  padding: 45%;
+  height: 20px;
+  grid-column: line1 / span 1;
+  grid-row: row1/ 1;
+}
+
+.deviceIdLabel{
+  text-align: center;
+  padding-left: 5px;
+  grid-column: line2 / span 1;
+  grid-row: row1/ 1;
+}
+
+.employeeLabel{
+  padding-left: 10px;
+  text-align: left !important;
+  grid-column: line3 / span 1;
+  grid-row: row1/ 1;
+}
+
+.batteryLabel{
+
+  grid-column: line4 / span 1;
+  grid-row: row1/ 1;
+}
+
+.eventInfoImg{
+  padding: 10px;
+  height: 30px;
+  grid-column: line5 / span 1;
+  grid-row: row1/ 1;
+}
+>>>>>>> Stashed changes
 
 
 .rootContent{
@@ -132,6 +219,10 @@ body {
 .accelerationHistory, .eventHistory, .control {
   font-size: large;
   border: 1px solid white;
+<<<<<<< Updated upstream
+=======
+  border-radius: 10px;
+>>>>>>> Stashed changes
   padding: 5px;
   padding-left: 10px;
   padding-right: 10px;
@@ -145,6 +236,7 @@ body {
   grid-template-rows: [row1] 200px [row2] auto [last-line];
 }
 
+<<<<<<< Updated upstream
 .diagram{
   grid-column: line1 / span 3;
   grid-row: row1 / span 1;
@@ -152,6 +244,14 @@ body {
   width: 100%;
   border: 1px solid white;
   display:block;
+=======
+.diagramContainer{
+  grid-column: line1 / span 3;
+  grid-row: row1 / span 1;
+  padding-top: 15%;
+  height: 100%;
+  width: 100%;
+>>>>>>> Stashed changes
 }
 
 .legend, .window, .current{
