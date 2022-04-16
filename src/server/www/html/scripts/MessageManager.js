@@ -42,36 +42,34 @@ export class MessageManager {
     switch (message.t) {
       case "uc":
         console.log("UpdateConnection received: %o", message);
-        this.triggerEvent("handleUpdateConnection", message);
+        this.callback("handleUpdateConnection", message);
         break;
 
       case "M":
         console.log("Add measurement received: %o", message);
-        this.triggerEvent("handleAddEvent", message);
+        this.callback("handleAddEvent", message);
         break;
 
       case "e":
         console.log("Add event received: %o", message);
-        message.d.forEach((element) => {
-          this.triggerEvent("handleAddEvent", element);
-        });
+        this.callback("handleAddEvent", message);
         break;
 
       case "su":
         console.log("Settings update received: %o", message);
-        this.triggerEvent("handleSettingsUpdate", message);
+        this.callback("handleSettingsUpdate", message);
         break;
 
       case "ad":
         console.log("Add device received: %o", message);
         message.d.forEach((element) => {
-          this.triggerEvent("handleAddDevice", element);
+          this.callback("handleAddDevice", element);
         });
         break;
 
       case "rd":
         console.log("Remove device received: %o", message);
-        this.triggerEvent("handleRemoveDevice", message);
+        this.callback("handleRemoveDevice", message);
         break;
     }
   }
@@ -88,7 +86,7 @@ export class MessageManager {
     delete this.listeners[method];
   }
 
-  triggerEvent(method, payload = null) {
+  callback(method, payload = null) {
     const callback = this.listeners[method];
     if (typeof callback === "function") {
       callback(payload);
