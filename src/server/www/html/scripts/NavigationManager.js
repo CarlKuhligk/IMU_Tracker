@@ -58,11 +58,7 @@ export class NavigationManager {
 
     // add connection image
     var imgConnection = document.createElement("img");
-<<<<<<< Updated upstream
-    imgConnection.classList.add("isConnected");
-=======
     imgConnection.classList.add("isConnectedImg");
->>>>>>> Stashed changes
     if (device.isConnected === 1) {
       imgConnection.src = "./img/circle-green.png";
       imgConnection.alt = "connected";
@@ -73,57 +69,37 @@ export class NavigationManager {
     newDeviceNavigationObject.appendChild(imgConnection);
 
     // add id label
-<<<<<<< Updated upstream
-    var labelDeviceIs = document.createElement("label");
-    //_____labelChannelName.onclick = onClickModuleLabel;
-    labelDeviceIs.innerText = device.id;
-    newDeviceNavigationObject.appendChild(labelDeviceIs);
-=======
     var labelDeviceId = document.createElement("label");
     //_____labelChannelName.onclick = onClickModuleLabel;
     labelDeviceId.classList.add("deviceIdLabel");
     labelDeviceId.innerText = device.id;
     newDeviceNavigationObject.appendChild(labelDeviceId);
->>>>>>> Stashed changes
 
     // add employee label
     var labelEmployee = document.createElement("label");
     //_____labelChannelName.onclick = onClickModuleLabel;
-<<<<<<< Updated upstream
-=======
     labelEmployee.classList.add("employeeLabel");
->>>>>>> Stashed changes
     labelEmployee.innerText = device.employee;
     newDeviceNavigationObject.appendChild(labelEmployee);
 
     // add battery label
     var labelBattery = document.createElement("label");
     //_____labelChannelName.onclick = onClickModuleLabel;
-<<<<<<< Updated upstream
-=======
     labelBattery.classList.add("batteryLabel");
->>>>>>> Stashed changes
     labelBattery.innerText = "???";
     newDeviceNavigationObject.appendChild(labelBattery);
 
     // add event info image
     var imgEventInfo = document.createElement("img");
-<<<<<<< Updated upstream
-    imgEventInfo.classList.add("eventInfo");
-=======
     imgEventInfo.classList.add("eventInfoImg");
->>>>>>> Stashed changes
     imgEventInfo.src = "./img/information-variant.png";
     imgEventInfo.alt = "event information";
     newDeviceNavigationObject.appendChild(imgEventInfo);
 
-<<<<<<< Updated upstream
-=======
     newDeviceNavigationObject.addEventListener("click", (event) => {
       alert(device.employee);
     });
 
->>>>>>> Stashed changes
     return newDeviceNavigationObject;
   }
 

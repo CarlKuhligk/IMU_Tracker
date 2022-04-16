@@ -1,27 +1,6 @@
 export class MessageManager {
   constructor() {
     this.listeners = {};
-<<<<<<< Updated upstream
-  }
-
-  connect() {
-    var serverIP = $.get("../debug/getServerIP.php").done(function (data) {
-      // create a new WebSocket.
-      //this.websocket = new WebSocket("ws://192.168.212.9:8080");
-      websocket = new WebSocket("ws://" + data + ":8080");
-
-      this.websocket.addEventListener("open", (event) => {
-        this.onOpen(event);
-      });
-
-      this.websocket.addEventListener("message", (event) => {
-        this.onMessage(event);
-      });
-
-      this.websocket.addEventListener("close", (event) => {
-        this.onClose(event);
-      });
-=======
     this.websocket = {};
   }
 
@@ -46,7 +25,6 @@ export class MessageManager {
 
     this.websocket.addEventListener("close", (event) => {
       this.onClose(event);
->>>>>>> Stashed changes
     });
   }
 
