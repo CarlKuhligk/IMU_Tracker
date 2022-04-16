@@ -1,17 +1,11 @@
 import { Device } from "./Device.js";
 import { MessageManager } from "./MessageManager.js";
 import { NavigationManager } from "./NavigationManager.js";
-<<<<<<< Updated upstream
-
-var messageManager = new MessageManager();
-var navigationManager;
-=======
 import { ContentManager } from "./ContentManager.js";
 
 var messageManager = new MessageManager();
 var navigationManager;
 var content;
->>>>>>> Stashed changes
 
 var deviceList = [];
 
