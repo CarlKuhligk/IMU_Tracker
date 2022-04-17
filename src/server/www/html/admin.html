@@ -12,9 +12,9 @@
     />
     <link rel="icon" href="./img/icon.png" />
 
-    <script src="source/jquery.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
-    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script src="./lib/jquery.js"></script>
+    <script src="./lib/crypto-js.min.js"></script>
+    <script src="./lib/qrcode.min.js"></script>
     <script scr="./lib/canvasjs.min.js"></script>
     <script type="module" src="./scripts/MessageManager.js"></script>
     <script type="module" src="./scripts/NavigationManager.js"></script>
@@ -28,46 +28,8 @@
       <div class="rootContent">
         <div class="content">
           <label>NAME XYZ</label>
-
-          <div class="chartRoot">
-            <div class="chartComponents">
-              <div class="chartPlaceholder" id="chartContainer">
-                <label>Diagram</label>
-              </div>
-              <div class="legend">
-                <label>Legende?</label>
-              </div>
-              <div class="window">
-                <label>Zeitfenster?</label>
-              </div>
-              <div class="current">
-                <label>Aktuelle Werte?</label>
-              </div>
-            </div>
-          </div>
-
-          <div class="controlsRoot">
-            <label>Einstellungen</label>
-            <div class="controls">
-              <label>Battery Warning</label>
-              <input>%</input>
-              <label>Idle Timeout</label>
-              <input>%</input>
-              <label>Connection Timeout</label>
-              <input>%</input>
-              <label>Measurement Interval</label>
-              <input>%</input>
-              <label>Acceleration min</label>
-              <input>%</input>
-              <label>Acceleration max</label>
-              <input>%</input>
-              <label>Rotation min</label>
-              <input>%</input>
-              <label>Rotation max</label>
-              <input>%</input>
-            </div>
-
-
+          <div class="chartRoot"></div>
+          <div class="controlsRoot"></div>
           </div>
         </div>
       </div>

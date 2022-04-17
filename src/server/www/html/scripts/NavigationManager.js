@@ -78,7 +78,10 @@ export class NavigationManager {
     var labelBattery = document.createElement("label");
     //_____labelChannelName.onclick = onClickModuleLabel;
     labelBattery.classList.add("batteryLabel");
-    labelBattery.innerText = "???";
+    if (device.isConnected)
+      labelBattery.innerText =
+        device.measurements.battery[device.measurements.battery.length - 1].y + " %";
+    else labelBattery.innerText = " ?";
     newDeviceNavigationObject.appendChild(labelBattery);
 
     // add event info image
@@ -90,13 +93,15 @@ export class NavigationManager {
 
     newDeviceNavigationObject.addEventListener("click", (event) => {
       device.select();
+      device.addEventListener("update", () => {
+        this.updateDeviceEntity(device);
+      });
     });
 
     return newDeviceNavigationObject;
   }
 
   addDeviceEntity(device) {
-    console.log("Navigationmanager");
     $(".navigationDevicesSubSection").append(this.generateDeviceHTMLObject(device));
   }
 

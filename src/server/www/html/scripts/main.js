@@ -14,11 +14,24 @@ function bodyLoad() {
   navigationManager = new NavigationManager();
 }
 
+messageManager.addEventListener("handleAddDevice", (event) => {
+  handleAddDevice(event);
+});
+
 function handleAddDevice(deviceAddMessage) {
   console.log("create device %o", deviceAddMessage);
-  navigationManager.addDeviceEntity(new Device(deviceAddMessage));
+  var device = new Device(deviceAddMessage);
+  device.addEventListener("updateNewSettings", (device) => {
+    messageManager.sendNewSettings(device);
+  });
+
+  navigationManager.addDeviceEntity(device);
   console.log("Devicelist: %o", Device.list);
 }
+
+messageManager.addEventListener("handleUpdateConnection", (event) => {
+  handleUpdateConnection(event);
+});
 
 function handleUpdateConnection(updateMessage) {
   console.log("%o", updateMessage);
@@ -27,28 +40,33 @@ function handleUpdateConnection(updateMessage) {
   navigationManager.updateDeviceEntity(Device.list[updateMessage.i]);
 }
 
-function handleAddEvent(addEventMessage) {
-  Device.addEvent(addEventMessage);
-}
-
-function handleAddMeasurement(addMeasurementMessage) {
-  Device.list[addMeasurementMessage.i].addMeasurement(addMeasurementMessage);
-}
-
-messageManager.addEventListener("handleAddDevice", (event) => {
-  handleAddDevice(event);
-});
-
-messageManager.addEventListener("handleUpdateConnection", (event) => {
-  handleUpdateConnection(event);
-});
-
 messageManager.addEventListener("handleAddEvent", (event) => {
   handleAddEvent(event);
 });
 
+function handleAddEvent(addEventMessage) {
+  Device.addEvent(addEventMessage);
+}
+
 messageManager.addEventListener("handleAddMeasurement", (event) => {
   handleAddMeasurement(event);
 });
+
+function handleAddMeasurement(addMeasurementMessage) {
+  addMeasurementMessage.d.forEach((newMeasurement) => {
+    var message = {
+      d: [newMeasurement],
+    };
+    Device.list[newMeasurement.i].addMeasurement(message);
+  });
+}
+
+messageManager.addEventListener("handleSettingsUpdate", (event) => {
+  handleUpdateSettings(event);
+});
+
+function handleUpdateSettings(settingsUpdateMessage) {
+  Device.list[settingsUpdateMessage.i].updateSettings(settingsUpdateMessage);
+}
 
 window.addEventListener("load", bodyLoad());

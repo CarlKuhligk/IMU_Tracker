@@ -304,7 +304,8 @@ class SocketController implements MessageComponentInterface
                 if (array_key_exists($data->i, $this->deviceList)) {
                     $device = $this->deviceList[$data->i];
                     $device->updateSettings($data);
-                    $device->sendToStreamingDevice(buildUpdateDeviceSettingsForAppClientResponseMessage($device));
+                    if ($device->isConnected)
+                        $device->sendToStreamingDevice(buildUpdateDeviceSettingsForAppClientResponseMessage($device));
                     $this->sendGlobalMessage(buildUpdateDeviceSettingsForWebClientResponseMessage($device), MF_SUBSCRIBER);
                 } else
                     $client->send(buildResponseMessage(R_INVALID_DEVICE_ID));
