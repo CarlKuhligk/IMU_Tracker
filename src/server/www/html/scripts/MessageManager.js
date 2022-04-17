@@ -78,6 +78,22 @@ export class MessageManager {
     console.log("Connection closed!");
   }
 
+  sendNewSettings(device) {
+    var updateMessage = {
+      t: "S",
+      i: device.id,
+      it: document.getElementById("idleTimeoutInput").value,
+      b: document.getElementById("batteryWarningInput").value,
+      c: document.getElementById("connectionTimeoutInput").value,
+      m: document.getElementById("measurementIntervalInput").value,
+      ai: document.getElementById("accelerationMinInput").value,
+      a: document.getElementById("accelerationMaxInput").value,
+      ri: document.getElementById("rotationMinInput").value,
+      r: document.getElementById("rotationMaxInput").value,
+    };
+    this.websocket.send(JSON.stringify(updateMessage));
+  }
+
   addEventListener(method, callback) {
     this.listeners[method] = callback;
   }
