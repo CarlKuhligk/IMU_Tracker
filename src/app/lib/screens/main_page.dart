@@ -11,7 +11,6 @@ import 'package:imu_tracker/services/websocket_handler.dart';
 import 'package:imu_tracker/services/localstorage_service.dart';
 import 'package:imu_tracker/services/internal_sensor_service.dart';
 import 'package:imu_tracker/services/device_settings_handler.dart';
-import 'package:imu_tracker/services/notification_service.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({
@@ -25,7 +24,6 @@ class _MyMainPageState extends State<MainPage> {
   var websocket = getIt<WebSocketHandler>();
   var internalSensors = getIt<InternalSensorService>();
   var deviceSettings = getIt<DeviceSettingsHandler>();
-  var _notificationService = getIt<NotificationService>();
 
   Timer? timer;
   TextEditingController _textFieldController = TextEditingController();
