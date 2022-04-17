@@ -44,6 +44,19 @@ class _MyMainPageState extends State<MainPage> {
     });
 
     websocket.successfullyRegistered.addListener(() {
+      if (!websocket.successfullyRegistered.value)
+        _showDialog('Lost Server Connection!', 'Lost Connection to Server.');
+      setState(() {});
+    });
+    internalSensors.batteryAlarmstate.addListener(() {
+      if (internalSensors.movementAlarmstate.value)
+        _showDialog('Low Battery', 'Batterylevel too low');
+      setState(() {});
+    });
+    internalSensors.movementAlarmstate.addListener(() {
+      if (internalSensors.movementAlarmstate.value)
+        _showDialog('No Movement Alert',
+            'You need to move, otherwise no movement Alert will be triggered');
       setState(() {});
     });
     super.initState();
@@ -57,10 +70,56 @@ class _MyMainPageState extends State<MainPage> {
         ),
         body: Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            //mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               if (!websocket.successfullyLoggedOut.value)
                 _getConnectionStateIcon(websocket.successfullyRegistered.value),
+              Table(
+                border: TableBorder.symmetric(),
+                columnWidths: const {
+                  0: FractionColumnWidth(0.2),
+                  1: FractionColumnWidth(0.8)
+                },
+                children: [
+                  if (internalSensors.movementAlarmstate.value)
+                    TableRow(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: const Icon(
+                            Icons.report_problem,
+                            color: Colors.red,
+                            size: 24.0,
+                          ),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text('Movement Alarm!',
+                              style: TextStyle(fontSize: 20.0)),
+                        )
+                      ],
+                    ),
+                  if (internalSensors.batteryAlarmstate.value)
+                    TableRow(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: const Icon(
+                            Icons.battery_alert,
+                            color: Colors.red,
+                            size: 24.0,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text('Battery Alarm!',
+                              style: TextStyle(fontSize: 20.0)),
+                        )
+                      ],
+                    ),
+                ],
+              ),
               if (websocket.successfullyRegistered.value)
                 FlatButton(
                   color: Colors.teal,
@@ -79,38 +138,6 @@ class _MyMainPageState extends State<MainPage> {
                   },
                   child: const Text('Close App'),
                 ),
-              FlatButton(
-                color: Colors.green,
-                textColor: Colors.white,
-                child: const Text('Show Battery notification'),
-                onPressed: () async {
-                  await _notificationService.showBatteryNotification();
-                },
-              ),
-              FlatButton(
-                color: Colors.green,
-                textColor: Colors.white,
-                child: const Text('Cancel Battery notification'),
-                onPressed: () async {
-                  await _notificationService.cancelBatteryNotification();
-                },
-              ),
-              FlatButton(
-                color: Colors.green,
-                textColor: Colors.white,
-                child: const Text('Show Movement notification'),
-                onPressed: () async {
-                  await _notificationService.showMovementNotification();
-                },
-              ),
-              FlatButton(
-                color: Colors.green,
-                textColor: Colors.white,
-                child: const Text('Cancel Movement notification'),
-                onPressed: () async {
-                  await _notificationService.cancelMovementNotification();
-                },
-              )
             ],
           ),
         ));
@@ -173,5 +200,32 @@ class _MyMainPageState extends State<MainPage> {
             ],
           );
         });
+  }
+
+  Future<void> _showDialog(AlertTitel, AlertText) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("$AlertTitel"),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text("$AlertText"),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Acknowledge'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
