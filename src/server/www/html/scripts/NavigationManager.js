@@ -1,7 +1,5 @@
 export class NavigationManager {
   constructor() {
-    this.devices = [];
-
     this.navigation = document.createElement("div");
     this.navigation.classList.add("navigation");
 
@@ -91,13 +89,14 @@ export class NavigationManager {
     newDeviceNavigationObject.appendChild(imgEventInfo);
 
     newDeviceNavigationObject.addEventListener("click", (event) => {
-      device.activateContent();
+      device.select();
     });
 
     return newDeviceNavigationObject;
   }
 
   addDeviceEntity(device) {
+    console.log("Navigationmanager");
     $(".navigationDevicesSubSection").append(this.generateDeviceHTMLObject(device));
   }
 
