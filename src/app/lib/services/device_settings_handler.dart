@@ -10,7 +10,8 @@ class DeviceSettingsHandler {
 
   writeNewDeviceSettingsToInternalStorage(message) {
     var _newDeviceSettings = _decodeSettingsMessage(message);
-    String _newDeviceSettingsString = (jsonEncode(_newDeviceSettings));
+    deviceSettings = _newDeviceSettings;
+    String _newDeviceSettingsString = (jsonEncode(deviceSettings));
     LocalStorageService.writeDeviceSettingsToMemory(_newDeviceSettingsString);
   }
 
@@ -20,6 +21,7 @@ class DeviceSettingsHandler {
 
   _decodeSettingsMessage(message) {
     message.remove("t");
-    return message;
+    var newSettingsMessage = message;
+    return newSettingsMessage;
   }
 }

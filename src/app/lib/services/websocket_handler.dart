@@ -1,33 +1,39 @@
 //dart packages
 // ignore_for_file: prefer_typing_uninitialized_variables
-
+import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
 //project specific types
 import 'package:imu_tracker/data_structures/function_return_types.dart';
 import 'package:imu_tracker/data_structures/response_numbers.dart';
+import 'package:crypto/crypto.dart';
 
 //project internal services / dependency injection
 import 'package:imu_tracker/service_locator.dart';
 import 'package:imu_tracker/services/device_settings_handler.dart';
+import 'package:imu_tracker/services/internal_sensor_service.dart';
 
 class WebSocketHandler {
 //Websocket Variables
-  var successfullyRegistered = false;
-  var successfullyLoggedOut = false;
-  late WebSocket _channel; //initialize a websocket channel
-  final streamController = StreamController.broadcast();
   bool isWebsocketRunning = false; //status of a websocket
-  int retryLimit = 3;
+  ValueNotifier<bool> successfullyRegistered = ValueNotifier<bool>(false);
+  ValueNotifier<bool> successfullyLoggedOut = ValueNotifier<bool>(false);
+  late WebSocket _channel; //initialize a websocket channel
+  Timer? _pingIntervalTimer;
+  Timer? _transmitIntervalTimer;
+  var _socketData;
 
   var deviceSettings = getIt<DeviceSettingsHandler>();
 
-  Future<int> connectWebSocket(socketData) async {
-    int _webSocketResponseNumber = 0;
+  var internalSensors = getIt<InternalSensorService>();
+
+  connectWebSocket(socketData) async {
+    _socketData = socketData;
 
     try {
-      _channel = await WebSocket.connect('ws://${socketData['host']}');
+      _channel = await WebSocket.connect(
+          'ws://${socketData['host']}:${socketData['port']}');
       isWebsocketRunning = true;
       registerAsSender(socketData);
       _channel.listen(
@@ -46,12 +52,9 @@ class WebSocketHandler {
     } catch (e) {
       isWebsocketRunning = false;
       //TODO: Errorhandling via errorhandlingpackage
-      return _webSocketResponseNumber;
     }
 
-    return await Future.delayed(const Duration(seconds: 1), () {
-      return _webSocketResponseNumber;
-    });
+    return await Future.delayed(const Duration(seconds: 1), () {});
   }
 
   Future<WebSocketTestResultReturnType> testWebSocketConnection(
@@ -67,7 +70,8 @@ class WebSocketHandler {
     var _webSocket;
 
     try {
-      _webSocket = await WebSocket.connect('ws://${socketData['host']}');
+      _webSocket = await WebSocket.connect(
+          'ws://${socketData['host']}:${socketData['port']}');
       _isWebsocketRunning = true;
       _webSocket.add(jsonEncode(_apiKeyTestMessage));
 
@@ -103,25 +107,24 @@ class WebSocketHandler {
     });
   }
 
-  void buildValueMessage(
-      accelerationValue, gyroscopeValue, temperatureValue, batteryState) {
+  void buildValueMessage() {
     var buildMessage = {
       "t": "m",
-      "a": accelerationValue,
-      "r": gyroscopeValue,
-      "tp": temperatureValue,
-      "b": batteryState
+      "a": internalSensors.magnitudeAccelerometer,
+      "r": internalSensors.magnitudeGyroscope,
+      "tp": internalSensors.deviceTemperature,
+      "b": internalSensors.batteryLevel
     };
-    if (accelerationValue != null &&
-        gyroscopeValue != null &&
-        temperatureValue != null &&
-        batteryState != null) {
+    if (internalSensors.magnitudeAccelerometer != null &&
+        internalSensors.magnitudeGyroscope != null &&
+        internalSensors.deviceTemperature != null &&
+        internalSensors.batteryLevel != null) {
       sendMessage(buildMessage);
     }
   }
 
   buildRegistrationMessage(socketData) {
-    var _registrationMessage = {"t": "i", "a": ""};
+    var _registrationMessage = {"t": "i", "a": "", "c": 0};
     _registrationMessage['a'] = socketData['apikey'];
 
     return _registrationMessage;
@@ -136,9 +139,10 @@ class WebSocketHandler {
 
   buildLogOutMessage(personalPin) {
     var _logOutMessage = {"t": "o"};
-    _logOutMessage['p'] = personalPin;
-
-    return _logOutMessage;
+    var bytes = utf8.encode(personalPin);
+    var hashedPin = sha256.convert(bytes);
+    _logOutMessage['p'] = hashedPin.toString();
+    sendMessage(_logOutMessage);
   }
 
   void sendMessage(messageString) {
@@ -152,28 +156,27 @@ class WebSocketHandler {
     _channel.add(jsonEncode(_registrationMessage));
   }
 
-  messageDecoderReturnType messageDecoder(message) {
+  MessageDecoderReturnType messageDecoder(message) {
     var decodedJSON;
     bool decodeSucceeded = false;
     try {
       decodedJSON = json.decode(message) as Map<String, dynamic>;
       decodeSucceeded = true;
     } on FormatException {
-      return messageDecoderReturnType(false, 'w', 0);
+      return MessageDecoderReturnType(false, 'w', 0);
     }
 
     if (decodeSucceeded && decodedJSON["t"] != null) {
       switch (decodedJSON["t"]) {
         case "r":
-          return messageDecoderReturnType(
-              true, 'r', int.parse(decodedJSON['i']));
+          return MessageDecoderReturnType(true, 'r', decodedJSON['i']);
         case "s":
-          return messageDecoderReturnType(true, 's', int.parse(message));
+          return MessageDecoderReturnType(true, 's', decodedJSON);
         default:
-          return messageDecoderReturnType(true, 'u', 0);
+          return MessageDecoderReturnType(true, 'u', 0);
       }
     } else {
-      return messageDecoderReturnType(false, 'w', 0);
+      return MessageDecoderReturnType(false, 'w', 0);
     }
   }
 
@@ -186,11 +189,14 @@ class WebSocketHandler {
           _handleResponseMessages(decodedMessage);
           break;
         case 's':
-          deviceSettings
-              .writeNewDeviceSettingsToInternalStorage(decodedMessage);
+          deviceSettings.writeNewDeviceSettingsToInternalStorage(
+              decodedMessage.webSocketResponseNumber);
+          _transmitIntervalTimer?.cancel();
+
+          startTransmissionInterval();
           break;
         default:
-        //TODO: Handle unknown response via errorhandler package
+          break; //TODO: Handle unknown response via errorhandler package
       }
     } else {
       //channel.close();
@@ -200,17 +206,17 @@ class WebSocketHandler {
   _handleResponseMessages(message) {
     switch (message.webSocketResponseNumber) {
       case 8:
-        successfullyLoggedOut = false;
+        successfullyLoggedOut.value = false;
         break;
       case 9:
-        successfullyRegistered = false;
-        successfullyLoggedOut = true;
+        _closeWebsocketConnection();
         break;
       case 10:
-        successfullyRegistered = true;
+        successfullyRegistered.value = true;
+        _startPingInterval();
         break;
       case 24:
-        successfullyRegistered = false;
+        successfullyRegistered.value = false;
         break;
       default:
         try {
@@ -233,7 +239,49 @@ class WebSocketHandler {
     }
   }
 
-  void dispose() {
+  void _closeWebsocketConnection() {
+    successfullyRegistered.value = false;
+    successfullyLoggedOut.value = true;
     _channel.close();
+    _pingIntervalTimer?.cancel();
+    isWebsocketRunning = false;
+  }
+
+  _checkServerAvailable() {
+    //TODO: Implement the argument socketData into ping
+    Socket.connect(_socketData['host'], _socketData['port'],
+            timeout: const Duration(seconds: 5))
+        .then((socket) {
+      isWebsocketRunning = true;
+      socket.destroy();
+    }).catchError((error) {
+      successfullyRegistered.value = false;
+      isWebsocketRunning = false;
+      _channel.close;
+      if (!successfullyLoggedOut.value) connectWebSocket(_socketData);
+    });
+  }
+
+  _startPingInterval() {
+    // Intervall for websocketconnection available test
+    if (_pingIntervalTimer == null || !_pingIntervalTimer!.isActive) {
+      _pingIntervalTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+        _checkServerAvailable();
+      });
+    }
+  }
+
+  startTransmissionInterval() {
+    // Intervall for websocketconnection
+    internalSensors.startInternalSensors();
+    if (_transmitIntervalTimer == null || !_transmitIntervalTimer!.isActive) {
+      _transmitIntervalTimer = Timer.periodic(
+          Duration(milliseconds: (deviceSettings.deviceSettings["m"])), (_) {
+        if (successfullyRegistered.value) {
+          buildValueMessage();
+          internalSensors.getCurrentValues();
+        }
+      });
+    }
   }
 }

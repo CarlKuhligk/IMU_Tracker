@@ -58,7 +58,7 @@ class _RegistrationScreen extends State<RegistrationScreen> {
             child: FittedBox(
               fit: BoxFit.contain,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: const <Widget>[
                   Text('Bitte den QR-Code scannen'),
                 ],
@@ -110,23 +110,28 @@ class _RegistrationScreen extends State<RegistrationScreen> {
           LocalStorageService.writeAuthenticationToMemory(scanData.code);
           LocalStorageService.setDeviceIsRegistered(true);
         }
-        Navigator.of(context).push(
+
+        Navigator.pushAndRemoveUntil(
+          context,
           MaterialPageRoute(
             builder: (context) => QrCodeFoundPage(
                 qrCheckResult: qrCodeHasRightFormat,
                 webSocketTestResult: webSocketTestResult),
           ),
+          (Route<dynamic> route) => false,
         );
       } else {
         var qrCodeHasRightFormat = false;
         var webSocketTestResult =
             WebSocketTestResultReturnType(false, false, 0);
-        Navigator.of(context).push(
+        Navigator.pushAndRemoveUntil(
+          context,
           MaterialPageRoute(
             builder: (context) => QrCodeFoundPage(
                 qrCheckResult: qrCodeHasRightFormat,
                 webSocketTestResult: webSocketTestResult),
           ),
+          (Route<dynamic> route) => false,
         );
       }
     });

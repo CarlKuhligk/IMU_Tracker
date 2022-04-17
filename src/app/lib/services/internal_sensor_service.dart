@@ -1,18 +1,22 @@
 // ignore_for_file: prefer_typing_uninitialized_variables
+//flutter packages
+import 'package:flutter/material.dart';
 //dart packages
-
 import 'dart:async';
 import 'dart:math';
 
+//additional packages
 import 'package:sensors/sensors.dart';
-import 'package:battery_plus/battery_plus.dart';
-import 'package:environment_sensors/environment_sensors.dart';
+import 'package:battery_info/battery_info_plugin.dart';
+
+//project internal services / dependency injection
+import 'package:imu_tracker/service_locator.dart';
+import 'package:imu_tracker/services/device_settings_handler.dart';
 
 class InternalSensorService {
-  final Battery _battery = Battery();
+  var deviceSettings = getIt<DeviceSettingsHandler>();
 
-  BatteryState? batteryState;
-  StreamSubscription<BatteryState>? _batteryStateSubscription;
+  final _battery = BatteryInfoPlugin();
 
   StreamSubscription? accelerationSubscription;
   StreamSubscription? gyroscopeSubscription;
@@ -23,12 +27,15 @@ class InternalSensorService {
   var _accelerationValues;
   var _gyroscopeValues;
   var batteryLevel;
+  var deviceTemperature;
+
+  ValueNotifier<bool> movementAlarmstate = ValueNotifier<bool>(false);
+  ValueNotifier<bool> batteryAlarmstate = ValueNotifier<bool>(false);
 
   startInternalSensors() {
     _startGyroscopeSensor();
     _startAccelerationSensor();
     _startBatterySensor();
-    _startMeasurementInterval();
   }
 
   _startGyroscopeSensor() {
@@ -57,46 +64,59 @@ class InternalSensorService {
   }
 
   _startBatterySensor() {
-    // if the battery subscription hasn't been created, go ahead and create it
-    if (_batteryStateSubscription == null) {
-      _batteryStateSubscription =
-          _battery.onBatteryStateChanged.listen((BatteryState state) {
-        batteryState = state;
-      });
-    } else {
-      // it has already ben created so just resume it
-      _batteryStateSubscription?.resume();
-    }
+    _battery.androidBatteryInfoStream.listen((event) {
+      deviceTemperature = event!.temperature;
+      batteryLevel = event.batteryLevel;
+    });
   }
 
-  _startMeasurementInterval() {
-    if (measurementIntervalTimer == null ||
-        !measurementIntervalTimer!.isActive) {
-      measurementIntervalTimer =
-          Timer.periodic(const Duration(milliseconds: 200), (_) {
-        //TODO: get measurement interval from settings
-        _getBatteryPercentage();
-        _calculateGyroscopeMagnitude();
-        _calculateAccelerometerMagnitude();
-      });
-    }
-  }
-
-  _getBatteryPercentage() async {
-    batteryLevel = await _battery.batteryLevel;
+  getCurrentValues() {
+    _calculateGyroscopeMagnitude();
+    _calculateAccelerometerMagnitude();
+    _checkMovementTimeout();
+    _checkBatteryAlarmstate();
   }
 
   _calculateGyroscopeMagnitude() {
     var rawData = _gyroscopeValues;
-    magnitudeGyroscope = sqrt((rawData.x * rawData.x) +
-        (rawData.y * rawData.y) +
-        (rawData.z * rawData.z));
+    magnitudeGyroscope = sqrt(_sqrVariable(rawData.x) +
+        _sqrVariable(rawData.y) +
+        _sqrVariable(rawData.z));
   }
 
   _calculateAccelerometerMagnitude() {
     var rawData = _accelerationValues;
-    magnitudeAccelerometer = sqrt((rawData.x * rawData.x) +
-        (rawData.y * rawData.y) +
-        (rawData.z * rawData.z));
+    magnitudeAccelerometer = sqrt(_sqrVariable(rawData.x) +
+        _sqrVariable(rawData.y) +
+        _sqrVariable(rawData.z));
+  }
+
+  _checkMovementTimeout() {
+    Timer? _movementTimer;
+    if (magnitudeAccelerometer < deviceSettings.deviceSettings["ai"]) {
+      if (_movementTimer == null || !_movementTimer.isActive) {
+        _movementTimer = Timer(
+          Duration(seconds: (deviceSettings.deviceSettings["it"])),
+          () {
+            movementAlarmstate.value = true;
+          },
+        );
+      }
+    } else {
+      movementAlarmstate.value = false;
+      _movementTimer!.cancel();
+    }
+  }
+
+  _checkBatteryAlarmstate() {
+    if (batteryLevel < deviceSettings.deviceSettings["b"]) {
+      batteryAlarmstate.value = true;
+    } else {
+      batteryAlarmstate.value = false;
+    }
+  }
+
+  _sqrVariable(value) {
+    return value * value;
   }
 }
