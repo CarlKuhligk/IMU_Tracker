@@ -47,7 +47,7 @@ export class MessageManager {
 
       case "M":
         console.log("Add measurement received: %o", message);
-        this.callback("handleAddEvent", message);
+        this.callback("handleAddMeasurement", message);
         break;
 
       case "e":
