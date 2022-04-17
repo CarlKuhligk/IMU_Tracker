@@ -5,7 +5,7 @@ import { NavigationManager } from "./NavigationManager.js";
 var messageManager = new MessageManager();
 var navigationManager;
 
-var deviceList = [];
+Device.list = [];
 Device.events = [];
 Device.content = "";
 
@@ -15,22 +15,24 @@ function bodyLoad() {
 }
 
 function handleAddDevice(deviceAddMessage) {
-  console.log("%o", deviceAddMessage);
-  var newDevice = new Device(deviceAddMessage);
-  deviceList[newDevice.id] = newDevice;
-  navigationManager.addDeviceEntity(newDevice);
-  console.log("Devicelist: %o", deviceList);
+  console.log("create device %o", deviceAddMessage);
+  navigationManager.addDeviceEntity(new Device(deviceAddMessage));
+  console.log("Devicelist: %o", Device.list);
 }
 
 function handleUpdateConnection(updateMessage) {
   console.log("%o", updateMessage);
-  deviceList[updateMessage.i].isConnected = updateMessage.c;
-  console.log("Updated Device %o", deviceList[updateMessage.i]);
-  navigationManager.updateDeviceEntity(deviceList[updateMessage.i]);
+  Device.list[updateMessage.i].isConnected = updateMessage.c;
+  console.log("Updated Device %o", Device.list[updateMessage.i]);
+  navigationManager.updateDeviceEntity(Device.list[updateMessage.i]);
 }
 
 function handleAddEvent(addEventMessage) {
   Device.addEvent(addEventMessage);
+}
+
+function handleAddMeasurement(addMeasurementMessage) {
+  Device.list[addMeasurementMessage.i].addMeasurement(addMeasurementMessage);
 }
 
 messageManager.addEventListener("handleAddDevice", (event) => {
@@ -43,6 +45,10 @@ messageManager.addEventListener("handleUpdateConnection", (event) => {
 
 messageManager.addEventListener("handleAddEvent", (event) => {
   handleAddEvent(event);
+});
+
+messageManager.addEventListener("handleAddMeasurement", (event) => {
+  handleAddMeasurement(event);
 });
 
 window.addEventListener("load", bodyLoad());
