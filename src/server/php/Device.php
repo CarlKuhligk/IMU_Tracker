@@ -336,7 +336,8 @@ class Device
     // send message to the streaming device
     public function sendToStreamingDevice($message)
     {
-        Device::$clientList[$this->streamerResourceId]->send($message);
+        if (isset($this->streamerResourceId))
+            Device::$clientList[$this->streamerResourceId]->send($message);
     }
 
     public function updateSettings($newSettings)
