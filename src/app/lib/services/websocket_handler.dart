@@ -249,7 +249,7 @@ class WebSocketHandler {
 
   _checkServerAvailable() {
     //TODO: Implement the argument socketData into ping
-    Socket.connect(_socketData['host'], _socketData['port'],
+    Socket.connect(_socketData['host'], int.parse(_socketData['port']),
             timeout: const Duration(seconds: 5))
         .then((socket) {
       isWebsocketRunning = true;
