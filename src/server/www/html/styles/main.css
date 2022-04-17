@@ -103,8 +103,8 @@ body {
 
 
 }
-.device:hover{
-  border: 1px solid var(--hover-color1)
+.device:hover label{
+  color: var(--hover-color1)
 }
 
 .isConnectedImg, .deviceIdLabel, .employeeLabel, .batteryLabel, .eventInfoImg{
@@ -112,7 +112,7 @@ body {
 }
 
 .isConnectedImg{
-  padding: 45%;
+  padding: 15px;
   height: 20px;
   grid-column: line1 / span 1;
   grid-row: row1/ 1;
@@ -159,7 +159,7 @@ body {
   background-color: var(--navigation-bg-color);
 }
 
-.accelerationHistory, .eventHistory, .control {
+.chartRoot, .controlsRoot {
   font-size: large;
   border: 1px solid white;
   border-radius: 10px;
@@ -169,17 +169,17 @@ body {
   margin-top: 20px;
 }
 
-.diagramCollection{
+.chartComponents{
   display: grid;
-  height: 250px;
+  height: min-content;
   grid-template-columns: [line1] 20% [line2]  50% [line3] auto  [end];
-  grid-template-rows: [row1] 200px [row2] auto [last-line];
+  grid-template-rows: [row1] 400px [row2] auto [last-line];
 }
 
-.diagramContainer{
+.chartPlaceholder{
   grid-column: line1 / span 3;
   grid-row: row1 / span 1;
-  padding-top: 15%;
+  padding-top: 10px;
   height: 100%;
   width: 100%;
 }
