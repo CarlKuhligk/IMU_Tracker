@@ -12,15 +12,18 @@ import 'package:battery_info/battery_info_plugin.dart';
 //project internal services / dependency injection
 import 'package:imu_tracker/service_locator.dart';
 import 'package:imu_tracker/services/device_settings_handler.dart';
+import 'package:imu_tracker/services/notification_service.dart';
 
 class InternalSensorService {
   var deviceSettings = getIt<DeviceSettingsHandler>();
+  var notificationService = getIt<NotificationService>();
 
   final _battery = BatteryInfoPlugin();
 
   StreamSubscription? accelerationSubscription;
   StreamSubscription? gyroscopeSubscription;
   Timer? measurementIntervalTimer;
+  Timer? _movementTimer;
 
   var magnitudeAccelerometer;
   var magnitudeGyroscope;
@@ -92,26 +95,33 @@ class InternalSensorService {
   }
 
   _checkMovementTimeout() {
-    Timer? _movementTimer;
-    if (magnitudeAccelerometer < deviceSettings.deviceSettings["ai"]) {
-      if (_movementTimer == null || !_movementTimer.isActive) {
+    if (magnitudeAccelerometer < deviceSettings.deviceSettings["a"]) {
+      if (_movementTimer == null || !_movementTimer!.isActive) {
         _movementTimer = Timer(
           Duration(seconds: (deviceSettings.deviceSettings["it"])),
           () {
+            if (!movementAlarmstate.value) {
+              notificationService.showMovementNotification();
+            }
             movementAlarmstate.value = true;
           },
         );
       }
     } else {
       movementAlarmstate.value = false;
+      notificationService.cancelMovementNotification();
       _movementTimer!.cancel();
     }
   }
 
   _checkBatteryAlarmstate() {
     if (batteryLevel < deviceSettings.deviceSettings["b"]) {
+      if (!batteryAlarmstate.value) {
+        notificationService.showBatteryNotification();
+      }
       batteryAlarmstate.value = true;
     } else {
+      notificationService.cancelBatteryNotification();
       batteryAlarmstate.value = false;
     }
   }
