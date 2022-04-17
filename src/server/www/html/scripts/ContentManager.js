@@ -1,9 +1,13 @@
+import "../lib/canvasjs.min.js";
+
 export class ContentManager {
   constructor(device) {
-    this.buildContent(device);
+    //this.buildContent(device);
 
-    $(".rootContent").empty();
-    $(".rootContent").append(this.ContentDIV);
+    this.buildChart(device);
+
+    //$(".rootContent").empty();
+    //$(".rootContent").append(this.ContentDIV);
   }
 
   buildContent(device) {
@@ -30,7 +34,7 @@ export class ContentManager {
 
     this.DeviceHistoryChartDIV = document.createElement("div");
     this.DeviceHistoryChartDIV.classList.add("chartPlaceholder");
-    this.DeviceHistoryChartDIV.id = "deviceHistoryChart";
+    this.DeviceHistoryChartDIV.id = "chartContainer";
     this.ChartComponentsDIV.appendChild(this.DeviceHistoryChartDIV);
 
     this.DeviceHistoryChartLegendDIV = document.createElement("div");
@@ -141,26 +145,73 @@ export class ContentManager {
   }
 
   buildChart(device) {
+    console.log("Chart input: %s", JSON.stringify(device.measurements.acceleration));
     this.chart = new CanvasJS.Chart("chartContainer", {
+      animationEnabled: false,
+      exportEnabled: true,
       zoomEnabled: true,
+      theme: "dark1",
+      backgroundColor: "#444444",
       title: {
-        text: "Überschrift",
+        text: "Ereignisverlauf",
       },
       axisX: {
-        title: "x-beschriftung",
+        title: "",
       },
-      axisY: {
-        title: "Beschleunigung",
-        suffix: " m/s²",
-        includeZero: false,
-      },
+      //acceleration
+      //rotation
+      //event state
+      //temperature
+      //battery
+      axisY: [
+        {
+          title: "Acceleration",
+          lineColor: "#3A83FF",
+          tickColor: "#3A83FF",
+          labelFontColor: "#3A83FF",
+          titleFontColor: "#3A83FF",
+          includeZero: true,
+          suffix: " m/s²",
+        },
+        {
+          title: "Angular Acceleration",
+          lineColor: "#A42EFF",
+          tickColor: "#A42EFF",
+          labelFontColor: "#A42EFF",
+          titleFontColor: "#A42EFF",
+          includeZero: true,
+          suffix: " rad/s²",
+        },
+        {
+          title: "Battery",
+          lineColor: "#35FFDE",
+          tickColor: "#35FFDE",
+          labelFontColor: "#35FFDE",
+          titleFontColor: "#35FFDE",
+          includeZero: true,
+          suffix: " %",
+        },
+        {
+          title: "Temperature",
+          lineColor: "#7DEB28",
+          tickColor: "#7DEB28",
+          labelFontColor: "#7DEB28",
+          titleFontColor: "#7DEB28",
+          includeZero: true,
+          suffix: " °C",
+        },
+      ],
       toolTip: {
         shared: true,
       },
       axisY2: {
-        title: "Winkelbeschleunigung",
-        suffix: " rad/s²",
-        includeZero: false,
+        title: "Event Trigger",
+        lineColor: "#E00930",
+        tickColor: "#E00930",
+        labelFontColor: "#E00930",
+        titleFontColor: "#E00930",
+        includeZero: true,
+        suffix: "",
       },
       legend: {
         cursor: "pointer",
@@ -173,35 +224,149 @@ export class ContentManager {
         {
           type: "line",
           xValueType: "dateTime",
-          yValueFormatString: "$####.00",
-          xValueFormatString: "hh:mm:ss TT",
+          yValueFormatString: "####.## m/s²",
+          xValueFormatString: "YYYY-MMM-DD hh:mm:ss",
           showInLegend: true,
-          name: "WERT A",
+          name: "Acceleration",
+          axisYIndex: 0,
           dataPoints: device.measurements.acceleration,
         },
         {
           type: "line",
           xValueType: "dateTime",
-          yValueFormatString: "$####.00",
+          yValueFormatString: "####.## rad/s²",
+          xValueFormatString: "YYYY-MMM-DD hh:mm:ss",
           showInLegend: true,
-          name: "WERT B",
+          name: "Rotation",
+          axisYIndex: 1,
           dataPoints: device.measurements.rotation,
+        },
+        {
+          type: "line",
+          xValueType: "dateTime",
+          yValueFormatString: "## '%'",
+          xValueFormatString: "YYYY-MMM-DD hh:mm:ss",
+          showInLegend: true,
+          name: "Battery",
+          axisYIndex: 2,
+          dataPoints: device.measurements.acceleration,
+        },
+        {
+          type: "line",
+          xValueType: "dateTime",
+          yValueFormatString: " ##.#°C",
+          xValueFormatString: "YYYY-MMM-DD hh:mm:ss",
+          showInLegend: true,
+          name: "Temperature",
+          axisYIndex: 3,
+          dataPoints: device.measurements.rotation,
+        },
+        //###############################//###############################
+        //#######  E V E N T S  //#######//###############################
+        //###############################//###############################
+        {
+          type: "stepLine",
+          xValueType: "dateTime",
+          yValueFormatString: " #",
+          xValueFormatString: "YYYY-MMM-DD hh:mm:ss",
+          showInLegend: true,
+          name: "Battery Empty",
+          axisYType: "secondary",
+          axisYIndex: 0,
+
+          dataPoints: device.events.batteryEmpty,
+        },
+        {
+          type: "stepLine",
+          xValueType: "dateTime",
+          yValueFormatString: " #",
+          xValueFormatString: "YYYY-MMM-DD hh:mm:ss",
+          showInLegend: true,
+          name: "Battery Warning",
+          axisYType: "secondary",
+          axisYIndex: 0,
+
+          dataPoints: device.events.batteryWarning,
+        },
+        {
+          type: "stepLine",
+          xValueType: "dateTime",
+          yValueFormatString: " #",
+          xValueFormatString: "YYYY-MMM-DD hh:mm:ss",
+          showInLegend: true,
+          name: "Idle Timeout",
+          axisYType: "secondary",
+          axisYIndex: 0,
+
+          dataPoints: device.events.idleTimeout,
+        },
+        {
+          type: "stepLine",
+          xValueType: "dateTime",
+          yValueFormatString: " #",
+          xValueFormatString: "YYYY-MMM-DD hh:mm:ss",
+          showInLegend: true,
+          name: "Connection Lost",
+          axisYType: "secondary",
+          axisYIndex: 0,
+
+          dataPoints: device.events.connectionLost,
+        },
+        {
+          type: "stepLine",
+          xValueType: "dateTime",
+          yValueFormatString: " #",
+          xValueFormatString: "YYYY-MMM-DD hh:mm:ss",
+          showInLegend: true,
+          name: "Connection Timeout",
+          axisYType: "secondary",
+          axisYIndex: 0,
+
+          dataPoints: device.events.connectionTimeout,
+        },
+        {
+          type: "stepLine",
+          xValueType: "dateTime",
+          yValueFormatString: " #",
+          xValueFormatString: "YYYY-MMM-DD hh:mm:ss",
+          showInLegend: true,
+          name: "Acceleration Exceeded",
+          axisYType: "secondary",
+          axisYIndex: 0,
+
+          dataPoints: device.events.accelerationExceeded,
+        },
+        {
+          type: "stepLine",
+          xValueType: "dateTime",
+          yValueFormatString: " #",
+          xValueFormatString: "YYYY-MMM-DD hh:mm:ss",
+          showInLegend: true,
+          name: "Rotation Exceeded",
+          axisYType: "secondary",
+          axisYIndex: 0,
+
+          dataPoints: device.events.rotationExceeded,
         },
       ],
     });
-    renderChart();
+    this.renderChart();
+
+    device.addEventListener("update", (event) => {
+      this.renderChart();
+    });
   }
 
-  toggleDataSeries(e) {
+  renderChart() {
+    this.chart.render();
+  }
+
+  toggleDataSeries(e, self) {
     if (typeof e.dataSeries.visible === "undefined" || e.dataSeries.visible) {
       e.dataSeries.visible = false;
     } else {
       e.dataSeries.visible = true;
     }
-    renderChart();
-  }
-
-  renderChart() {
-    this.chart.render();
+    self.renderChart();
   }
 }
