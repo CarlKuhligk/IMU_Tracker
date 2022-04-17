@@ -82,17 +82,33 @@ class _MyMainPageState extends State<MainPage> {
               FlatButton(
                 color: Colors.green,
                 textColor: Colors.white,
-                child: const Text('Show notification'),
+                child: const Text('Show Battery notification'),
                 onPressed: () async {
-                  await _notificationService.showNotifications();
+                  await _notificationService.showBatteryNotification();
                 },
               ),
               FlatButton(
                 color: Colors.green,
                 textColor: Colors.white,
-                child: const Text('Cancel notification'),
+                child: const Text('Cancel Battery notification'),
                 onPressed: () async {
-                  await _notificationService.cancelNotifications();
+                  await _notificationService.cancelBatteryNotification();
+                },
+              ),
+              FlatButton(
+                color: Colors.green,
+                textColor: Colors.white,
+                child: const Text('Show Movement notification'),
+                onPressed: () async {
+                  await _notificationService.showMovementNotification();
+                },
+              ),
+              FlatButton(
+                color: Colors.green,
+                textColor: Colors.white,
+                child: const Text('Cancel Movement notification'),
+                onPressed: () async {
+                  await _notificationService.cancelMovementNotification();
                 },
               )
             ],

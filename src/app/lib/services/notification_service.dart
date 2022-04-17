@@ -1,15 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationService {
-  //NotificationService a singleton object
-  /*
-  static final NotificationService _notificationService =
-      NotificationService._internal();
-
-  factory NotificationService() {
-    return _notificationService;
-  }
-*/
   static Future<NotificationService> getInstance() async {
     final NotificationService _notificationService =
         NotificationService._internal();
@@ -43,16 +34,29 @@ class NotificationService {
     importance: Importance.high,
   );
 
-  Future<void> showNotifications() async {
+  Future<void> showBatteryNotification() async {
     await flutterLocalNotificationsPlugin.show(
       0,
-      "Notification Title",
-      "This is the Notification Body!",
+      "Battery Level low!",
+      "Your Battery Level is too low!",
       NotificationDetails(android: _androidNotificationDetails),
     );
   }
 
-  Future<void> cancelNotifications() async {
+  Future<void> cancelBatteryNotification() async {
     await flutterLocalNotificationsPlugin.cancel(0);
+  }
+
+  Future<void> showMovementNotification() async {
+    await flutterLocalNotificationsPlugin.show(
+      3,
+      "You need to move!",
+      "If you're not moving within the next seconds, the alarm for no movement will trigger!",
+      NotificationDetails(android: _androidNotificationDetails),
+    );
+  }
+
+  Future<void> cancelMovementNotification() async {
+    await flutterLocalNotificationsPlugin.cancel(3);
   }
 }
