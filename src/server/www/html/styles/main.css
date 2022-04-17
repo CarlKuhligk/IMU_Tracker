@@ -171,15 +171,15 @@ body {
 
 .chartComponents{
   display: grid;
-  height: 250px;
+  height: min-content;
   grid-template-columns: [line1] 20% [line2]  50% [line3] auto  [end];
-  grid-template-rows: [row1] 200px [row2] auto [last-line];
+  grid-template-rows: [row1] 400px [row2] auto [last-line];
 }
 
 .chartPlaceholder{
   grid-column: line1 / span 3;
   grid-row: row1 / span 1;
-  padding-top: 100px;
+  padding-top: 10px;
   height: 100%;
   width: 100%;
 }
