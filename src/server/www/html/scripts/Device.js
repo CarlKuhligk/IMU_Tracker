@@ -31,12 +31,7 @@ export class Device {
     this.alarmState = 0;
     this.isSelected = false;
 
-    console.log("Device builded");
-
     this.addMeasurement(message);
-
-    console.log("measurements imprted");
-
     Device.list[this.id] = this;
   }
 
@@ -44,8 +39,12 @@ export class Device {
     Device.unselectAll();
     this.isSelected = true;
     this.updateEventList();
-    console.log(JSON.stringify(this.events));
+    this.updateChart();
+  }
+
+  updateChart() {
     var content = new ContentManager(this);
+    this.callback("update");
   }
 
   updateConnectionState(message) {
@@ -61,12 +60,21 @@ export class Device {
     this.accelerationMax = newSettings.a;
     this.rotationMin = newSettings.ri;
     this.rotationMax = newSettings.r;
+    if (this.isSelected) {
+      document.getElementById("idleTimeoutInput").value = this.idleTimeout;
+      document.getElementById("batteryWarningInput").value = this.batteryWarning;
+      document.getElementById("connectionTimeoutInput").value = this.connectionTimeout;
+      document.getElementById("measurementIntervalInput").value = this.measurementInterval;
+      document.getElementById("accelerationMinInput").value = this.accelerationMin;
+      document.getElementById("accelerationMaxInput").value = this.accelerationMax;
+      document.getElementById("rotationMinInput").value = this.rotationMin;
+      document.getElementById("rotationMaxInput").value = this.rotationMax;
+    }
   }
 
   updateEventList() {
     this.events = this.getEventList();
-    this.callback("updateEvent");
-    this.callback("update");
+    if (this.isSelected) this.updateChart();
   }
 
   addMeasurement(message) {
@@ -92,8 +100,7 @@ export class Device {
       this.measurements.rotation,
       this.convertToChartDataPoints(timestamps, rotations)
     );
-    this.callback("updateMeasurement");
-    this.callback("update");
+    this.updateEventList();
   }
 
   getEventList(deviceSpecific = true) {
@@ -126,11 +133,19 @@ export class Device {
       var timestamps = eventsOfEventId.map((item) => new Date(item.t));
       var isTriggereds = eventsOfEventId.map((item) => (item.a ? 1 : 0));
 
+      // add datapoint to the end
+      timestamps.push(this.measurements.temperature[this.measurements.temperature.length - 1].x);
+      isTriggereds.push(isTriggereds[isTriggereds.length - 1]);
+
       // convert and insert to result
       result[resultKeys[index]] = this.convertToChartDataPoints(timestamps, isTriggereds);
     }, this);
 
     return result;
+  }
+
+  sendNewSettings() {
+    this.callback("updateNewSettings", this);
   }
 
   convertToChartDataPoints(xData, yData) {
@@ -144,7 +159,6 @@ export class Device {
 
     Device.list.forEach((device) => {
       if (device.isSelected) {
-        // reload event list
         device.updateEventList();
       }
     });
@@ -153,6 +167,14 @@ export class Device {
   static unselectAll() {
     Device.list.forEach((device) => {
       device.isSelected = false;
+    });
+  }
+
+  static getSelectedDevice() {
+    Device.list.forEach((device) => {
+      if (device.isSelected) {
+        return device;
+      }
     });
   }
 
