@@ -3,8 +3,11 @@ import { ContentManager } from "./ContentManager.js";
 export class Device {
   static events;
   static content;
+  static list = [];
 
   constructor(message) {
+    this.listeners = {};
+
     this.id = message.i;
     this.employee = message.e;
     this.idleTimeout = message.it;
@@ -16,26 +19,33 @@ export class Device {
     this.rotationMin = message.ri;
     this.rotationMax = message.r;
 
-    this.isConnected = false;
     this.measurements = {
       temperature: [],
       battery: [],
       acceleration: [],
       rotation: [],
     };
+    this.events = {};
 
+    this.isConnected = false;
     this.alarmState = 0;
     this.isSelected = false;
 
+    console.log("Device builded");
+
     this.addMeasurement(message);
 
-    console.log("CONVERT MEASUREMENTS");
-    console.log(JSON.stringify(this.measurements));
+    console.log("measurements imprted");
+
+    Device.list[this.id] = this;
   }
 
-  activateContent() {
-    console.log("GET EVENTLIST");
-    console.log(JSON.stringify(this.getEventList()));
+  select() {
+    Device.unselectAll();
+    this.isSelected = true;
+    this.updateEventList();
+    console.log(JSON.stringify(this.events));
+    var content = new ContentManager(this);
   }
 
   updateConnectionState(message) {
@@ -53,12 +63,18 @@ export class Device {
     this.rotationMax = newSettings.r;
   }
 
+  updateEventList() {
+    this.events = this.getEventList();
+    this.callback("updateEvent");
+    this.callback("update");
+  }
+
   addMeasurement(message) {
-    var timestamps = message.d.map((item) => item.t);
-    var temperatures = message.d.map((item) => item.tp);
-    var batterys = message.d.map((item) => item.b);
-    var accelerations = message.d.map((item) => item.a);
-    var rotations = message.d.map((item) => item.r);
+    var timestamps = message.d.map((item) => new Date(item.t));
+    var temperatures = message.d.map((item) => parseFloat(item.tp));
+    var batterys = message.d.map((item) => parseFloat(item.b));
+    var accelerations = message.d.map((item) => parseFloat(item.a));
+    var rotations = message.d.map((item) => parseFloat(item.r));
 
     Array.prototype.push.apply(
       this.measurements.temperature,
@@ -76,12 +92,18 @@ export class Device {
       this.measurements.rotation,
       this.convertToChartDataPoints(timestamps, rotations)
     );
-    // update chart
+    this.callback("updateMeasurement");
+    this.callback("update");
   }
 
-  getEventList() {
-    // filter events that match to the device id
-    var eventsMatchingDeviceId = Device.events.filter((event) => event.i == this.id);
+  getEventList(deviceSpecific = true) {
+    var eventsMatchingDeviceId;
+    if (deviceSpecific) {
+      // filter events that match to the device id
+      eventsMatchingDeviceId = Device.events.filter((event) => event.i == this.id);
+    } else {
+      eventsMatchingDeviceId = Device.events;
+    }
 
     var eventIdFilter = [11, 10, 12, 21, 22, 30, 31];
 
@@ -101,8 +123,8 @@ export class Device {
       var eventsOfEventId = eventsMatchingDeviceId.filter((event) => event.e == eventId);
 
       // extracting event data
-      var timestamps = eventsOfEventId.map((item) => item.t);
-      var isTriggereds = eventsOfEventId.map((item) => item.a);
+      var timestamps = eventsOfEventId.map((item) => new Date(item.t));
+      var isTriggereds = eventsOfEventId.map((item) => (item.a ? 1 : 0));
 
       // convert and insert to result
       result[resultKeys[index]] = this.convertToChartDataPoints(timestamps, isTriggereds);
@@ -119,5 +141,33 @@ export class Device {
 
   static addEvent(message) {
     Array.prototype.push.apply(Device.events, message.d);
+
+    Device.list.forEach((device) => {
+      if (device.isSelected) {
+        // reload event list
+        device.updateEventList();
+      }
+    });
+  }
+
+  static unselectAll() {
+    Device.list.forEach((device) => {
+      device.isSelected = false;
+    });
+  }
+
+  addEventListener(method, callback) {
+    this.listeners[method] = callback;
+  }
+
+  removeEventListener(method) {
+    delete this.listeners[method];
+  }
+
+  callback(method, payload = null) {
+    const callback = this.listeners[method];
+    if (typeof callback === "function") {
+      callback(payload);
+    }
   }
 }
