@@ -13,6 +13,7 @@ import 'package:crypto/crypto.dart';
 import 'package:imu_tracker/service_locator.dart';
 import 'package:imu_tracker/services/device_settings_handler.dart';
 import 'package:imu_tracker/services/internal_sensor_service.dart';
+import 'package:imu_tracker/services/notification_service.dart';
 
 class WebSocketHandler {
 //Websocket Variables
@@ -28,6 +29,8 @@ class WebSocketHandler {
 
   var internalSensors = getIt<InternalSensorService>();
 
+  var _notificationService = getIt<NotificationService>();
+
   connectWebSocket(socketData) async {
     _socketData = socketData;
 
@@ -35,6 +38,7 @@ class WebSocketHandler {
       _channel = await WebSocket.connect(
           'ws://${socketData['host']}:${socketData['port']}');
       isWebsocketRunning = true;
+      _notificationService.cancelLostConnectionNotification();
       registerAsSender(socketData);
       _channel.listen(
         (message) {
@@ -258,6 +262,7 @@ class WebSocketHandler {
       successfullyRegistered.value = false;
       isWebsocketRunning = false;
       _channel.close;
+      _notificationService.showLostConnectionNotification();
       if (!successfullyLoggedOut.value) connectWebSocket(_socketData);
     });
   }

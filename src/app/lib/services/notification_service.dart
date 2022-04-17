@@ -59,4 +59,17 @@ class NotificationService {
   Future<void> cancelMovementNotification() async {
     await flutterLocalNotificationsPlugin.cancel(3);
   }
+
+  Future<void> showLostConnectionNotification() async {
+    await flutterLocalNotificationsPlugin.show(
+      5,
+      "Lost Server Connection",
+      "Lost Connection to Server!",
+      NotificationDetails(android: _androidNotificationDetails),
+    );
+  }
+
+  Future<void> cancelLostConnectionNotification() async {
+    await flutterLocalNotificationsPlugin.cancel(3);
+  }
 }
