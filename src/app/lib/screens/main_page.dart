@@ -5,14 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 
-//additional packages
-
 //project internal services / dependency injection
 import 'package:imu_tracker/service_locator.dart';
 import 'package:imu_tracker/services/websocket_handler.dart';
 import 'package:imu_tracker/services/localstorage_service.dart';
 import 'package:imu_tracker/services/internal_sensor_service.dart';
 import 'package:imu_tracker/services/device_settings_handler.dart';
+import 'package:imu_tracker/services/notification_service.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({
@@ -26,6 +25,7 @@ class _MyMainPageState extends State<MainPage> {
   var websocket = getIt<WebSocketHandler>();
   var internalSensors = getIt<InternalSensorService>();
   var deviceSettings = getIt<DeviceSettingsHandler>();
+  var _notificationService = getIt<NotificationService>();
 
   Timer? timer;
   TextEditingController _textFieldController = TextEditingController();
@@ -53,8 +53,7 @@ class _MyMainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title:
-              const Text("IMU_Tracker DEMO"), //TODO Change title before release
+          title: const Text("IMU_Tracker"),
         ),
         body: Center(
           child: Column(
@@ -80,6 +79,22 @@ class _MyMainPageState extends State<MainPage> {
                   },
                   child: const Text('Close App'),
                 ),
+              FlatButton(
+                color: Colors.green,
+                textColor: Colors.white,
+                child: const Text('Show notification'),
+                onPressed: () async {
+                  await _notificationService.showNotifications();
+                },
+              ),
+              FlatButton(
+                color: Colors.green,
+                textColor: Colors.white,
+                child: const Text('Cancel notification'),
+                onPressed: () async {
+                  await _notificationService.cancelNotifications();
+                },
+              )
             ],
           ),
         ));
