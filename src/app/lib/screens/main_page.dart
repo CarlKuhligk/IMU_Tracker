@@ -59,11 +59,9 @@ class _MyMainPageState extends State<MainPage> {
       setState(() {});
     });
     internalSensors.movementAlarmstate.addListener(() {
-      print("Hello");
       print(movementWarningDialogOpen);
       if (internalSensors.movementAlarmstate.value &&
           !movementWarningDialogOpen) {
-        print("MovementAlart");
         _showMovementDialog();
       }
       setState(() {});
