@@ -24,6 +24,9 @@ class _MyMainPageState extends State<MainPage> {
   var websocket = getIt<WebSocketHandler>();
   var internalSensors = getIt<InternalSensorService>();
   var deviceSettings = getIt<DeviceSettingsHandler>();
+  var connectionWarningDialogOpen = false;
+  var movementWarningDialogOpen = false;
+  var batteryWarningDialogOpen = false;
 
   Timer? timer;
   TextEditingController _textFieldController = TextEditingController();
@@ -42,19 +45,27 @@ class _MyMainPageState extends State<MainPage> {
     });
 
     websocket.successfullyRegistered.addListener(() {
-      if (!websocket.successfullyRegistered.value)
-        _showDialog('Lost Server Connection!', 'Lost Connection to Server.');
+      if (!websocket.successfullyRegistered.value &&
+          !connectionWarningDialogOpen) {
+        _showConnectionDialog();
+      }
       setState(() {});
     });
     internalSensors.batteryAlarmstate.addListener(() {
-      if (internalSensors.movementAlarmstate.value)
-        _showDialog('Low Battery', 'Batterylevel too low');
+      if (internalSensors.movementAlarmstate.value &&
+          !batteryWarningDialogOpen) {
+        _showBatteryDialog();
+      }
       setState(() {});
     });
     internalSensors.movementAlarmstate.addListener(() {
-      if (internalSensors.movementAlarmstate.value)
-        _showDialog('No Movement Alert',
-            'You need to move, otherwise no movement Alert will be triggered');
+      print("Hello");
+      print(movementWarningDialogOpen);
+      if (internalSensors.movementAlarmstate.value &&
+          !movementWarningDialogOpen) {
+        print("MovementAlart");
+        _showMovementDialog();
+      }
       setState(() {});
     });
     super.initState();
@@ -200,17 +211,18 @@ class _MyMainPageState extends State<MainPage> {
         });
   }
 
-  Future<void> _showDialog(AlertTitel, AlertText) async {
+  Future<void> _showBatteryDialog() async {
+    batteryWarningDialogOpen = true;
     return showDialog<void>(
       context: context,
-      barrierDismissible: false, // user must tap button!
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("$AlertTitel"),
+          title: Text("Batterylevel too low!"),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text("$AlertText"),
+                Text("Batterylevel too low!"),
               ],
             ),
           ),
@@ -218,6 +230,7 @@ class _MyMainPageState extends State<MainPage> {
             TextButton(
               child: const Text('Acknowledge'),
               onPressed: () {
+                batteryWarningDialogOpen = false;
                 Navigator.of(context).pop();
               },
             ),
@@ -226,4 +239,68 @@ class _MyMainPageState extends State<MainPage> {
       },
     );
   }
+
+  Future<void> _showMovementDialog() async {
+    movementWarningDialogOpen = true;
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Alarm for no movement"),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                    "You need to move, otherwise the alarm for no movement will be triggered"),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Acknowledge'),
+              onPressed: () {
+                movementWarningDialogOpen = false;
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showConnectionDialog() async {
+    connectionWarningDialogOpen = true;
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Lost Connection to Server!"),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text("Lost Connection to Server, no Data is sent"),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Acknowledge'),
+              onPressed: () {
+                connectionWarningDialogOpen = false;
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class PrimitiveWrapper {
+  var value;
+  PrimitiveWrapper(this.value);
 }
