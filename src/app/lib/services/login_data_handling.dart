@@ -3,8 +3,8 @@
 
 import 'dart:convert';
 
-//QRCode String:
-//{"host":"192.168.0.20:8080","apikey":"23b651a79c9a5136d4751e6df9659ea15ed9df4768c211ede558d1ebd3b0c5bd"}
+//QRCode example String:
+//{"host":"192.168.178.70","apikey":"4d7048cbb191d6728ae014accb552d6a1aecc6a1fbd88b5a69e912ca47f6732f", "port":"8080"}
 
 checkQrCode(qrCodeType, qrCodeData) {
   var decodedJSON;

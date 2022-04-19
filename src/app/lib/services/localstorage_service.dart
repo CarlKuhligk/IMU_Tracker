@@ -34,7 +34,6 @@ class LocalStorageService {
     if (_authenticationValues != null) {
       return jsonDecode(_authenticationValues);
     } else {
-      //TODO Implement error handling
       return "";
     }
   }
@@ -44,7 +43,6 @@ class LocalStorageService {
     if (_deviceSettingsValues != null) {
       return jsonDecode(_deviceSettingsValues);
     } else {
-      //TODO Implement error handling
       return "";
     }
   }

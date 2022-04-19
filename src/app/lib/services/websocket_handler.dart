@@ -47,16 +47,13 @@ class WebSocketHandler {
         },
         onDone: () {
           isWebsocketRunning = false;
-          //TODO: Errorhandling via errorhandlingpackage
         },
         onError: (err) {
           isWebsocketRunning = false;
-          //TODO: Errorhandling via errorhandlingpackage
         },
       );
     } catch (e) {
       isWebsocketRunning = false;
-      //TODO: Errorhandling via errorhandlingpackage
     }
 
     return await Future.delayed(const Duration(seconds: 1), () {});
@@ -201,7 +198,7 @@ class WebSocketHandler {
           startTransmissionInterval();
           break;
         default:
-          break; //TODO: Handle unknown response via errorhandler package
+          break;
       }
     } else {
       //channel.close();
@@ -255,7 +252,6 @@ class WebSocketHandler {
   }
 
   _checkServerAvailable() {
-    //TODO: Implement the argument socketData into ping
     Socket.connect(_socketData['host'], int.parse(_socketData['port']),
             timeout: const Duration(seconds: 5))
         .then((socket) {

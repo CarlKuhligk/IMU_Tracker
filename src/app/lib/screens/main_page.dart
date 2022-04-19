@@ -32,7 +32,6 @@ class _MyMainPageState extends State<MainPage> {
   TextEditingController _textFieldController = TextEditingController();
   late String codeDialog;
   late String valueText;
-  String _connectionStateText = 'Not Connected';
   @override
   void initState() {
     var authenticationData = LocalStorageService.getAuthenticationFromMemory();
