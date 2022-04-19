@@ -13,12 +13,14 @@ import 'package:crypto/crypto.dart';
 import 'package:imu_tracker/service_locator.dart';
 import 'package:imu_tracker/services/device_settings_handler.dart';
 import 'package:imu_tracker/services/internal_sensor_service.dart';
+import 'package:imu_tracker/services/notification_service.dart';
 
 class WebSocketHandler {
 //Websocket Variables
   bool isWebsocketRunning = false; //status of a websocket
   ValueNotifier<bool> successfullyRegistered = ValueNotifier<bool>(false);
   ValueNotifier<bool> successfullyLoggedOut = ValueNotifier<bool>(false);
+  ValueNotifier<bool> logOutFailed = ValueNotifier<bool>(false);
   late WebSocket _channel; //initialize a websocket channel
   Timer? _pingIntervalTimer;
   Timer? _transmitIntervalTimer;
@@ -28,6 +30,8 @@ class WebSocketHandler {
 
   var internalSensors = getIt<InternalSensorService>();
 
+  var _notificationService = getIt<NotificationService>();
+
   connectWebSocket(socketData) async {
     _socketData = socketData;
 
@@ -35,6 +39,7 @@ class WebSocketHandler {
       _channel = await WebSocket.connect(
           'ws://${socketData['host']}:${socketData['port']}');
       isWebsocketRunning = true;
+      _notificationService.cancelLostConnectionNotification();
       registerAsSender(socketData);
       _channel.listen(
         (message) {
@@ -207,8 +212,10 @@ class WebSocketHandler {
     switch (message.webSocketResponseNumber) {
       case 8:
         successfullyLoggedOut.value = false;
+        logOutFailed.value = true;
         break;
       case 9:
+        logOutFailed.value = false;
         _closeWebsocketConnection();
         break;
       case 10:
@@ -249,7 +256,7 @@ class WebSocketHandler {
 
   _checkServerAvailable() {
     //TODO: Implement the argument socketData into ping
-    Socket.connect(_socketData['host'], _socketData['port'],
+    Socket.connect(_socketData['host'], int.parse(_socketData['port']),
             timeout: const Duration(seconds: 5))
         .then((socket) {
       isWebsocketRunning = true;
@@ -258,6 +265,7 @@ class WebSocketHandler {
       successfullyRegistered.value = false;
       isWebsocketRunning = false;
       _channel.close;
+      _notificationService.showLostConnectionNotification();
       if (!successfullyLoggedOut.value) connectWebSocket(_socketData);
     });
   }

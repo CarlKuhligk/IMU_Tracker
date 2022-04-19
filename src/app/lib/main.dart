@@ -76,7 +76,6 @@ class LoadPageState extends State {
         body: deviceIsRegistered
             ? const RegistrationScreen()
             : const RegistrationScreen());
-    //TODO put line back in place, so the app works normally
     //deviceIsRegistered ? const MainPage() : const RegistrationScreen());
   }
 }
