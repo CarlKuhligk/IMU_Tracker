@@ -4,6 +4,7 @@
         "apikey",
         "Batterylevel",
         "qrcode",
+        "responsenumber",
         "scannen",
         "websocketconnection",
         "wifi"

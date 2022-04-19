@@ -36,8 +36,7 @@ class _RegistrationScreen extends State<RegistrationScreen> {
   QRViewController? controller;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
-  // In order to get hot reload to work we need to pause the camera if the platform
-  // is android, or resume the camera if the platform is iOS.
+  // In order to get hot reload to work we need to pause the camera if the platform is android
   @override
   void reassemble() {
     super.reassemble();
@@ -58,7 +57,6 @@ class _RegistrationScreen extends State<RegistrationScreen> {
             child: FittedBox(
               fit: BoxFit.contain,
               child: Column(
-                //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: const <Widget>[
                   Text('Bitte den QR-Code scannen'),
                 ],
@@ -71,13 +69,11 @@ class _RegistrationScreen extends State<RegistrationScreen> {
   }
 
   Widget _buildQrView(BuildContext context) {
-    // For this example we check how width or tall the device is and change the scanArea and overlay accordingly.
+    // check how width or tall the device is and change the scanArea and overlay accordingly.
     var scanArea = (MediaQuery.of(context).size.width < 200 ||
             MediaQuery.of(context).size.height < 200)
         ? 150.0
         : 300.0;
-    // To ensure the Scanner view is properly sizes after rotation
-    // we need to listen for Flutter SizeChanged notification and update controller
     return QRView(
       key: qrKey,
       onQRViewCreated: _onQRViewCreated,
@@ -96,17 +92,17 @@ class _RegistrationScreen extends State<RegistrationScreen> {
       this.controller = controller;
     });
 
-    var websocket = getIt<WebSocketHandler>();
+    var _websocket = getIt<WebSocketHandler>();
     controller.scannedDataStream.listen((scanData) async {
       controller.pauseCamera();
       if (checkQrCode(describeEnum(scanData.format), scanData.code)) {
-        var qrCodeHasRightFormat = true;
-        var socketData;
-        socketData = scanData.code;
-        var webSocketTestResult =
-            await websocket.testWebSocketConnection(json.decode(socketData));
-        if (webSocketTestResult.isWebSocketConnected &
-            webSocketTestResult.isApiKeyValid) {
+        var _qrCodeHasRightFormat = true;
+        var _socketData;
+        _socketData = scanData.code;
+        var _webSocketTestResult =
+            await _websocket.testWebSocketConnection(json.decode(_socketData));
+        if (_webSocketTestResult.isWebSocketConnected &
+            _webSocketTestResult.isApiKeyValid) {
           LocalStorageService.writeAuthenticationToMemory(scanData.code);
           LocalStorageService.setDeviceIsRegistered(true);
         }
@@ -115,21 +111,21 @@ class _RegistrationScreen extends State<RegistrationScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => QrCodeFoundPage(
-                qrCheckResult: qrCodeHasRightFormat,
-                webSocketTestResult: webSocketTestResult),
+                qrCheckResult: _qrCodeHasRightFormat,
+                webSocketTestResult: _webSocketTestResult),
           ),
           (Route<dynamic> route) => false,
         );
       } else {
-        var qrCodeHasRightFormat = false;
-        var webSocketTestResult =
+        var _qrCodeHasRightFormat = false;
+        var _webSocketTestResult =
             WebSocketTestResultReturnType(false, false, 0);
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
             builder: (context) => QrCodeFoundPage(
-                qrCheckResult: qrCodeHasRightFormat,
-                webSocketTestResult: webSocketTestResult),
+                qrCheckResult: _qrCodeHasRightFormat,
+                webSocketTestResult: _webSocketTestResult),
           ),
           (Route<dynamic> route) => false,
         );

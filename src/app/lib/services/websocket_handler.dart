@@ -26,9 +26,9 @@ class WebSocketHandler {
   Timer? _transmitIntervalTimer;
   var _socketData;
 
-  var deviceSettings = getIt<DeviceSettingsHandler>();
+  var _deviceSettings = getIt<DeviceSettingsHandler>();
 
-  var internalSensors = getIt<InternalSensorService>();
+  var _internalSensors = getIt<InternalSensorService>();
 
   var _notificationService = getIt<NotificationService>();
 
@@ -67,7 +67,7 @@ class WebSocketHandler {
 
     var _webSocketResponseNumber = 0;
 
-    var _apiKeyTestMessage = buildApiKeyTestMessage(socketData);
+    var _apiKeyTestMessage = _buildApiKeyTestMessage(socketData);
 
     var _webSocket;
 
@@ -112,53 +112,62 @@ class WebSocketHandler {
   void buildValueMessage() {
     var buildMessage = {
       "t": "m",
-      "a": internalSensors.magnitudeAccelerometer,
-      "r": internalSensors.magnitudeGyroscope,
-      "tp": internalSensors.deviceTemperature,
-      "b": internalSensors.batteryLevel
+      "a": _internalSensors.magnitudeAccelerometer,
+      "r": _internalSensors.magnitudeGyroscope,
+      "tp": _internalSensors.deviceTemperature,
+      "b": _internalSensors.batteryLevel
     };
-    if (internalSensors.magnitudeAccelerometer != null &&
-        internalSensors.magnitudeGyroscope != null &&
-        internalSensors.deviceTemperature != null &&
-        internalSensors.batteryLevel != null) {
-      sendMessage(buildMessage);
+    if (_internalSensors.magnitudeAccelerometer != null &&
+        _internalSensors.magnitudeGyroscope != null &&
+        _internalSensors.deviceTemperature != null &&
+        _internalSensors.batteryLevel != null) {
+      _sendMessage(buildMessage);
     }
   }
 
-  buildRegistrationMessage(socketData) {
+  _buildRegistrationMessage(socketData) {
+    //builds registration message for the websocket connection
     var _registrationMessage = {"t": "i", "a": "", "c": 0};
     _registrationMessage['a'] = socketData['apikey'];
 
     return _registrationMessage;
   }
 
-  buildApiKeyTestMessage(socketData) {
+  _buildApiKeyTestMessage(socketData) {
+    //builds the test Message for api key testing
     var _apiKeyTestMessage = {"t": "i", "a": "", "c": 1};
     _apiKeyTestMessage['a'] = socketData['apikey'];
 
     return _apiKeyTestMessage;
   }
 
-  buildLogOutMessage(personalPin) {
+  _buildLogOutMessage(personalPin) {
     var _logOutMessage = {"t": "o"};
     var bytes = utf8.encode(personalPin);
     var hashedPin = sha256.convert(bytes);
     _logOutMessage['p'] = hashedPin.toString();
-    sendMessage(_logOutMessage);
+    return _logOutMessage;
   }
 
-  void sendMessage(messageString) {
+  logoutDevice(personalPin) {
+    var _logOutMessage = _buildLogOutMessage(personalPin);
+    _sendMessage(_logOutMessage);
+  }
+
+  void _sendMessage(messageString) {
     if (messageString.isNotEmpty) {
       _channel.add(jsonEncode(messageString));
     }
   }
 
   void registerAsSender(socketData) {
-    var _registrationMessage = buildRegistrationMessage(socketData);
+    //sends the registration message via websocket connection
+    var _registrationMessage = _buildRegistrationMessage(socketData);
     _channel.add(jsonEncode(_registrationMessage));
   }
 
   MessageDecoderReturnType messageDecoder(message) {
+    //checks incoming websocket messages for right format and returns the decoded json string
     var decodedJSON;
     bool decodeSucceeded = false;
     try {
@@ -183,6 +192,7 @@ class WebSocketHandler {
   }
 
   _messageHandler(message) {
+    //handles all incoming websocket messages with right message format
     var decodedMessage = messageDecoder(message);
 
     if (decodedMessage.hasMessageRightFormat) {
@@ -191,7 +201,7 @@ class WebSocketHandler {
           _handleResponseMessages(decodedMessage);
           break;
         case 's':
-          deviceSettings.writeNewDeviceSettingsToInternalStorage(
+          _deviceSettings.writeNewDeviceSettingsToInternalStorage(
               decodedMessage.webSocketResponseNumber);
           _transmitIntervalTimer?.cancel();
 
@@ -206,6 +216,7 @@ class WebSocketHandler {
   }
 
   _handleResponseMessages(message) {
+    //handles websocket messages of type response
     switch (message.webSocketResponseNumber) {
       case 8:
         successfullyLoggedOut.value = false;
@@ -234,6 +245,7 @@ class WebSocketHandler {
   }
 
   _isWebSocketMessageValidApiKeyMessage(message) {
+    //Checks, if the received responsenumber equals the responsenumber for a valid api key
     if (message.hasMessageRightFormat &&
         message.webSocketResponseNumber ==
             responseList['validApiKey']!.responseNumber) {
@@ -252,6 +264,7 @@ class WebSocketHandler {
   }
 
   _checkServerAvailable() {
+    //Ping to check, if the websocket server is still available
     Socket.connect(_socketData['host'], int.parse(_socketData['port']),
             timeout: const Duration(seconds: 5))
         .then((socket) {
@@ -277,13 +290,13 @@ class WebSocketHandler {
 
   startTransmissionInterval() {
     // Intervall for websocketconnection
-    internalSensors.startInternalSensors();
+    _internalSensors.startInternalSensors();
     if (_transmitIntervalTimer == null || !_transmitIntervalTimer!.isActive) {
       _transmitIntervalTimer = Timer.periodic(
-          Duration(milliseconds: (deviceSettings.deviceSettings["m"])), (_) {
+          Duration(milliseconds: (_deviceSettings.deviceSettings["m"])), (_) {
         if (successfullyRegistered.value) {
           buildValueMessage();
-          internalSensors.getCurrentValues();
+          _internalSensors.getCurrentValues();
         }
       });
     }

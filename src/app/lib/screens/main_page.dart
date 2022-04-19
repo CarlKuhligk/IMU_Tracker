@@ -10,7 +10,6 @@ import 'package:imu_tracker/service_locator.dart';
 import 'package:imu_tracker/services/websocket_handler.dart';
 import 'package:imu_tracker/services/localstorage_service.dart';
 import 'package:imu_tracker/services/internal_sensor_service.dart';
-import 'package:imu_tracker/services/device_settings_handler.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({
@@ -21,52 +20,50 @@ class MainPage extends StatefulWidget {
 }
 
 class _MyMainPageState extends State<MainPage> {
-  var websocket = getIt<WebSocketHandler>();
-  var internalSensors = getIt<InternalSensorService>();
-  var deviceSettings = getIt<DeviceSettingsHandler>();
-  var connectionWarningDialogOpen = false;
-  var movementWarningDialogOpen = false;
-  var batteryWarningDialogOpen = false;
+  var _websocket = getIt<WebSocketHandler>();
+  var _internalSensors = getIt<InternalSensorService>();
+  var _connectionWarningDialogOpen = false;
+  var _movementWarningDialogOpen = false;
+  var _batteryWarningDialogOpen = false;
 
   Timer? timer;
   TextEditingController _textFieldController = TextEditingController();
-  late String codeDialog;
-  late String valueText;
+  late String _valueText;
   @override
   void initState() {
     var authenticationData = LocalStorageService.getAuthenticationFromMemory();
 
     Future.delayed(Duration.zero, () async {
-      await websocket.connectWebSocket(authenticationData);
-      if (websocket.successfullyRegistered.value) {
-        websocket.startTransmissionInterval();
+      await _websocket.connectWebSocket(authenticationData);
+      if (_websocket.successfullyRegistered.value) {
+        _websocket.startTransmissionInterval();
       }
     });
 
-    websocket.successfullyRegistered.addListener(() {
-      if (!websocket.successfullyRegistered.value &&
-          !connectionWarningDialogOpen) {
+    _websocket.successfullyRegistered.addListener(() {
+      if (!_websocket.successfullyRegistered.value &&
+          !_connectionWarningDialogOpen) {
         _showConnectionDialog();
       }
       setState(() {});
     });
 
-    websocket.logOutFailed.addListener(() {
-      if (websocket.logOutFailed.value) {
+    _websocket.logOutFailed.addListener(() {
+      if (_websocket.logOutFailed.value) {
         _showLogOutDialog(context);
       }
     });
-    internalSensors.batteryAlarmstate.addListener(() {
-      if (internalSensors.movementAlarmstate.value &&
-          !batteryWarningDialogOpen) {
+    _internalSensors.batteryAlarmstate.addListener(() {
+      if (_internalSensors.movementAlarmstate.value &&
+          !_batteryWarningDialogOpen) {
         _showBatteryDialog();
       }
       setState(() {});
     });
-    internalSensors.movementAlarmstate.addListener(() {
-      print(movementWarningDialogOpen);
-      if (internalSensors.movementAlarmstate.value &&
-          !movementWarningDialogOpen) {
+    _internalSensors.movementAlarmstate.addListener(() {
+      print(_movementWarningDialogOpen);
+      if (_internalSensors.movementAlarmstate.value &&
+          !_movementWarningDialogOpen) {
         _showMovementDialog();
       }
       setState(() {});
@@ -86,8 +83,9 @@ class _MyMainPageState extends State<MainPage> {
             //mainAxisAlignment: MainAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              if (!websocket.successfullyLoggedOut.value)
-                _getConnectionStateIcon(websocket.successfullyRegistered.value),
+              if (!_websocket.successfullyLoggedOut.value)
+                _getConnectionStateIcon(
+                    _websocket.successfullyRegistered.value),
               Table(
                 border: TableBorder.symmetric(),
                 columnWidths: const {
@@ -95,7 +93,7 @@ class _MyMainPageState extends State<MainPage> {
                   1: FractionColumnWidth(0.8)
                 },
                 children: [
-                  if (internalSensors.movementAlarmstate.value)
+                  if (_internalSensors.movementAlarmstate.value)
                     TableRow(
                       children: [
                         Padding(
@@ -113,7 +111,7 @@ class _MyMainPageState extends State<MainPage> {
                         )
                       ],
                     ),
-                  if (internalSensors.batteryAlarmstate.value)
+                  if (_internalSensors.batteryAlarmstate.value)
                     TableRow(
                       children: [
                         Padding(
@@ -133,7 +131,7 @@ class _MyMainPageState extends State<MainPage> {
                     ),
                 ],
               ),
-              if (websocket.successfullyRegistered.value)
+              if (_websocket.successfullyRegistered.value)
                 FlatButton(
                   color: Colors.teal,
                   textColor: Colors.white,
@@ -142,7 +140,7 @@ class _MyMainPageState extends State<MainPage> {
                   },
                   child: const Text('Logout'),
                 ),
-              if (websocket.successfullyLoggedOut.value)
+              if (_websocket.successfullyLoggedOut.value)
                 FlatButton(
                   color: Colors.teal,
                   textColor: Colors.white,
@@ -181,12 +179,12 @@ class _MyMainPageState extends State<MainPage> {
             content: SingleChildScrollView(
               child: ListBody(
                 children: <Widget>[
-                  if (websocket.logOutFailed.value)
+                  if (_websocket.logOutFailed.value)
                     Text('Logout failed, wrong Personal Pin!'),
                   TextField(
                     onChanged: (value) {
                       setState(() {
-                        valueText = value;
+                        _valueText = value;
                       });
                     },
                     controller: _textFieldController,
@@ -211,9 +209,8 @@ class _MyMainPageState extends State<MainPage> {
                 textColor: Colors.white,
                 child: const Text('Logout'),
                 onPressed: () {
-                  websocket.buildLogOutMessage(valueText);
+                  _websocket.logoutDevice(_valueText);
                   setState(() {
-                    codeDialog = valueText;
                     Navigator.pop(context);
                   });
                 },
@@ -224,7 +221,7 @@ class _MyMainPageState extends State<MainPage> {
   }
 
   Future<void> _showBatteryDialog() async {
-    batteryWarningDialogOpen = true;
+    _batteryWarningDialogOpen = true;
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -242,7 +239,7 @@ class _MyMainPageState extends State<MainPage> {
             TextButton(
               child: const Text('Acknowledge'),
               onPressed: () {
-                batteryWarningDialogOpen = false;
+                _batteryWarningDialogOpen = false;
                 Navigator.of(context).pop();
               },
             ),
@@ -253,7 +250,7 @@ class _MyMainPageState extends State<MainPage> {
   }
 
   Future<void> _showMovementDialog() async {
-    movementWarningDialogOpen = true;
+    _movementWarningDialogOpen = true;
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -272,7 +269,7 @@ class _MyMainPageState extends State<MainPage> {
             TextButton(
               child: const Text('Acknowledge'),
               onPressed: () {
-                movementWarningDialogOpen = false;
+                _movementWarningDialogOpen = false;
                 Navigator.of(context).pop();
               },
             ),
@@ -283,7 +280,7 @@ class _MyMainPageState extends State<MainPage> {
   }
 
   Future<void> _showConnectionDialog() async {
-    connectionWarningDialogOpen = true;
+    _connectionWarningDialogOpen = true;
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -301,7 +298,7 @@ class _MyMainPageState extends State<MainPage> {
             TextButton(
               child: const Text('Acknowledge'),
               onPressed: () {
-                connectionWarningDialogOpen = false;
+                _connectionWarningDialogOpen = false;
                 Navigator.of(context).pop();
               },
             ),
@@ -310,9 +307,4 @@ class _MyMainPageState extends State<MainPage> {
       },
     );
   }
-}
-
-class PrimitiveWrapper {
-  var value;
-  PrimitiveWrapper(this.value);
 }
