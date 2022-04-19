@@ -20,6 +20,7 @@ class WebSocketHandler {
   bool isWebsocketRunning = false; //status of a websocket
   ValueNotifier<bool> successfullyRegistered = ValueNotifier<bool>(false);
   ValueNotifier<bool> successfullyLoggedOut = ValueNotifier<bool>(false);
+  ValueNotifier<bool> logOutFailed = ValueNotifier<bool>(false);
   late WebSocket _channel; //initialize a websocket channel
   Timer? _pingIntervalTimer;
   Timer? _transmitIntervalTimer;
@@ -211,8 +212,10 @@ class WebSocketHandler {
     switch (message.webSocketResponseNumber) {
       case 8:
         successfullyLoggedOut.value = false;
+        logOutFailed.value = true;
         break;
       case 9:
+        logOutFailed.value = false;
         _closeWebsocketConnection();
         break;
       case 10:

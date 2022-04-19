@@ -51,6 +51,12 @@ class _MyMainPageState extends State<MainPage> {
       }
       setState(() {});
     });
+
+    websocket.logOutFailed.addListener(() {
+      if (websocket.logOutFailed.value) {
+        _showLogOutDialog(context);
+      }
+    });
     internalSensors.batteryAlarmstate.addListener(() {
       if (internalSensors.movementAlarmstate.value &&
           !batteryWarningDialogOpen) {
@@ -66,6 +72,7 @@ class _MyMainPageState extends State<MainPage> {
       }
       setState(() {});
     });
+
     super.initState();
   }
 
@@ -132,7 +139,7 @@ class _MyMainPageState extends State<MainPage> {
                   color: Colors.teal,
                   textColor: Colors.white,
                   onPressed: () {
-                    _displayTextInputDialog(context);
+                    _showLogOutDialog(context);
                   },
                   child: const Text('Logout'),
                 ),
@@ -166,20 +173,28 @@ class _MyMainPageState extends State<MainPage> {
     }
   }
 
-  Future<void> _displayTextInputDialog(BuildContext context) async {
+  Future<void> _showLogOutDialog(BuildContext context) async {
     return showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
             title: const Text('LogOut'),
-            content: TextField(
-              onChanged: (value) {
-                setState(() {
-                  valueText = value;
-                });
-              },
-              controller: _textFieldController,
-              decoration: const InputDecoration(hintText: "LogOut Pin"),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  if (websocket.logOutFailed.value)
+                    Text('Logout failed, wrong Personal Pin!'),
+                  TextField(
+                    onChanged: (value) {
+                      setState(() {
+                        valueText = value;
+                      });
+                    },
+                    controller: _textFieldController,
+                    decoration: const InputDecoration(hintText: "LogOut Pin"),
+                  ),
+                ],
+              ),
             ),
             actions: <Widget>[
               FlatButton(
