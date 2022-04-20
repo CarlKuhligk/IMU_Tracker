@@ -6,7 +6,7 @@ var outputField = document.getElementById("outputField");
 var mainButton = document.getElementById("sendButton");
 
 // get server ip
-var serverIP = $.get("../debug/getServerIP.php").done(function (data) {
+var serverIP = $.get("../lib/getServerIP.php").done(function (data) {
   // create a new WebSocket.
   websocket = new WebSocket("ws://" + data + ":8080");
   // socket message callback

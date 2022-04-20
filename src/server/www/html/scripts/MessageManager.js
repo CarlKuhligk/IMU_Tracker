@@ -5,7 +5,7 @@ export class MessageManager {
   }
 
   connect() {
-    $.get("../debug/getServerIP.php").done((serverIp) => {
+    $.get("../lib/getServerIP.php").done((serverIp) => {
       // create a new WebSocket.
       this.openWebsocket(serverIp);
     });
@@ -13,7 +13,6 @@ export class MessageManager {
 
   openWebsocket(serverIp) {
     this.websocket = new WebSocket("ws://" + serverIp + ":8080");
-    //this.websocket = new WebSocket("ws://" + serverIp + ":8080");
 
     this.websocket.addEventListener("open", (event) => {
       this.onOpen(event);
