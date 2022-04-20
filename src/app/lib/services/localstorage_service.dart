@@ -53,8 +53,12 @@ class LocalStorageService {
     _preferences.setBool(deviceIsSetUpKey, isRegistered);
   }
 
-  static bool getDeviceIsRegistered() {
-    bool _isRegistered = ((_preferences.getBool(deviceIsSetUpKey) ?? true));
-    return _isRegistered;
+  static getDeviceIsRegistered() {
+    var _isRegistered = _preferences.getBool(deviceIsSetUpKey);
+    if (_isRegistered != null) {
+      return _isRegistered;
+    } else {
+      return false;
+    }
   }
 }
