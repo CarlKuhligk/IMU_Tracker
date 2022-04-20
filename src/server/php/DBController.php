@@ -182,14 +182,13 @@ class DBController
     public function validatePin($pin, $requestingDevice)
     {
         $result = $this->dbQuery("SELECT isLoggedIn FROM devices WHERE id = '{$requestingDevice->id}' AND pin = '{$pin}';");
-        if (isset($result)) {
-            $row = $result->fetch();
-            if (isset($row)) {
-                if ($row == 1)
-                    return true;
-            }
+        $row = $result->fetch();
+        if (is_bool($row))
+            return false;
+        if (isset($row)) {
+            if ($row[0] == 1)
+                return true;
         }
-        return false;
     }
 
     public function validateDeviceId($id)
