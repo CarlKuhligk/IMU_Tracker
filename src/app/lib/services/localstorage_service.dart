@@ -10,8 +10,8 @@ class LocalStorageService {
   static late SharedPreferences _preferences;
   static late var deviceSettings;
   static const String deviceIsSetUpKey = 'deviceIsSetUp';
-  static const String authenticationValuesKey = 'AuthenticationValues';
-  static const String deviceSettingsValuesKey = 'deviceSettingsValues';
+  static const String _authenticationValuesKey = 'AuthenticationValues';
+  static const String _deviceSettingsValuesKey = 'deviceSettingsValues';
 
   static Future<LocalStorageService> getInstance() async {
     _instance = LocalStorageService();
@@ -22,29 +22,29 @@ class LocalStorageService {
   }
 
   static void writeAuthenticationToMemory(authenticationValues) {
-    _preferences.setString(authenticationValuesKey, authenticationValues);
+    _preferences.setString(_authenticationValuesKey, authenticationValues);
   }
 
   static void writeDeviceSettingsToMemory(deviceSettings) {
-    _preferences.setString(deviceSettingsValuesKey, deviceSettings);
+    _preferences.setString(_deviceSettingsValuesKey, deviceSettings);
   }
 
   static getAuthenticationFromMemory() {
-    var _authenticationValues = _preferences.getString(authenticationValuesKey);
+    var _authenticationValues =
+        _preferences.getString(_authenticationValuesKey);
     if (_authenticationValues != null) {
       return jsonDecode(_authenticationValues);
     } else {
-      //TODO Implement error handling
       return "";
     }
   }
 
   static getDeviceSettingsFromMemory() {
-    var _deviceSettingsValues = _preferences.getString(deviceSettingsValuesKey);
+    var _deviceSettingsValues =
+        _preferences.getString(_deviceSettingsValuesKey);
     if (_deviceSettingsValues != null) {
       return jsonDecode(_deviceSettingsValues);
     } else {
-      //TODO Implement error handling
       return "";
     }
   }

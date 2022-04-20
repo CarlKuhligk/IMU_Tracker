@@ -17,7 +17,7 @@ final androidConfig = FlutterBackgroundAndroidConfig(
   notificationImportance: AndroidNotificationImportance.Default,
   notificationIcon: AndroidResource(
       name: 'background_icon',
-      defType: 'drawable'), // Default is ic_launcher from folder mipmap
+      defType: 'drawable'), // Default is ic_launcher from
 );
 
 Future<void> main() async {
@@ -73,9 +73,7 @@ class LoadPageState extends State {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: deviceIsRegistered
-            ? const RegistrationScreen()
-            : const RegistrationScreen());
-    //deviceIsRegistered ? const MainPage() : const RegistrationScreen());
+        body:
+            deviceIsRegistered ? const MainPage() : const RegistrationScreen());
   }
 }

@@ -15,14 +15,13 @@ import 'package:imu_tracker/services/device_settings_handler.dart';
 import 'package:imu_tracker/services/notification_service.dart';
 
 class InternalSensorService {
-  var deviceSettings = getIt<DeviceSettingsHandler>();
-  var notificationService = getIt<NotificationService>();
+  var _deviceSettings = getIt<DeviceSettingsHandler>();
+  var _notificationService = getIt<NotificationService>();
 
   final _battery = BatteryInfoPlugin();
 
-  StreamSubscription? accelerationSubscription;
-  StreamSubscription? gyroscopeSubscription;
-  Timer? measurementIntervalTimer;
+  StreamSubscription? _accelerationSubscription;
+  StreamSubscription? _gyroscopeSubscription;
   Timer? _movementTimer;
 
   var magnitudeAccelerometer;
@@ -43,26 +42,26 @@ class InternalSensorService {
 
   _startGyroscopeSensor() {
     // if the gyroscope subscription hasn't been created, go ahead and create it
-    if (gyroscopeSubscription == null) {
-      gyroscopeSubscription = gyroscopeEvents.listen((GyroscopeEvent eve) {
+    if (_gyroscopeSubscription == null) {
+      _gyroscopeSubscription = gyroscopeEvents.listen((GyroscopeEvent eve) {
         _gyroscopeValues = eve;
       });
     } else {
       // it has already ben created so just resume it
-      gyroscopeSubscription?.resume();
+      _gyroscopeSubscription?.resume();
     }
   }
 
   _startAccelerationSensor() {
     // if the accelerometer subscription hasn't been created, go ahead and create it
-    if (accelerationSubscription == null) {
-      accelerationSubscription =
+    if (_accelerationSubscription == null) {
+      _accelerationSubscription =
           userAccelerometerEvents.listen((UserAccelerometerEvent eve) {
         _accelerationValues = eve;
       });
     } else {
       // it has already ben created so just resume it
-      accelerationSubscription?.resume();
+      _accelerationSubscription?.resume();
     }
   }
 
@@ -95,13 +94,13 @@ class InternalSensorService {
   }
 
   _checkMovementTimeout() {
-    if (magnitudeAccelerometer < deviceSettings.deviceSettings["a"]) {
+    if (magnitudeAccelerometer < _deviceSettings.deviceSettings["a"]) {
       if (_movementTimer == null || !_movementTimer!.isActive) {
         _movementTimer = Timer(
-          Duration(seconds: (deviceSettings.deviceSettings["it"])),
+          Duration(seconds: (_deviceSettings.deviceSettings["it"])),
           () {
             if (!movementAlarmstate.value) {
-              notificationService.showMovementNotification();
+              _notificationService.showMovementNotification();
             }
             movementAlarmstate.value = true;
           },
@@ -109,19 +108,19 @@ class InternalSensorService {
       }
     } else {
       movementAlarmstate.value = false;
-      notificationService.cancelMovementNotification();
+      _notificationService.cancelMovementNotification();
       _movementTimer!.cancel();
     }
   }
 
   _checkBatteryAlarmstate() {
-    if (batteryLevel < deviceSettings.deviceSettings["b"]) {
+    if (batteryLevel < _deviceSettings.deviceSettings["b"]) {
       if (!batteryAlarmstate.value) {
-        notificationService.showBatteryNotification();
+        _notificationService.showBatteryNotification();
       }
       batteryAlarmstate.value = true;
     } else {
-      notificationService.cancelBatteryNotification();
+      _notificationService.cancelBatteryNotification();
       batteryAlarmstate.value = false;
     }
   }
