@@ -185,7 +185,8 @@ class DBController
         if (isset($result)) {
             $row = $result->fetch();
             if (isset($row)) {
-                return true;
+                if ($row[0] = 1)
+                    return true;
             }
         }
         return false;
