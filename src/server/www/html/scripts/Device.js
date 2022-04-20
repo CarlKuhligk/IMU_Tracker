@@ -105,6 +105,7 @@ export class Device {
       this.convertToChartDataPoints(timestamps, rotations)
     );
     this.updateEventList();
+    if (this.isSelected) this.updateChart();
   }
 
   updateEventList(deviceSpecific = true) {

@@ -169,7 +169,11 @@ function onClick() {
     case "newDevice":
       message.t = "A";
       message.e = document.getElementsByName("input0")[0].value;
-      message.p = document.getElementsByName("input1")[0].value;
+
+      var pin = CryptoJS.SHA256(document.getElementsByName("input1")[0].value);
+      pin = pin.toString(CryptoJS.enc.Hex);
+      message.p = pin;
+
       message.it = document.getElementsByName("input2")[0].value;
       message.b = document.getElementsByName("input3")[0].value;
       message.c = document.getElementsByName("input4")[0].value;
