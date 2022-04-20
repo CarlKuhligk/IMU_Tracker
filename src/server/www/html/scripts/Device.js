@@ -37,14 +37,15 @@ export class Device {
 
   select() {
     Device.unselectAll();
+    Device.content = new ContentManager(this);
     this.isSelected = true;
     this.updateEventList();
     this.updateChart();
   }
 
   updateChart() {
-    var content = new ContentManager(this);
     this.callback("update");
+    Device.content.buildChart(this);
   }
 
   updateConnectionState(message) {
@@ -70,6 +71,7 @@ export class Device {
       document.getElementById("rotationMinInput").value = this.rotationMin;
       document.getElementById("rotationMaxInput").value = this.rotationMax;
     }
+    Device.content.updateControls(this);
   }
 
   updateEventList() {

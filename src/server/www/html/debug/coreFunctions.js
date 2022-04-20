@@ -8,8 +8,7 @@ var mainButton = document.getElementById("sendButton");
 // get server ip
 var serverIP = $.get("../debug/getServerIP.php").done(function (data) {
   // create a new WebSocket.
-  websocket = new WebSocket("ws://192.168.212.9:8080");
-
+  websocket = new WebSocket("ws://" + data + ":8080");
   // socket message callback
   websocket.onmessage = function (e) {
     outputField.append(e.data + "\r\n");

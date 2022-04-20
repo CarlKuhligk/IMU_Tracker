@@ -12,7 +12,7 @@ export class MessageManager {
   }
 
   openWebsocket(serverIp) {
-    this.websocket = new WebSocket("ws://192.168.212.9:8080");
+    this.websocket = new WebSocket("ws://" + serverIp + ":8080");
     //this.websocket = new WebSocket("ws://" + serverIp + ":8080");
 
     this.websocket.addEventListener("open", (event) => {
