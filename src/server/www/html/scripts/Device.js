@@ -25,7 +25,15 @@ export class Device {
       acceleration: [],
       rotation: [],
     };
-    this.events = {};
+    this.events = {
+      batteryEmpty: [],
+      batteryWarning: [],
+      idleTimeout: [],
+      connectionLost: [],
+      connectionTimeout: [],
+      accelerationExceeded: [],
+      rotationExceeded: [],
+    };
 
     this.isConnected = false;
     this.alarmState = 0;
@@ -37,14 +45,14 @@ export class Device {
 
   select() {
     Device.unselectAll();
+    Device.content = new ContentManager(this);
     this.isSelected = true;
     this.updateEventList();
     this.updateChart();
   }
 
   updateChart() {
-    var content = new ContentManager(this);
-    this.callback("update");
+    Device.content.renderChart();
   }
 
   updateConnectionState(message) {
@@ -70,11 +78,7 @@ export class Device {
       document.getElementById("rotationMinInput").value = this.rotationMin;
       document.getElementById("rotationMaxInput").value = this.rotationMax;
     }
-  }
-
-  updateEventList() {
-    this.events = this.getEventList();
-    if (this.isSelected) this.updateChart();
+    Device.content.updateControls(this);
   }
 
   addMeasurement(message) {
@@ -101,9 +105,10 @@ export class Device {
       this.convertToChartDataPoints(timestamps, rotations)
     );
     this.updateEventList();
+    if (this.isSelected) this.updateChart();
   }
 
-  getEventList(deviceSpecific = true) {
+  updateEventList(deviceSpecific = true) {
     var eventsMatchingDeviceId;
     if (deviceSpecific) {
       // filter events that match to the device id
@@ -114,16 +119,7 @@ export class Device {
 
     var eventIdFilter = [11, 10, 12, 21, 22, 30, 31];
 
-    var result = {
-      batteryEmpty: [],
-      batteryWarning: [],
-      idleTimeout: [],
-      connectionLost: [],
-      connectionTimeout: [],
-      accelerationExceeded: [],
-      rotationExceeded: [],
-    };
-    var resultKeys = Object.keys(result);
+    var eventKeys = Object.keys(this.events);
 
     // split the array of event objects in to single arrays
     eventIdFilter.forEach(function (eventId, index) {
@@ -138,10 +134,12 @@ export class Device {
       isTriggereds.push(isTriggereds[isTriggereds.length - 1]);
 
       // convert and insert to result
-      result[resultKeys[index]] = this.convertToChartDataPoints(timestamps, isTriggereds);
+      this.events[eventKeys[index]].length = 0; // clear array
+      Array.prototype.push.apply(
+        this.events[eventKeys[index]],
+        this.convertToChartDataPoints(timestamps, isTriggereds)
+      );
     }, this);
-
-    return result;
   }
 
   sendNewSettings() {

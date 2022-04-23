@@ -215,7 +215,7 @@ body {
 
 .controls{
   display: grid;
-  grid-template-columns: [line1] 260px [line2]  260px [end];
+  grid-template-columns: [line1] 260px [line2]  300px [end];
   grid-template-rows: [row1] 40px [row2] 40px [row3] 40px [row4] 40px [last-line];
   margin-left: auto;
   margin-right: auto;

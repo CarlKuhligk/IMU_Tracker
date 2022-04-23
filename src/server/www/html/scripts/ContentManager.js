@@ -23,9 +23,6 @@ export class ContentManager {
 
     this.ChartRootDIV = document.createElement("div");
     this.ChartRootDIV.classList.add("chartRoot");
-    //this.ChartRootLabel = document.createElement("label");
-    //this.ChartRootLabel.textContent = "Ereignisübersicht";
-    //this.ChartRootDIV.appendChild(this.ChartRootLabel);
 
     this.ChartComponentsDIV = document.createElement("div");
     this.ChartComponentsDIV.classList.add("chartComponents");
@@ -35,17 +32,6 @@ export class ContentManager {
     this.DeviceHistoryChartDIV.id = "chartContainer";
     this.ChartComponentsDIV.appendChild(this.DeviceHistoryChartDIV);
 
-    //this.DeviceHistoryChartLegendDIV = document.createElement("div");
-    //this.DeviceHistoryChartLegendDIV.classList.add("legend");
-    //this.ChartComponentsDIV.appendChild(this.DeviceHistoryChartLegendDIV);
-
-    //this.DeviceHistoryChartWindowDIV = document.createElement("div");
-    //this.DeviceHistoryChartWindowDIV.classList.add("window");
-    //this.ChartComponentsDIV.appendChild(this.DeviceHistoryChartWindowDIV);
-
-    //this.DeviceHistoryChartCurrentDIV = document.createElement("div");
-    //this.DeviceHistoryChartCurrentDIV.classList.add("current");
-    //this.ChartComponentsDIV.appendChild(this.DeviceHistoryChartCurrentDIV);
     this.ChartRootDIV.appendChild(this.ChartComponentsDIV);
     this.ContentDIV.appendChild(this.ChartRootDIV);
   }
@@ -59,8 +45,19 @@ export class ContentManager {
     this.ControlsRootLabel.id = "controlsRootLabel";
     this.ControlsRootDIV.appendChild(this.ControlsRootLabel);
 
-    this.ControlsDIV = document.createElement("div");
-    this.ControlsDIV.classList.add("controls");
+    this.buildControlContent(device);
+
+    this.ControlsRootDIV.appendChild(this.ControlsContent);
+
+    this.ContentDIV.appendChild(this.ControlsRootDIV);
+  }
+
+  buildControlContent(device) {
+    this.ControlsContent = document.createElement("div");
+    this.ControlsContent.classList.add("controlsContent");
+
+    this.ControlCollection = document.createElement("div");
+    this.ControlCollection.classList.add("controls");
 
     // battery warning
     this.BatteryWarningLabel = document.createElement("label");
@@ -70,8 +67,8 @@ export class ContentManager {
     this.BatteryWarningInput.value = device.batteryWarning;
     this.BatteryWarningInput.setAttribute("type", "number");
     this.BatteryWarningInput.id = "batteryWarningInput";
-    this.ControlsDIV.appendChild(this.BatteryWarningLabel);
-    this.ControlsDIV.appendChild(this.BatteryWarningInput);
+    this.ControlCollection.appendChild(this.BatteryWarningLabel);
+    this.ControlCollection.appendChild(this.BatteryWarningInput);
 
     // idle timeout
     this.IdleTimeoutLabel = document.createElement("label");
@@ -81,8 +78,8 @@ export class ContentManager {
     this.IdleTimeoutInput.value = device.idleTimeout;
     this.IdleTimeoutInput.setAttribute("type", "number");
     this.IdleTimeoutInput.id = "idleTimeoutInput";
-    this.ControlsDIV.appendChild(this.IdleTimeoutLabel);
-    this.ControlsDIV.appendChild(this.IdleTimeoutInput);
+    this.ControlCollection.appendChild(this.IdleTimeoutLabel);
+    this.ControlCollection.appendChild(this.IdleTimeoutInput);
 
     // connection timeout
     this.ConnectionTimeoutLabel = document.createElement("label");
@@ -92,8 +89,8 @@ export class ContentManager {
     this.ConnectionTimeoutInput.value = device.connectionTimeout;
     this.ConnectionTimeoutInput.setAttribute("type", "number");
     this.ConnectionTimeoutInput.id = "connectionTimeoutInput";
-    this.ControlsDIV.appendChild(this.ConnectionTimeoutLabel);
-    this.ControlsDIV.appendChild(this.ConnectionTimeoutInput);
+    this.ControlCollection.appendChild(this.ConnectionTimeoutLabel);
+    this.ControlCollection.appendChild(this.ConnectionTimeoutInput);
 
     // measurement interval
     this.MeasurementIntervalLabel = document.createElement("label");
@@ -103,8 +100,8 @@ export class ContentManager {
     this.MeasurementIntervalInput.value = device.measurementInterval;
     this.MeasurementIntervalInput.setAttribute("type", "number");
     this.MeasurementIntervalInput.id = "measurementIntervalInput";
-    this.ControlsDIV.appendChild(this.MeasurementIntervalLabel);
-    this.ControlsDIV.appendChild(this.MeasurementIntervalInput);
+    this.ControlCollection.appendChild(this.MeasurementIntervalLabel);
+    this.ControlCollection.appendChild(this.MeasurementIntervalInput);
 
     // acceleration min
     this.AccelerationMinLabel = document.createElement("label");
@@ -114,8 +111,8 @@ export class ContentManager {
     this.AccelerationMinInput.value = device.accelerationMin;
     this.AccelerationMinInput.setAttribute("type", "number");
     this.AccelerationMinInput.id = "accelerationMinInput";
-    this.ControlsDIV.appendChild(this.AccelerationMinLabel);
-    this.ControlsDIV.appendChild(this.AccelerationMinInput);
+    this.ControlCollection.appendChild(this.AccelerationMinLabel);
+    this.ControlCollection.appendChild(this.AccelerationMinInput);
 
     // acceleration max
     this.AccelerationMaxLabel = document.createElement("label");
@@ -125,8 +122,8 @@ export class ContentManager {
     this.AccelerationMaxInput.value = device.accelerationMax;
     this.AccelerationMaxInput.setAttribute("type", "number");
     this.AccelerationMaxInput.id = "accelerationMaxInput";
-    this.ControlsDIV.appendChild(this.AccelerationMaxLabel);
-    this.ControlsDIV.appendChild(this.AccelerationMaxInput);
+    this.ControlCollection.appendChild(this.AccelerationMaxLabel);
+    this.ControlCollection.appendChild(this.AccelerationMaxInput);
 
     // rotation min
     this.RotationMinLabel = document.createElement("label");
@@ -136,8 +133,8 @@ export class ContentManager {
     this.RotationMinInput.value = device.rotationMin;
     this.RotationMinInput.setAttribute("type", "number");
     this.RotationMinInput.id = "rotationMinInput";
-    this.ControlsDIV.appendChild(this.RotationMinLabel);
-    this.ControlsDIV.appendChild(this.RotationMinInput);
+    this.ControlCollection.appendChild(this.RotationMinLabel);
+    this.ControlCollection.appendChild(this.RotationMinInput);
 
     // rotation max
     this.RotationMaxLabel = document.createElement("label");
@@ -147,9 +144,10 @@ export class ContentManager {
     this.RotationMaxInput.value = device.rotationMax;
     this.RotationMaxInput.setAttribute("type", "number");
     this.RotationMaxInput.id = "rotationMaxInput";
-    this.ControlsDIV.appendChild(this.RotationMaxLabel);
-    this.ControlsDIV.appendChild(this.RotationMaxInput);
-    this.ControlsRootDIV.appendChild(this.ControlsDIV);
+    this.ControlCollection.appendChild(this.RotationMaxLabel);
+    this.ControlCollection.appendChild(this.RotationMaxInput);
+
+    this.ControlsContent.appendChild(this.ControlCollection);
 
     //update button
     this.UpdateSettingsButton = document.createElement("button");
@@ -158,9 +156,19 @@ export class ContentManager {
     this.UpdateSettingsButton.addEventListener("click", () => {
       device.sendNewSettings();
     });
-    this.ControlsRootDIV.appendChild(this.UpdateSettingsButton);
 
-    this.ContentDIV.appendChild(this.ControlsRootDIV);
+    this.ControlsContent.appendChild(this.UpdateSettingsButton);
+  }
+
+  updateControls(device) {
+    document.getElementById("idleTimeoutInput").value = device.idleTimeout;
+    document.getElementById("batteryWarningInput").value = device.batteryWarning;
+    document.getElementById("connectionTimeoutInput").value = device.connectionTimeout;
+    document.getElementById("measurementIntervalInput").value = device.measurementInterval;
+    document.getElementById("accelerationMinInput").value = device.accelerationMin;
+    document.getElementById("accelerationMaxInput").value = device.accelerationMax;
+    document.getElementById("rotationMinInput").value = device.rotationMin;
+    document.getElementById("rotationMaxInput").value = device.rotationMax;
   }
 
   buildChart(device) {
@@ -452,10 +460,6 @@ export class ContentManager {
       ],
     });
     this.renderChart();
-
-    //device.addEventListener("update", () => {
-    //  this.renderChart();
-    //});
   }
 
   renderChart() {
