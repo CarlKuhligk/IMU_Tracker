@@ -225,6 +225,7 @@ class WebSocketHandler {
       case 9:
         logOutFailed.value = false;
         _closeWebsocketConnection();
+        _internalSensors.stopSensors();
         break;
       case 10:
         successfullyRegistered.value = true;
@@ -256,8 +257,8 @@ class WebSocketHandler {
   }
 
   void _closeWebsocketConnection() {
-    successfullyRegistered.value = false;
     successfullyLoggedOut.value = true;
+    successfullyRegistered.value = false;
     _channel.close();
     _pingIntervalTimer?.cancel();
     isWebsocketRunning = false;
