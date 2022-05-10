@@ -10,6 +10,9 @@ import 'package:imu_tracker/service_locator.dart';
 import 'package:imu_tracker/services/websocket_handler.dart';
 import 'package:imu_tracker/services/localstorage_service.dart';
 import 'package:imu_tracker/services/internal_sensor_service.dart';
+import 'package:imu_tracker/services/notification_service.dart';
+
+import 'package:flutter_background/flutter_background.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({
@@ -22,6 +25,7 @@ class MainPage extends StatefulWidget {
 class _MyMainPageState extends State<MainPage> {
   var _websocket = getIt<WebSocketHandler>();
   var _internalSensors = getIt<InternalSensorService>();
+  var _notificationService = getIt<NotificationService>();
   var _connectionWarningDialogOpen = false;
   var _movementWarningDialogOpen = false;
   var _batteryWarningDialogOpen = false;
@@ -42,7 +46,8 @@ class _MyMainPageState extends State<MainPage> {
 
     _websocket.successfullyRegistered.addListener(() {
       if (!_websocket.successfullyRegistered.value &&
-          !_connectionWarningDialogOpen) {
+          !_connectionWarningDialogOpen &&
+          !_websocket.successfullyLoggedOut.value) {
         _showConnectionDialog();
       }
       setState(() {});
@@ -69,85 +74,127 @@ class _MyMainPageState extends State<MainPage> {
       setState(() {});
     });
 
+    if (_websocket.logOutFailed.value) {
+      _showLogOutDialog(context);
+    }
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: Color.fromARGB(255, 18, 18, 18),
         appBar: AppBar(
-          title: const Text("IMU_Tracker"),
+          title: const Text("Security-Motion-Tracker"),
+          backgroundColor: Color.fromARGB(255, 30, 30, 30),
         ),
         body: Center(
           child: Column(
-            //mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              if (!_websocket.successfullyLoggedOut.value)
-                _getConnectionStateIcon(
-                    _websocket.successfullyRegistered.value),
-              Table(
-                border: TableBorder.symmetric(),
-                columnWidths: const {
-                  0: FractionColumnWidth(0.2),
-                  1: FractionColumnWidth(0.8)
-                },
-                children: [
-                  if (_internalSensors.movementAlarmstate.value)
-                    TableRow(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: const Icon(
-                            Icons.report_problem,
-                            color: Colors.red,
-                            size: 24.0,
+              Expanded(
+                  flex: 10,
+                  child: Column(
+                    //mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Column(children: [
+                        if (!_websocket.successfullyLoggedOut.value)
+                          _getConnectionStateIcon(
+                              _websocket.successfullyRegistered.value),
+                        if (_websocket.successfullyRegistered.value)
+                          Text(
+                            'Erfolgreich verbunden!',
+                            style:
+                                TextStyle(fontSize: 20.0, color: Colors.green),
                           ),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text('Movement Alarm!',
-                              style: TextStyle(fontSize: 20.0)),
-                        )
-                      ],
-                    ),
-                  if (_internalSensors.batteryAlarmstate.value)
-                    TableRow(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: const Icon(
-                            Icons.battery_alert,
-                            color: Colors.red,
-                            size: 24.0,
+                        if (!_websocket.successfullyRegistered.value &&
+                            !_websocket.successfullyLoggedOut.value)
+                          Text(
+                            'Keine Verbindung zum Server!',
+                            style: TextStyle(fontSize: 20.0, color: Colors.red),
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text('Battery Alarm!',
-                              style: TextStyle(fontSize: 20.0)),
-                        )
-                      ],
-                    ),
-                ],
-              ),
+                      ]),
+                      Table(
+                        border: TableBorder.symmetric(),
+                        columnWidths: const {
+                          0: FractionColumnWidth(0.2),
+                          1: FractionColumnWidth(0.8)
+                        },
+                        children: [
+                          if (_internalSensors.movementAlarmstate.value)
+                            TableRow(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: const Icon(
+                                    Icons.report_problem,
+                                    color: Colors.red,
+                                    size: 24.0,
+                                  ),
+                                ),
+                                const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text('Bewegungslosigkeit erkannt!',
+                                      style: TextStyle(
+                                          fontSize: 20.0, color: Colors.red)),
+                                )
+                              ],
+                            ),
+                          if (_internalSensors.batteryAlarmstate.value)
+                            TableRow(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: const Icon(
+                                    Icons.battery_alert,
+                                    color: Colors.red,
+                                    size: 24.0,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text('Batteriestand niedrig!',
+                                      style: TextStyle(
+                                          fontSize: 20.0, color: Colors.red)),
+                                )
+                              ],
+                            ),
+                        ],
+                      ),
+                    ],
+                  )),
               if (_websocket.successfullyRegistered.value)
-                FlatButton(
-                  color: Colors.teal,
-                  textColor: Colors.white,
-                  onPressed: () {
-                    _showLogOutDialog(context);
-                  },
-                  child: const Text('Logout'),
+                Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: FlatButton(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    shape: const StadiumBorder(),
+                    color: Colors.teal,
+                    textColor: Colors.white,
+                    onPressed: () {
+                      _showLogOutDialog(context);
+                    },
+                    child: const Text('Abmelden'),
+                  ),
                 ),
               if (_websocket.successfullyLoggedOut.value)
-                FlatButton(
-                  color: Colors.teal,
-                  textColor: Colors.white,
-                  onPressed: () {
-                    SystemNavigator.pop();
-                  },
-                  child: const Text('Close App'),
+                Text('Erfolgreich abgemeldet!',
+                    style: TextStyle(fontSize: 20.0, color: Colors.green)),
+              if (_websocket.successfullyLoggedOut.value)
+                Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: FlatButton(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    shape: const StadiumBorder(),
+                    color: Colors.teal,
+                    textColor: Colors.white,
+                    onPressed: () async {
+                      SystemNavigator.pop();
+                      await FlutterBackground.disableBackgroundExecution();
+                      _notificationService.cancelAllNotifications();
+                    },
+                    child: const Text('App schließen'),
+                  ),
                 ),
             ],
           ),
@@ -159,13 +206,13 @@ class _MyMainPageState extends State<MainPage> {
       return const Icon(
         Icons.wifi,
         color: Colors.green,
-        size: 80.0,
+        size: 130.0,
       );
     } else {
       return const Icon(
         Icons.wifi_off,
         color: Colors.red,
-        size: 80.0,
+        size: 100.0,
       );
     }
   }
@@ -175,12 +222,12 @@ class _MyMainPageState extends State<MainPage> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: const Text('LogOut'),
+            title: const Text('Abmeldung'),
             content: SingleChildScrollView(
               child: ListBody(
                 children: <Widget>[
                   if (_websocket.logOutFailed.value)
-                    Text('Logout failed, wrong Personal Pin!'),
+                    Text('Abmeldung fehlgeschlagen, falsche Pin!'),
                   TextField(
                     onChanged: (value) {
                       setState(() {
@@ -188,7 +235,9 @@ class _MyMainPageState extends State<MainPage> {
                       });
                     },
                     controller: _textFieldController,
-                    decoration: const InputDecoration(hintText: "LogOut Pin"),
+                    keyboardType: TextInputType.number,
+                    decoration:
+                        const InputDecoration(hintText: "Persönliche Pin"),
                   ),
                 ],
               ),
@@ -197,7 +246,7 @@ class _MyMainPageState extends State<MainPage> {
               FlatButton(
                 color: Colors.red,
                 textColor: Colors.white,
-                child: const Text('Cancel'),
+                child: const Text('Abbrechen'),
                 onPressed: () {
                   setState(() {
                     Navigator.pop(context);
@@ -205,9 +254,9 @@ class _MyMainPageState extends State<MainPage> {
                 },
               ),
               FlatButton(
-                color: Colors.green,
+                color: Colors.teal,
                 textColor: Colors.white,
-                child: const Text('Logout'),
+                child: const Text('Abmelden'),
                 onPressed: () {
                   _websocket.logoutDevice(_valueText);
                   setState(() {
@@ -227,17 +276,20 @@ class _MyMainPageState extends State<MainPage> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Batterylevel too low!"),
+          title: Text("Batteriestand niedrig!",
+              style: TextStyle(fontSize: 20.0, color: Colors.red)),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text("Batterylevel too low!"),
+                Text("Batteriestand niedrig!"),
               ],
             ),
           ),
           actions: <Widget>[
-            TextButton(
-              child: const Text('Acknowledge'),
+            FlatButton(
+              color: Colors.teal,
+              textColor: Colors.white,
+              child: const Text('Wahrgenommen'),
               onPressed: () {
                 _batteryWarningDialogOpen = false;
                 Navigator.of(context).pop();
@@ -256,18 +308,20 @@ class _MyMainPageState extends State<MainPage> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Alarm for no movement"),
+          title: Text("Bewegungslosigkeit erkannt!",
+              style: TextStyle(fontSize: 20.0, color: Colors.red)),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text(
-                    "You need to move, otherwise the alarm for no movement will be triggered"),
+                Text("Wenn Sie sich nicht bewegen, wird der Alarm ausgelöst"),
               ],
             ),
           ),
           actions: <Widget>[
-            TextButton(
-              child: const Text('Acknowledge'),
+            FlatButton(
+              color: Colors.teal,
+              textColor: Colors.white,
+              child: const Text('Wahrgenommen'),
               onPressed: () {
                 _movementWarningDialogOpen = false;
                 Navigator.of(context).pop();
@@ -286,17 +340,21 @@ class _MyMainPageState extends State<MainPage> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Lost Connection to Server!"),
+          title: Text("Verbindung zum Server verloren!",
+              style: TextStyle(fontSize: 20.0, color: Colors.red)),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text("Lost Connection to Server, no Data is sent"),
+                Text(
+                    "Verbindung zum Server verloren, es werden keine Daten gesendet!"),
               ],
             ),
           ),
           actions: <Widget>[
-            TextButton(
-              child: const Text('Acknowledge'),
+            FlatButton(
+              color: Colors.teal,
+              textColor: Colors.white,
+              child: const Text('Wahrgenommen'),
               onPressed: () {
                 _connectionWarningDialogOpen = false;
                 Navigator.of(context).pop();
