@@ -49,20 +49,22 @@ class _RegistrationScreen extends State<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromARGB(255, 18, 18, 18),
+      appBar: AppBar(
+        title: const Text("Geräte-Einrichtung"),
+        backgroundColor: Color.fromARGB(255, 30, 30, 30),
+      ),
       body: Column(
         children: <Widget>[
-          Expanded(flex: 9, child: _buildQrView(context)),
+          Expanded(flex: 10, child: _buildQrView(context)),
           Expanded(
             flex: 1,
-            child: FittedBox(
-              fit: BoxFit.contain,
-              child: Column(
-                children: const <Widget>[
-                  Text('Bitte den QR-Code scannen'),
-                ],
-              ),
-            ),
-          )
+            child: Align(
+                alignment: Alignment.center,
+                child: Text('Bitte Einrichtungscode scannen',
+                    style:
+                        const TextStyle(fontSize: 20.0, color: Colors.white))),
+          ),
         ],
       ),
     );
