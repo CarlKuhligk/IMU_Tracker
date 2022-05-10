@@ -29,6 +29,7 @@ class NotificationService {
       AndroidNotificationDetails(
     'channel ID',
     'channel name',
+    icon: "app_icon",
     playSound: true,
     priority: Priority.high,
     importance: Importance.high,
@@ -37,8 +38,8 @@ class NotificationService {
   Future<void> showBatteryNotification() async {
     await flutterLocalNotificationsPlugin.show(
       0,
-      "Battery Level low!",
-      "Your Battery Level is too low!",
+      "Niedriger Akkustand!",
+      "Niedriger Akkustand!",
       NotificationDetails(android: _androidNotificationDetails),
     );
   }
@@ -50,8 +51,8 @@ class NotificationService {
   Future<void> showMovementNotification() async {
     await flutterLocalNotificationsPlugin.show(
       3,
-      "You need to move!",
-      "If you're not moving within the next seconds, the alarm for no movement will trigger!",
+      "Bewegungslosigkeit erkannt!",
+      "Wenn Sie sich nicht bewegen, wird der Alarm ausgeloest!",
       NotificationDetails(android: _androidNotificationDetails),
     );
   }
@@ -63,13 +64,17 @@ class NotificationService {
   Future<void> showLostConnectionNotification() async {
     await flutterLocalNotificationsPlugin.show(
       5,
-      "Lost Server Connection",
-      "Lost Connection to Server!",
+      "Verbindung zum Server verloren!",
+      "Es werden keine Daten gesendet!",
       NotificationDetails(android: _androidNotificationDetails),
     );
   }
 
   Future<void> cancelLostConnectionNotification() async {
-    await flutterLocalNotificationsPlugin.cancel(3);
+    await flutterLocalNotificationsPlugin.cancel(5);
+  }
+
+  Future<void> cancelAllNotifications() async {
+    await flutterLocalNotificationsPlugin.cancelAll();
   }
 }
