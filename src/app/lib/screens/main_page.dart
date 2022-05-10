@@ -108,6 +108,7 @@ class _MyMainPageState extends State<MainPage> {
                           padding: EdgeInsets.all(8.0),
                           child: Text('Movement Alarm!',
                               style: TextStyle(fontSize: 20.0)),
+                                  TextStyle(fontSize: 20.0, color: Colors.red)),
                         )
                       ],
                     ),
