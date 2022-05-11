@@ -2,6 +2,7 @@
 // ignore_for_file: use_key_in_widget_constructors
 import 'package:flutter_background/flutter_background.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 //project internal services / dependency injection
 import 'service_locator.dart';
@@ -27,6 +28,7 @@ Future<void> main() async {
 
     await FlutterBackground.initialize(androidConfig: androidConfig);
     await FlutterBackground.enableBackgroundExecution();
+
     runApp(MyApp());
   } catch (error) {
     print('Locator setup has failed');
@@ -38,6 +40,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
         title: 'IMU_Tracker',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
@@ -56,6 +59,10 @@ class LoadPageState extends State {
 
   @override
   void initState() {
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+        systemNavigationBarColor: Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light));
+
     super.initState();
     loadNewLaunch();
   }

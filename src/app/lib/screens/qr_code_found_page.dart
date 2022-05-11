@@ -22,12 +22,13 @@ class QrCodeFoundPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromARGB(255, 18, 18, 18),
       appBar: AppBar(
-        title: const Text('Found QR-Code'),
+        title: const Text('QR-Code gefunden'),
+        backgroundColor: Color.fromARGB(255, 30, 30, 30),
       ),
       body: Center(
         child: Column(
-          // horizontal).
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             Table(
@@ -46,7 +47,8 @@ class QrCodeFoundPage extends StatelessWidget {
                     const Padding(
                       padding: EdgeInsets.all(8.0),
                       child: Text('QR - Code Format',
-                          style: TextStyle(fontSize: 20.0)),
+                          style:
+                              TextStyle(fontSize: 20.0, color: Colors.white)),
                     )
                   ],
                 ),
@@ -61,7 +63,8 @@ class QrCodeFoundPage extends StatelessWidget {
                       const Padding(
                         padding: EdgeInsets.all(8.0),
                         child: Text('Verbindung zum Server',
-                            style: TextStyle(fontSize: 20.0)),
+                            style:
+                                TextStyle(fontSize: 20.0, color: Colors.white)),
                       )
                     ],
                   ),
@@ -76,14 +79,19 @@ class QrCodeFoundPage extends StatelessWidget {
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
                             '${_getWebsocketResponseString(webSocketTestResult.webSocketResponseNumber)}',
-                            style: const TextStyle(fontSize: 20.0)),
+                            style: const TextStyle(
+                                fontSize: 20.0, color: Colors.white)),
                       )
                     ],
                   ),
               ],
             ),
             if (webSocketTestResult.isApiKeyValid)
-              RaisedButton(
+              FlatButton(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                shape: const StadiumBorder(),
+                color: Colors.teal,
+                textColor: Colors.white,
                 onPressed: () => {
                   Navigator.pushAndRemoveUntil(
                     context,
@@ -94,7 +102,11 @@ class QrCodeFoundPage extends StatelessWidget {
                 child: const Text("App starten"),
               )
             else
-              RaisedButton(
+              FlatButton(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                shape: const StadiumBorder(),
+                color: Colors.teal,
+                textColor: Colors.white,
                 onPressed: () => {
                   Navigator.pushAndRemoveUntil(
                     context,

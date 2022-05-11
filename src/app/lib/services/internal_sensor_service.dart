@@ -24,10 +24,10 @@ class InternalSensorService {
   StreamSubscription? _gyroscopeSubscription;
   Timer? _movementTimer;
 
-  var magnitudeAccelerometer;
-  var magnitudeGyroscope;
   var _accelerationValues;
   var _gyroscopeValues;
+  var magnitudeAccelerometer;
+  var magnitudeGyroscope;
   var batteryLevel;
   var deviceTemperature;
 
@@ -38,6 +38,14 @@ class InternalSensorService {
     _startGyroscopeSensor();
     _startAccelerationSensor();
     _startBatterySensor();
+  }
+
+  stopSensors() {
+    _movementTimer!.cancel();
+    movementAlarmstate.value = false;
+    batteryAlarmstate.value = false;
+    _accelerationSubscription!.cancel();
+    _gyroscopeSubscription!.cancel();
   }
 
   _startGyroscopeSensor() {
