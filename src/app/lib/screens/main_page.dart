@@ -74,9 +74,6 @@ class _MyMainPageState extends State<MainPage> {
       setState(() {});
     });
 
-    if (_websocket.logOutFailed.value) {
-      _showLogOutDialog(context);
-    }
     super.initState();
   }
 
@@ -156,11 +153,15 @@ class _MyMainPageState extends State<MainPage> {
                                   child: Text('Batteriestand niedrig!',
                                       style: TextStyle(
                                           fontSize: 20.0, color: Colors.red)),
-                                )
+                                ),
                               ],
                             ),
                         ],
                       ),
+                      if (_websocket.successfullyLoggedOut.value)
+                        Text('Erfolgreich abgemeldet!',
+                            style:
+                                TextStyle(fontSize: 20.0, color: Colors.green)),
                     ],
                   )),
               if (_websocket.successfullyRegistered.value)
@@ -177,9 +178,6 @@ class _MyMainPageState extends State<MainPage> {
                     child: const Text('Abmelden'),
                   ),
                 ),
-              if (_websocket.successfullyLoggedOut.value)
-                Text('Erfolgreich abgemeldet!',
-                    style: TextStyle(fontSize: 20.0, color: Colors.green)),
               if (_websocket.successfullyLoggedOut.value)
                 Padding(
                   padding: const EdgeInsets.all(15.0),
@@ -222,13 +220,17 @@ class _MyMainPageState extends State<MainPage> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: const Text('Abmeldung'),
+            backgroundColor: Color.fromARGB(240, 53, 53, 53),
+            title: const Text('Abmeldung',
+                style: TextStyle(fontSize: 20.0, color: Colors.white)),
             content: SingleChildScrollView(
               child: ListBody(
                 children: <Widget>[
                   if (_websocket.logOutFailed.value)
-                    Text('Abmeldung fehlgeschlagen, falsche Pin!'),
+                    Text('Abmeldung fehlgeschlagen, falsche Pin!',
+                        style: TextStyle(color: Colors.white)),
                   TextField(
+                    style: TextStyle(color: Colors.white),
                     onChanged: (value) {
                       setState(() {
                         _valueText = value;
@@ -236,8 +238,10 @@ class _MyMainPageState extends State<MainPage> {
                     },
                     controller: _textFieldController,
                     keyboardType: TextInputType.number,
-                    decoration:
-                        const InputDecoration(hintText: "Persönliche Pin"),
+                    decoration: const InputDecoration(
+                        hintStyle: TextStyle(color: Colors.white),
+                        hintText: "Persönliche Pin",
+                        fillColor: Colors.white),
                   ),
                 ],
               ),
@@ -276,12 +280,14 @@ class _MyMainPageState extends State<MainPage> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Color.fromARGB(240, 53, 53, 53),
           title: Text("Batteriestand niedrig!",
               style: TextStyle(fontSize: 20.0, color: Colors.red)),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text("Batteriestand niedrig!"),
+                Text("Batteriestand niedrig!",
+                    style: TextStyle(color: Colors.white)),
               ],
             ),
           ),
@@ -308,12 +314,14 @@ class _MyMainPageState extends State<MainPage> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Color.fromARGB(240, 53, 53, 53),
           title: Text("Bewegungslosigkeit erkannt!",
               style: TextStyle(fontSize: 20.0, color: Colors.red)),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text("Wenn Sie sich nicht bewegen, wird der Alarm ausgelöst"),
+                Text("Wenn Sie sich nicht bewegen, wird der Alarm ausgelöst!",
+                    style: TextStyle(color: Colors.white)),
               ],
             ),
           ),
@@ -340,13 +348,15 @@ class _MyMainPageState extends State<MainPage> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Color.fromARGB(240, 53, 53, 53),
           title: Text("Verbindung zum Server verloren!",
               style: TextStyle(fontSize: 20.0, color: Colors.red)),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
                 Text(
-                    "Verbindung zum Server verloren, es werden keine Daten gesendet!"),
+                    "Verbindung zum Server verloren, es werden keine Daten gesendet!",
+                    style: TextStyle(color: Colors.white)),
               ],
             ),
           ),
