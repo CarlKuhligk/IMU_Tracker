@@ -230,6 +230,9 @@ class _MyMainPageState extends State<MainPage> {
                     Text('Abmeldung fehlgeschlagen, falsche Pin!',
                         style: TextStyle(color: Colors.white)),
                   TextField(
+                    obscureText: true,
+                    enableSuggestions: false,
+                    autocorrect: false,
                     style: TextStyle(color: Colors.white),
                     onChanged: (value) {
                       setState(() {
@@ -252,6 +255,8 @@ class _MyMainPageState extends State<MainPage> {
                 textColor: Colors.white,
                 child: const Text('Abbrechen'),
                 onPressed: () {
+                  _textFieldController.clear();
+                  _websocket.logOutFailed.value = false;
                   setState(() {
                     Navigator.pop(context);
                   });
@@ -263,6 +268,7 @@ class _MyMainPageState extends State<MainPage> {
                 child: const Text('Abmelden'),
                 onPressed: () {
                   _websocket.logoutDevice(_valueText);
+                  _textFieldController.clear();
                   setState(() {
                     Navigator.pop(context);
                   });
