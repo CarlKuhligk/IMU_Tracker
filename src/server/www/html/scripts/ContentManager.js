@@ -256,8 +256,6 @@ export class ContentManager {
         markerMargin: 4,
         itemWidth: 200,
         itemclick: function (e) {
-          //console.log("legend click: " + e.dataPointIndex);
-          //console.log(e);
           if (typeof e.dataSeries.visible === "undefined" || e.dataSeries.visible) {
             e.dataSeries.visible = false;
           } else {
@@ -311,7 +309,7 @@ export class ContentManager {
           markerColor: "#35FFDE",
           legendMarkerColor: "#35FFDE",
 
-          dataPoints: device.measurements.acceleration,
+          dataPoints: device.measurements.battery,
         },
         {
           type: "line",
@@ -326,7 +324,7 @@ export class ContentManager {
           markerColor: "#7DEB28",
           legendMarkerColor: "#7DEB28",
 
-          dataPoints: device.measurements.rotation,
+          dataPoints: device.measurements.temperature,
         },
         //###############################//###############################
         //#######  E V E N T S  //#######//###############################

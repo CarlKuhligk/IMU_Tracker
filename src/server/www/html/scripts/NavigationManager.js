@@ -78,7 +78,7 @@ export class NavigationManager {
     var labelBattery = document.createElement("label");
     //_____labelChannelName.onclick = onClickModuleLabel;
     labelBattery.classList.add("batteryLabel");
-    if (device.isConnected)
+    if (device.isConnected && device.measurements.battery.length != 0)
       labelBattery.innerText =
         device.measurements.battery[device.measurements.battery.length - 1].y + " %";
     else labelBattery.innerText = " ?";

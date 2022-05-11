@@ -47,6 +47,7 @@ export class Device {
     Device.unselectAll();
     Device.content = new ContentManager(this);
     this.isSelected = true;
+
     this.updateEventList();
     this.updateChart();
   }
@@ -104,42 +105,45 @@ export class Device {
       this.measurements.rotation,
       this.convertToChartDataPoints(timestamps, rotations)
     );
+
     this.updateEventList();
     if (this.isSelected) this.updateChart();
   }
 
   updateEventList(deviceSpecific = true) {
-    var eventsMatchingDeviceId;
-    if (deviceSpecific) {
-      // filter events that match to the device id
-      eventsMatchingDeviceId = Device.events.filter((event) => event.i == this.id);
-    } else {
-      eventsMatchingDeviceId = Device.events;
+    if (this.measurements.temperature.length != 0) {
+      var eventsMatchingDeviceId;
+      if (deviceSpecific) {
+        // filter events that match to the device id
+        eventsMatchingDeviceId = Device.events.filter((event) => event.i == this.id);
+      } else {
+        eventsMatchingDeviceId = Device.events;
+      }
+
+      var eventIdFilter = [11, 10, 12, 21, 22, 30, 31];
+
+      var eventKeys = Object.keys(this.events);
+
+      // split the array of event objects in to single arrays
+      eventIdFilter.forEach(function (eventId, index) {
+        var eventsOfEventId = eventsMatchingDeviceId.filter((event) => event.e == eventId);
+
+        // extracting event data
+        var timestamps = eventsOfEventId.map((item) => new Date(item.t));
+        var isTriggereds = eventsOfEventId.map((item) => (item.a ? 1 : 0));
+
+        // add datapoint to the end
+        timestamps.push(this.measurements.temperature[this.measurements.temperature.length - 1].x);
+        isTriggereds.push(isTriggereds[isTriggereds.length - 1]);
+
+        // convert and insert to result
+        this.events[eventKeys[index]].length = 0; // clear array
+        Array.prototype.push.apply(
+          this.events[eventKeys[index]],
+          this.convertToChartDataPoints(timestamps, isTriggereds)
+        );
+      }, this);
     }
-
-    var eventIdFilter = [11, 10, 12, 21, 22, 30, 31];
-
-    var eventKeys = Object.keys(this.events);
-
-    // split the array of event objects in to single arrays
-    eventIdFilter.forEach(function (eventId, index) {
-      var eventsOfEventId = eventsMatchingDeviceId.filter((event) => event.e == eventId);
-
-      // extracting event data
-      var timestamps = eventsOfEventId.map((item) => new Date(item.t));
-      var isTriggereds = eventsOfEventId.map((item) => (item.a ? 1 : 0));
-
-      // add datapoint to the end
-      timestamps.push(this.measurements.temperature[this.measurements.temperature.length - 1].x);
-      isTriggereds.push(isTriggereds[isTriggereds.length - 1]);
-
-      // convert and insert to result
-      this.events[eventKeys[index]].length = 0; // clear array
-      Array.prototype.push.apply(
-        this.events[eventKeys[index]],
-        this.convertToChartDataPoints(timestamps, isTriggereds)
-      );
-    }, this);
   }
 
   sendNewSettings() {
