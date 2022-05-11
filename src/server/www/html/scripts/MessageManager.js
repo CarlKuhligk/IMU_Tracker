@@ -5,15 +5,14 @@ export class MessageManager {
   }
 
   connect() {
-    $.get("../debug/getServerIP.php").done((serverIp) => {
+    $.get("../lib/getServerIP.php").done((serverIp) => {
       // create a new WebSocket.
       this.openWebsocket(serverIp);
     });
   }
 
   openWebsocket(serverIp) {
-    this.websocket = new WebSocket("ws://192.168.212.9:8080");
-    //this.websocket = new WebSocket("ws://" + serverIp + ":8080");
+    this.websocket = new WebSocket("ws://" + serverIp + ":8080");
 
     this.websocket.addEventListener("open", (event) => {
       this.onOpen(event);
@@ -42,42 +41,56 @@ export class MessageManager {
     switch (message.t) {
       case "uc":
         console.log("UpdateConnection received: %o", message);
-        this.triggerEvent("handleUpdateConnection", message);
+        this.callback("handleUpdateConnection", message);
         break;
 
       case "M":
         console.log("Add measurement received: %o", message);
-        this.triggerEvent("handleAddEvent", message);
+        this.callback("handleAddMeasurement", message);
         break;
 
       case "e":
         console.log("Add event received: %o", message);
-        message.d.forEach((element) => {
-          this.triggerEvent("handleAddEvent", element);
-        });
+        this.callback("handleAddEvent", message);
         break;
 
       case "su":
         console.log("Settings update received: %o", message);
-        this.triggerEvent("handleSettingsUpdate", message);
+        this.callback("handleSettingsUpdate", message);
         break;
 
       case "ad":
         console.log("Add device received: %o", message);
         message.d.forEach((element) => {
-          this.triggerEvent("handleAddDevice", element);
+          this.callback("handleAddDevice", element);
         });
         break;
 
       case "rd":
         console.log("Remove device received: %o", message);
-        this.triggerEvent("handleRemoveDevice", message);
+        this.callback("handleRemoveDevice", message);
         break;
     }
   }
 
   onClose(e) {
     console.log("Connection closed!");
+  }
+
+  sendNewSettings(device) {
+    var updateMessage = {
+      t: "S",
+      i: device.id,
+      it: document.getElementById("idleTimeoutInput").value,
+      b: document.getElementById("batteryWarningInput").value,
+      c: document.getElementById("connectionTimeoutInput").value,
+      m: document.getElementById("measurementIntervalInput").value,
+      ai: document.getElementById("accelerationMinInput").value,
+      a: document.getElementById("accelerationMaxInput").value,
+      ri: document.getElementById("rotationMinInput").value,
+      r: document.getElementById("rotationMaxInput").value,
+    };
+    this.websocket.send(JSON.stringify(updateMessage));
   }
 
   addEventListener(method, callback) {
@@ -88,7 +101,7 @@ export class MessageManager {
     delete this.listeners[method];
   }
 
-  triggerEvent(method, payload = null) {
+  callback(method, payload = null) {
     const callback = this.listeners[method];
     if (typeof callback === "function") {
       callback(payload);

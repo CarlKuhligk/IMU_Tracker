@@ -1,7 +1,5 @@
 export class NavigationManager {
   constructor() {
-    this.devices = [];
-
     this.navigation = document.createElement("div");
     this.navigation.classList.add("navigation");
 
@@ -23,9 +21,7 @@ export class NavigationManager {
     this.navigationDeviceSectionLabel1.innerText = "Geräte";
 
     this.navigationDeviceSectionDeviceList = document.createElement("div");
-    this.navigationDeviceSectionDeviceList.classList.add(
-      "navigationDevicesSubSection"
-    );
+    this.navigationDeviceSectionDeviceList.classList.add("navigationDevicesSubSection");
     this.navigationDeviceSection.id = "deviceList";
 
     this.buildNavigationHTML();
@@ -38,12 +34,8 @@ export class NavigationManager {
     this.navigationEventSection.appendChild(this.navigationEventSectionButton1);
     this.navigation.appendChild(this.navigationEventSection);
 
-    this.navigationDeviceSection.appendChild(
-      this.navigationDeviceSectionLabel1
-    );
-    this.navigationDeviceSection.appendChild(
-      this.navigationDeviceSectionDeviceList
-    );
+    this.navigationDeviceSection.appendChild(this.navigationDeviceSectionLabel1);
+    this.navigationDeviceSection.appendChild(this.navigationDeviceSectionDeviceList);
 
     this.navigation.appendChild(this.navigationDeviceSection);
 
@@ -86,7 +78,10 @@ export class NavigationManager {
     var labelBattery = document.createElement("label");
     //_____labelChannelName.onclick = onClickModuleLabel;
     labelBattery.classList.add("batteryLabel");
-    labelBattery.innerText = "???";
+    if (device.isConnected)
+      labelBattery.innerText =
+        device.measurements.battery[device.measurements.battery.length - 1].y + " %";
+    else labelBattery.innerText = " ?";
     newDeviceNavigationObject.appendChild(labelBattery);
 
     // add event info image
@@ -97,16 +92,17 @@ export class NavigationManager {
     newDeviceNavigationObject.appendChild(imgEventInfo);
 
     newDeviceNavigationObject.addEventListener("click", (event) => {
-      alert(device.employee);
+      device.select();
+      device.addEventListener("update", () => {
+        this.updateDeviceEntity(device);
+      });
     });
 
     return newDeviceNavigationObject;
   }
 
   addDeviceEntity(device) {
-    $(".navigationDevicesSubSection").append(
-      this.generateDeviceHTMLObject(device)
-    );
+    $(".navigationDevicesSubSection").append(this.generateDeviceHTMLObject(device));
   }
 
   removeDeviceEntity(device) {
@@ -116,8 +112,6 @@ export class NavigationManager {
 
   updateDeviceEntity(device) {
     this.removeDeviceEntity(device);
-    $(".navigationDevicesSubSection").prepend(
-      this.generateDeviceHTMLObject(device)
-    );
+    $(".navigationDevicesSubSection").prepend(this.generateDeviceHTMLObject(device));
   }
 }

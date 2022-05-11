@@ -4,6 +4,7 @@
 --navigation-bg-color:#444444;
 --navigation-font-color:white;
 --hover-color1: #38A7F1;
+--border-color1: gray;
 }
 
 body {
@@ -89,7 +90,7 @@ body {
   margin: 3px;
   padding-bottom: 10px;
   border-radius: 10px;
-  border: 1px solid white;
+  border: 1px solid var(--border-color1);
 }
 
 .device {
@@ -99,12 +100,10 @@ body {
   margin-left: 10px;
   margin-right: 10px;
   border-radius: 10px;
-  border: 1px solid white;
-
-
+  border: 1px solid var(--border-color1);
 }
 .device:hover{
-  border: 1px solid var(--hover-color1)
+  background-color: var(--hover-color1);
 }
 
 .isConnectedImg, .deviceIdLabel, .employeeLabel, .batteryLabel, .eventInfoImg{
@@ -112,7 +111,7 @@ body {
 }
 
 .isConnectedImg{
-  padding: 45%;
+  padding: 15px;
   height: 20px;
   grid-column: line1 / span 1;
   grid-row: row1/ 1;
@@ -159,9 +158,9 @@ body {
   background-color: var(--navigation-bg-color);
 }
 
-.accelerationHistory, .eventHistory, .control {
+.chartRoot, .controlsRoot {
   font-size: large;
-  border: 1px solid white;
+  border: 1px solid var(--border-color1);
   border-radius: 10px;
   padding: 5px;
   padding-left: 10px;
@@ -169,17 +168,16 @@ body {
   margin-top: 20px;
 }
 
-.diagramCollection{
+.chartComponents{
   display: grid;
-  height: 250px;
+  height: min-content;
   grid-template-columns: [line1] 20% [line2]  50% [line3] auto  [end];
-  grid-template-rows: [row1] 200px [row2] auto [last-line];
+  grid-template-rows: [row1] 400px [row2] auto [last-line];
 }
 
-.diagramContainer{
+.chartPlaceholder{
   grid-column: line1 / span 3;
   grid-row: row1 / span 1;
-  padding-top: 15%;
   height: 100%;
   width: 100%;
 }
@@ -206,10 +204,110 @@ body {
 
 }
 
+.controlsRoot{
+  display: inline-block;
+}
+
+.controlsRoot #controlsRootLabel{
+  display:block !important;
+  padding: 10px;
+}
+
+.controls{
+  display: grid;
+  grid-template-columns: [line1] 260px [line2]  300px [end];
+  grid-template-rows: [row1] 40px [row2] 40px [row3] 40px [row4] 40px [last-line];
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.controls label{
+  font-size: small;
+  text-align: left;
+  display:block !important;
+}
+
+.controls input{
+  display:block !important;
+  margin-top: 16px;
+  height: 16px;
+  width: 50px;  
+  background-color: var(--navigation-bg-color);
+  color: white ;
+  padding-left: 5px;
+  border: none; 
+  border:solid 1px var(--border-color1);
+  border-radius: 10px;
+  font-family: var(--default-font-family);
+}
+
+.controls input:focus{
+  outline: none !important;
+  border:1px solid var(--hover-color1);
+}
+
+#batteryWarningLabel, #batteryWarningInput{
+  grid-column: line1 / span 1;
+  grid-row: row1 / span 1;
+}
+
+#idleTimeoutLabel, #idleTimeoutInput{
+  grid-column: line1 / span 1;
+  grid-row: row2 / span 1;
+}
+
+#connectionTimeoutLabel, #connectionTimeoutInput{
+  grid-column: line1 / span 1;
+  grid-row: row3 / span 1;
+}
+
+#measurementIntervalLabel, #measurementIntervalInput{
+  grid-column: line1 / span 1;
+  grid-row: row4 / span 1;
+}
+
+#accelerationMinLabel, #accelerationMinInput{
+  grid-column: line2 / span 1;
+  grid-row: row1 / span 1;
+}
+
+#accelerationMaxLabel, #accelerationMaxInput{
+  grid-column: line2 / span 1;
+  grid-row: row2 / span 1;
+}
+
+#rotationMinLabel, #rotationMinInput{
+  grid-column: line2 / span 1;
+  grid-row: row3 / span 1;
+}
+
+#rotationMaxLabel, #rotationMaxInput{
+  grid-column: line2 / span 1;
+  grid-row: row4 / span 1;
+}
+
+#updateSettingsButton{
+  background-color: var(--navigation-bg-color); /* Green */
+  border: none;
+  width: 67%;
+  color: white;
+  padding: 10px;
+  margin: 10px;
+  text-align: center;
+  display: inline-block;
+  font-size: 16px;
+  border: 1px solid var(--border-color1);
+  border-radius: 10px;
+  font-family: var(--default-font-family);
+}
+
+#updateSettingsButton:hover {
+  background-color: var(--hover-color1);
+  }
 
 
 @media only screen and (max-width: 600px) {
   body {
-    background-color: white;
+    background-color: red;
   }
 }

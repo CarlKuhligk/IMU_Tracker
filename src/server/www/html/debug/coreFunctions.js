@@ -6,10 +6,9 @@ var outputField = document.getElementById("outputField");
 var mainButton = document.getElementById("sendButton");
 
 // get server ip
-var serverIP = $.get("../debug/getServerIP.php").done(function (data) {
+var serverIP = $.get("../lib/getServerIP.php").done(function (data) {
   // create a new WebSocket.
   websocket = new WebSocket("ws://" + data + ":8080");
-
   // socket message callback
   websocket.onmessage = function (e) {
     outputField.append(e.data + "\r\n");
@@ -170,7 +169,11 @@ function onClick() {
     case "newDevice":
       message.t = "A";
       message.e = document.getElementsByName("input0")[0].value;
-      message.p = document.getElementsByName("input1")[0].value;
+
+      var pin = CryptoJS.SHA256(document.getElementsByName("input1")[0].value);
+      pin = pin.toString(CryptoJS.enc.Hex);
+      message.p = pin;
+
       message.it = document.getElementsByName("input2")[0].value;
       message.b = document.getElementsByName("input3")[0].value;
       message.c = document.getElementsByName("input4")[0].value;

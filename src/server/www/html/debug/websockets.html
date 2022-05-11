@@ -22,17 +22,8 @@
       <button class="button" id="sendButton" onclick="onClick()">Send</button>
       <div class="outputContainer">
         <p class="label">result</p>
-        <textarea
-          class="scrollabletextbox"
-          name="note"
-          id="outputField"
-        ></textarea>
-        <input
-          class="messageCheckbox"
-          type="checkbox"
-          id="checkbox1"
-          name="autoScroll"
-        />
+        <textarea class="scrollabletextbox" name="note" id="outputField"></textarea>
+        <input class="messageCheckbox" type="checkbox" id="checkbox1" name="autoScroll" />
         <label for="checkbox1">auto scroll</label>
       </div>
     </div>
@@ -46,8 +37,8 @@
       </div>
     </div>
   </body>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
-  <script type="text/javascript" src="../source/jquery.js"></script>
-  <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+  <script src="../lib/jquery.js"></script>
+  <script src="../lib/crypto-js.min.js"></script>
+  <script src="../lib/qrcode.min.js"></script>
   <script type="text/javascript" src="coreFunctions.js"></script>
 </html>

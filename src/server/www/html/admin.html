@@ -12,9 +12,10 @@
     />
     <link rel="icon" href="./img/icon.png" />
 
-    <script src="source/jquery.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
-    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script src="./lib/jquery.js"></script>
+    <script src="./lib/crypto-js.min.js"></script>
+    <script src="./lib/qrcode.min.js"></script>
+    <script scr="./lib/canvasjs.min.js"></script>
     <script type="module" src="./scripts/MessageManager.js"></script>
     <script type="module" src="./scripts/NavigationManager.js"></script>
     <script type="module" src="./scripts/main.js"></script>
@@ -27,53 +28,8 @@
       <div class="rootContent">
         <div class="content">
           <label>NAME XYZ</label>
-
-          <div class="accelerationHistory">
-            <label>Bewegungsverlauf</label>
-            <div class="diagramCollection">
-              <div class="diagramContainer">
-                <label>Diagram</label>
-              </div>
-              <div class="legend">
-                <label>Legende?</label>
-              </div>
-              <div class="window">
-                <label>Zeitfenster?</label>
-              </div>
-              <div class="current">
-                <label>Aktuelle Werte?</label>
-              </div>
-            </div>
-          </div>
-
-          <div class="eventHistory">
-            <label>Eventverlauf</label>
-            <div class="diagramCollection">
-              <div class="diagramContainer">
-                <label>Diagram</label>
-              </div>
-              <div class="legend">
-                <label>Legende?</label>
-              </div>
-              <div class="window">
-                <label>Zeitfenster?</label>
-              </div>
-              <div class="current">
-                <label>Aktuelle Werte?</label>
-              </div>
-            </div>
-          </div>
-
-          <div class="control">
-            <label>Einstellungen</label>
-            <label>Idle Timeout</label>
-            <label>Battery Warning</label>
-            <label>Connection Timeout</label>
-            <label>Measurement Interval</label>
-            <label>Acceleration min</label>
-            <label>Acceleration max</label>
-            <label>Rotation min</label>
-            <label>Rotation max</label>
+          <div class="chartRoot"></div>
+          <div class="controlsRoot"></div>
           </div>
         </div>
       </div>
