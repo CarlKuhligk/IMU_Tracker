@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationService {
@@ -31,6 +32,7 @@ class NotificationService {
     'channel name',
     icon: "app_icon",
     playSound: true,
+    enableVibration: false,
     priority: Priority.high,
     importance: Importance.high,
   );
@@ -52,7 +54,7 @@ class NotificationService {
     await flutterLocalNotificationsPlugin.show(
       3,
       "Bewegungslosigkeit erkannt!",
-      "Wenn Sie sich nicht bewegen, wird der Alarm ausgeloest!",
+      "Wenn Sie sich nicht bewegen, wird der Alarm ausgelöst!",
       NotificationDetails(android: _androidNotificationDetails),
     );
   }
